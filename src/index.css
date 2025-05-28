@@ -1,0 +1,7 @@
+/* Optional: set Inter or any other clean font */
+html, body {
+  height: 100%;
+  overflow: hidden; /* Prevent vertical scrolling */
+  margin: 0;
+  padding: 0;
+}
