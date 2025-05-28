@@ -1,18 +1,48 @@
 import TopBar from './components/TopBar';
 import './styles.css';
 import React, { useState, useRef, useEffect } from 'react';
+import RightSidebar from './components/RightSidebar';
 
 function App() {
-  const [isSidebarVisible, setIsSidebarVisible] = useState(true);
+  const [isLeftSidebarVisible, setIsLeftSidebarVisible] = useState(true);
+  const [isRightSidebarVisible, setIsRightSidebarVisible] = useState(true);
+  const [leftWidth, setLeftWidth] = useState(240);
+  const minLeftWidth = 180;
+  const maxLeftWidth = 400;
 
-  const toggleSidebar = () => {
-    setIsSidebarVisible(prev => !prev);
-  };
+  const isResizingLeft = useRef(false);
+
+  useEffect(() => {
+    const handleMouseMove = (e) => {
+      if (isResizingLeft.current) {
+        const newWidth = e.clientX;
+        if (newWidth >= minLeftWidth && newWidth <= maxLeftWidth) {
+          setLeftWidth(newWidth);
+        }
+      }
+    };
+
+    const stopResizing = () => {
+      isResizingLeft.current = false;
+    };
+
+    window.addEventListener('mousemove', handleMouseMove);
+    window.addEventListener('mouseup', stopResizing);
+
+    return () => {
+      window.removeEventListener('mousemove', handleMouseMove);
+      window.removeEventListener('mouseup', stopResizing);
+    };
+  }, []);
 
   const songTitle = 'Song Name 🎵';
+  const totalDuration = 200;
 
   const [progress, setProgress] = useState(40);
   const [isSeeking, setIsSeeking] = useState(false);
+  const [isPlaying, setIsPlaying] = useState(true);
+  const [activeButton, setActiveButton] = useState(null);
+
   const progressBarRef = useRef(null);
 
   const handleSeekStart = (e) => {
@@ -36,16 +66,11 @@ function App() {
     setProgress(percentage);
   };
 
-  const totalDuration = 200;
-
   const formatTime = (seconds) => {
     const mins = Math.floor(seconds / 60);
     const secs = Math.floor(seconds % 60);
     return `${mins}:${secs < 10 ? '0' : ''}${secs}`;
   };
-
-  const [isPlaying, setIsPlaying] = useState(true);
-  const [activeButton, setActiveButton] = useState(null);
 
   const handleTogglePlay = () => {
     setIsPlaying(!isPlaying);
@@ -54,77 +79,55 @@ function App() {
   };
 
   const handleSkip = (direction) => {
-    console.log(`${direction} track`);
     setActiveButton(direction);
     setTimeout(() => setActiveButton(null), 200);
   };
 
-  useEffect(() => {
-    const resizers = document.querySelectorAll('.resizer-bar');
-    let startX, startWidth, currentSidebar;
-
-    resizers.forEach(resizer => {
-      resizer.addEventListener('mousedown', (e) => {
-        startX = e.clientX;
-        currentSidebar = resizer.classList.contains('left-resizer')
-          ? document.querySelector('.left-sidebar')
-          : null;
-        startWidth = currentSidebar.offsetWidth;
-        document.addEventListener('mousemove', resizeSidebar);
-        document.addEventListener('mouseup', stopResize);
-      });
-    });
-
-    const resizeSidebar = (e) => {
-      const dx = e.clientX - startX;
-      if (currentSidebar) {
-        currentSidebar.style.width = `${startWidth + dx}px`;
-      }
-    };
-
-    const stopResize = () => {
-      document.removeEventListener('mousemove', resizeSidebar);
-      document.removeEventListener('mouseup', stopResize);
-    };
-
-    return () => stopResize();
-  }, []);
-
   return (
     <>
       <TopBar />
-
       <div className="app-layout">
-        {/* Left Sidebar with resizer */}
-        <div className={`resizable sidebar left-sidebar ${isSidebarVisible ? '' : 'hidden'}`}>
-          <div className="sidebar-section">
-            <h2 className="sidebar-title">Room: Harmonize HQ</h2>
-            <button className="copy-button">Room Invite Link</button>
+        {/* Left Sidebar */}
+        {isLeftSidebarVisible && (
+          <div
+            className="sidebar left-sidebar"
+            style={{ width: leftWidth }}
+          >
+            {/* 👇 Right edge resizer for left sidebar */}
+            <div
+              className="sidebar-right-edge"
+              onMouseDown={() => (isResizingLeft.current = true)}
+            />
+            <div className="sidebar-section">
+              <h2 className="sidebar-title">Room: Harmonize HQ</h2>
+              <button className="copy-button">Room Invite Link</button>
+            </div>
+            <div className="sidebar-section">
+              <h3 className="sidebar-subtitle">Listeners</h3>
+              <ul className="user-list">
+                {['🎧 Pranav (Admin)', 'Sofia', 'Jake', 'Jess', 'Zane'].map((name, idx) => (
+                  <li className={`user ${idx === 0 ? 'admin' : ''}`} key={name}>
+                    <div className="user-icon">
+                      <div className="head"></div>
+                      <div className="body"></div>
+                    </div>
+                    <span className="username">{name}</span>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          </div>
+        )}
+
+        {/* Main and Right Sidebar */}
+        <div className="main-and-right">
+          <div
+            className="sidebar-handle left-handle"
+            onClick={() => setIsLeftSidebarVisible(prev => !prev)}
+          >
+            {isLeftSidebarVisible ? '⮜' : '⮞'}
           </div>
 
-          <div className="sidebar-section">
-            <h3 className="sidebar-subtitle">Listeners</h3>
-            <ul className="user-list">
-              {['🎧 Pranav (Admin)', 'Sofia', 'Jake', 'Jess', 'Zane'].map((name, idx) => (
-                <li className={`user ${idx === 0 ? 'admin' : ''}`} key={name}>
-                  <div className="user-icon">
-                    <div className="head"></div>
-                    <div className="body"></div>
-                  </div>
-                  <span className="username">{name}</span>
-                </li>
-              ))}
-            </ul>
-          </div>
-        </div>
-
-        <div className={`resizer-bar left-resizer ${isSidebarVisible ? '' : 'hidden'}`}></div>
-
-        {/* Main area */}
-        <div className="main-area">
-          <button className="toggle-sidebar-button" onClick={toggleSidebar}>
-            {isSidebarVisible ? '←' : '→'}
-          </button>
           <main className="main-content">
             <div className="now-playing-container">
               <div className="now-playing-cover">
@@ -150,7 +153,9 @@ function App() {
                 </div>
 
                 <div className="progress-time">
-                  <span className="current-time">{formatTime(progress / 100 * totalDuration)}</span>
+                  <span className="current-time">
+                    {formatTime((progress / 100) * totalDuration)}
+                  </span>
                   <span className="total-time">{formatTime(totalDuration)}</span>
                 </div>
               </div>
@@ -174,7 +179,13 @@ function App() {
                 </button>
               </div>
             </div>
+
+            <div className="sidebar-handle right-handle" onClick={() => setIsRightSidebarVisible(prev => !prev)}>
+              {isRightSidebarVisible ? '⮞' : '⮜'}
+            </div>
           </main>
+
+          {isRightSidebarVisible && <RightSidebar />}
         </div>
       </div>
     </>
