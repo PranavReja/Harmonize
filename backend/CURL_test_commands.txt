@@ -1,0 +1,35 @@
+CURL Test Database Functionality Commands
+
+Creating Rooms:
+curl -X POST http://localhost:3001/rooms/create -H "Content-Type: application/json" -d "{\"mode\":\"guest\"}"
+curl -X POST http://localhost:3001/rooms/create -H "Content-Type: application/json" -d "{\"mode\":\"spotify\"}"
+
+
+Join Room:
+curl -X POST http://localhost:3001/rooms/184852/join
+
+Queue Song:
+curl -X POST http://localhost:3001/rooms/7a111b/queue -H "Content-Type: application/json" -d "{\"title\":\"Lofi Chill\",\"artist\":\"DJ Zen\",\"platform\":\"youtube\",\"sourceId\":\"yt123\",\"addedBy\":\"pranav\"}"
+
+Display Queue:
+curl http://localhost:3001/rooms/184852/queue
+
+Re-order songs (test for more than 2)
+curl -X PATCH http://localhost:3001/rooms/184852/queue/reorder -H "Content-Type: application/json" -d "{\"sourceIndex\":1,\"destinationIndex\":0}"
+
+
+//Delete one song
+curl -X DELETE http://localhost:3001/rooms/184852/queue/0
+
+//Delete whole room
+curl -X DELETE http://localhost:3001/rooms/184852
+
+
+//Delete all rooms
+curl -X DELETE http://localhost:3001/rooms
+
+
+Test-db (display all rooms and info)
+curl http://localhost:3001/test-db
+
+
