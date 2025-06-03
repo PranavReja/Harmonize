@@ -89,6 +89,7 @@ const activeServices = ['YouTube', 'Spotify', 'SoundCloud']; // 👈 change this
             <div className="song-title">{service} {i + 1}</div>
             <div className="artist-name">{service} Artist {i + 1}</div>
           </div>
+          <button className="add-to-queue-button">+</button>
           <div className="service-info">{service}</div>
         </div>
       ))}
