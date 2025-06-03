@@ -1026,3 +1026,27 @@ transform: scale(1.02);
   overflow: hidden;
 }
 
+.queue-card {
+  position: relative; /* Ensure the button can be positioned relative to the card */
+}
+
+.add-to-queue-button {
+  position: absolute;
+  top: 5px; /* Adjust as needed */
+  right: 5px; /* Adjust as needed */
+  background-color: #007bff; /* Blue background */
+  color: white;
+  border: none;
+  border-radius: 50%; /* Circular button */
+  width: 20px; /* Adjust as needed */
+  height: 20px; /* Adjust as needed */
+  font-size: 14px; /* Adjust as needed */
+  line-height: 18px; /* Center the plus icon */
+  text-align: center;
+  cursor: pointer;
+  padding: 0;
+}
+
+.add-to-queue-button:hover {
+  background-color: #0056b3; /* Darker blue on hover */
+}
