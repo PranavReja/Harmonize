@@ -88,11 +88,15 @@ function App() {
       <TopBar />
       <div className="app-layout">
         {/* Left Sidebar */}
-        {isLeftSidebarVisible && (
-          <div
-            className="sidebar left-sidebar"
-            style={{ width: leftWidth }}
-          >
+<div
+  className={`left-sidebar-wrapper ${isLeftSidebarVisible ? 'slide-in' : 'slide-out'}`}
+  style={{ width: isLeftSidebarVisible ? leftWidth : 0 }}
+>
+  <div
+    className="sidebar left-sidebar"
+    style={{ width: leftWidth }}
+  >
+
             {/* 👇 Right edge resizer for left sidebar */}
             <div
               className="sidebar-right-edge"
@@ -117,7 +121,7 @@ function App() {
               </ul>
             </div>
           </div>
-        )}
+          </div>
 
         {/* Main and Right Sidebar */}
         <div className="main-and-right">
@@ -185,7 +189,24 @@ function App() {
             </div>
           </main>
 
-          {isRightSidebarVisible && <RightSidebar />}
+          <div
+  className="right-sidebar-container"
+  style={{
+    width: isRightSidebarVisible ? 'auto' : '0',
+    transition: 'width 0.3s ease'
+  }}
+>
+  <div
+    className={`right-sidebar-slide ${isRightSidebarVisible ? 'slide-in' : 'slide-out'}`}
+    style={{
+      width: isRightSidebarVisible ? undefined : 0,
+      overflow: 'hidden'
+    }}
+  >
+    <RightSidebar isVisible={isRightSidebarVisible} />
+  </div>
+</div>
+
         </div>
       </div>
     </>

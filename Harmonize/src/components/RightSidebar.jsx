@@ -16,7 +16,7 @@ const queueData = [
   { albumCover: 'https://via.placeholder.com/60', title: 'Static Bloom', artist: 'Signal Bloom', serviceLogo: SpotifyLogo, queuedBy: 'Pranav' },
 ];
 
-export default function RightSidebar() {
+export default function RightSidebar({isVisible}) {
   const [isOpen, setIsOpen] = useState(true);
   const [width, setWidth] = useState(300);
   const minWidth = 200;
@@ -45,44 +45,41 @@ export default function RightSidebar() {
       window.removeEventListener('mouseup', stopResize);
     };
   }, []);
-
   return (
-    <div className="right-sidebar-wrapper">
-      {isOpen && (
-        <div
-          className="right-sidebar"
-          style={{ width }}
-        >
-          {/* Invisible left-edge resizer */}
-          <div
-            className="sidebar-left-edge"
-            onMouseDown={() => (isResizing.current = true)}
-          />
-
-          {/* Shared Queue Title */}
-          <div className="sidebar-section">
-            <h2 className="sidebar-title">Shared Queue</h2>
+    <div
+      className="right-sidebar"
+      style={{
+        width: isVisible ? width : 0,
+        opacity: isVisible ? 1 : 0,
+        pointerEvents: isVisible ? 'auto' : 'none'
+      }}
+    >
+      <div
+        className="sidebar-left-edge"
+        onMouseDown={() => (isResizing.current = true)}
+      />
+  
+      <div className="sidebar-section">
+        <h2 className="sidebar-title">Shared Queue</h2>
+      </div>
+  
+      {queueData.map((item, idx) => (
+        <div className="queue-card" key={idx}>
+          <div className="album-cover-placeholder" />
+          <div className="song-info">
+            <div className="song-title">{item.title}</div>
+            <div className="artist-name">{item.artist}</div>
           </div>
-
-          {queueData.map((item, idx) => (
-            <div className="queue-card" key={idx}>
-              <div className="album-cover-placeholder" />
-              <div className="song-info">
-                <div className="song-title">{item.title}</div>
-                <div className="artist-name">{item.artist}</div>
-              </div>
-              <div className="service-info">
-                <img
-                  src={item.serviceLogo}
-                  alt="service"
-                  style={{ width: 20, height: 20, marginBottom: 4 }}
-                />
-                <div className="queued-by">{item.queuedBy}</div>
-              </div>
-            </div>
-          ))}
+          <div className="service-info">
+            <img
+              src={item.serviceLogo}
+              alt="service"
+              style={{ width: 20, height: 20, marginBottom: 4 }}
+            />
+            <div className="queued-by">{item.queuedBy}</div>
+          </div>
         </div>
-      )}
+      ))}
     </div>
-  );
+  );  
 }
