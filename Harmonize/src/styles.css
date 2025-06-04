@@ -700,7 +700,7 @@ transform: scale(1.02);
   font-size: 14px;
   gap: 8px;
   transition: background-color 0.2s ease, transform 0.1s ease;
-  cursor: pointer;
+  cursor: grab;
 }
 
 .queue-card:hover {
@@ -710,6 +710,7 @@ transform: scale(1.02);
 .queue-card:active {
   transform: scale(0.98);
   background-color: #3b3b3b;
+  cursor: grabbing;
 }
 
 .album-cover {
@@ -1028,6 +1029,7 @@ transform: scale(1.02);
 
 .queue-card {
   position: relative; /* Ensure the button can be positioned relative to the card */
+  cursor: grab;
 }
 
 .add-to-queue-button {
