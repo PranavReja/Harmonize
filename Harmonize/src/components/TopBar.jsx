@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import SearchResultCard from './SearchResultCard.jsx';
 
 export default function TopBar() {
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -78,24 +79,22 @@ const activeServices = ['YouTube', 'Spotify', 'SoundCloud']; // 👈 change this
 
 
           <h2 className="modal-title">Search Results</h2>
-<div className="multi-column-results">
-  {activeServices.map((service) => (
-    <div key={service} className="service-column">
-      <h3 className="service-header">{service}</h3>
-      {Array.from({ length: 10 }, (_, i) => (
-        <div key={i} className="queue-card">
-          <div className="album-cover-placeholder"></div>
-          <div className="song-info">
-            <div className="song-title">{service} {i + 1}</div>
-            <div className="artist-name">{service} Artist {i + 1}</div>
-          </div>
-          <button className="add-to-queue-button">+</button>
-          <div className="service-info">{service}</div>
-        </div>
-      ))}
-    </div>
-  ))}
-</div>
+  <div className="multi-column-results">
+    {activeServices.map((service) => (
+      <div key={service} className="service-column">
+        <h3 className="service-header">{service}</h3>
+        {Array.from({ length: 10 }, (_, i) => (
+          <SearchResultCard
+            key={i}
+            title={`${service} ${i + 1}`}
+            artist={`${service} Artist ${i + 1}`}
+            service={service}
+            onAdd={() => {}}
+          />
+        ))}
+      </div>
+    ))}
+  </div>
 
                 </div>
      

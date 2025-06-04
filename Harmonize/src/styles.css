@@ -713,6 +713,18 @@ transform: scale(1.02);
   cursor: grabbing;
 }
 
+.result-card {
+  display: flex;
+  align-items: center;
+  background-color: #1e1e1e;
+  padding: 8px 12px;
+  border: 1px solid #333;
+  border-radius: 6px;
+  margin-bottom: 8px;
+  font-size: 14px;
+  gap: 8px;
+}
+
 .album-cover {
   width: 60px;
   height: 60px;
@@ -1027,9 +1039,9 @@ transform: scale(1.02);
   overflow: hidden;
 }
 
-.queue-card {
+.result-card {
   position: relative; /* Ensure the button can be positioned relative to the card */
-  cursor: grab;
+  cursor: default;
 }
 
 .add-to-queue-button {
