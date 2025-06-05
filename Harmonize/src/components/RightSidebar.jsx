@@ -68,6 +68,7 @@ export default function RightSidebar({isVisible}) {
       className="right-sidebar"
       style={{
         width: isVisible ? width : 0,
+        minWidth: isVisible ? minWidth : 0,
         opacity: isVisible ? 1 : 0,
         pointerEvents: isVisible ? 'auto' : 'none',
       }}
