@@ -123,8 +123,8 @@ function App() {
           </div>
           </div>
 
-        {/* Main and Right Sidebar */}
-        <div className="main-and-right">
+        {/* Main Area */}
+        <div className="main-area">
           <div
             className="sidebar-handle left-handle"
             onClick={() => setIsLeftSidebarVisible(prev => !prev)}
@@ -189,15 +189,15 @@ function App() {
             </div>
           </main>
 
-          <div
-            className={`right-sidebar-container ${
-              isRightSidebarVisible ? 'slide-in' : 'slide-out'
-            }`}
-          >
-            <RightSidebar isVisible={isRightSidebarVisible} />
-          </div>
-
         </div>
+        <div
+          className={`right-sidebar-container ${
+            isRightSidebarVisible ? 'slide-in' : 'slide-out'
+          }`}
+        >
+          <RightSidebar isVisible={isRightSidebarVisible} />
+        </div>
+
       </div>
     </>
   );
