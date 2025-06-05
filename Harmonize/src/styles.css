@@ -1070,3 +1070,20 @@ transform: scale(1.02);
 .play-next-button:hover {
   background-color: #0056b3;
 }
+
+.add-to-queue-button.clicked,
+.play-next-button.clicked {
+  animation: button-click 0.2s ease;
+}
+
+@keyframes button-click {
+  0% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(0.85);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
