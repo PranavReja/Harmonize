@@ -652,13 +652,6 @@ transform: scale(1.02);
   margin: 0.5em auto;
 }
 
-.main-and-right {
-  position: relative;
-  display: flex;
-  flex-direction: row;
-  flex: 1;
-  height: 100%;
-}
 
 .sidebar.left-sidebar .copy-button {
   margin-top: 0px;
