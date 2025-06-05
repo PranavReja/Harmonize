@@ -3,11 +3,14 @@ import SearchResultCard from './SearchResultCard.jsx';
 
 export default function TopBar() {
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isLinkModalOpen, setIsLinkModalOpen] = useState(false);
+  const [linkInput, setLinkInput] = useState('');
 
   useEffect(() => {
     const handleKeyDown = (e) => {
       if (e.key === 'Escape') {
         setIsModalOpen(false);
+        setIsLinkModalOpen(false);
       }
     };
     window.addEventListener('keydown', handleKeyDown);
@@ -51,7 +54,9 @@ const activeServices = ['YouTube', 'Spotify', 'SoundCloud']; // 👈 change this
 
         {/* Right: Buttons */}
         <div className="topbar-right">
-          <button className="copy-button">Insert Music Links</button>
+          <button className="copy-button" onClick={() => setIsLinkModalOpen(true)}>
+            Insert Music Links
+          </button>
           <button className="icon-button settings-button" aria-label="Settings">
             <div className="dot"></div>
             <div className="dot"></div>
@@ -114,15 +119,44 @@ const activeServices = ['YouTube', 'Spotify', 'SoundCloud']; // 👈 change this
             onPlayNext={() => {}}
           />
         ))}
-      </div>
-    ))}
+        </div>
+      ))}
   </div>
 
                 </div>
-     
+
             </div>
-      
+
            )}
+      {isLinkModalOpen && (
+        <div className="modal-overlay" onClick={() => setIsLinkModalOpen(false)}>
+          <div
+            className="modal-content link-modal-content"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <button
+              className="modal-close-button"
+              onClick={() => setIsLinkModalOpen(false)}
+              aria-label="Close Modal"
+            >
+              ×
+            </button>
+            <div className="link-input-group">
+              <div className="unified-search-wrapper" style={{ maxWidth: '600px', marginRight: '12px' }}>
+                <input
+                  type="text"
+                  placeholder="Paste music link..."
+                  className="unified-search-input"
+                  value={linkInput}
+                  onChange={(e) => setLinkInput(e.target.value)}
+                  autoFocus
+                />
+              </div>
+              <button className="submit-link-button">Submit</button>
+            </div>
+          </div>
+        </div>
+      )}
     </>
   );
 }
