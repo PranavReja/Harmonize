@@ -1037,7 +1037,8 @@ transform: scale(1.02);
 
 .right-sidebar {
   transition: width 0.2s ease, opacity 0.2s ease;
-  overflow: hidden;
+  overflow-y: auto;
+  height: 100%;
 }
 
 .result-card {
