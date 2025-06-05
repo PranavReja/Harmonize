@@ -1064,9 +1064,17 @@ transform: scale(1.02);
   text-align: center;
   cursor: pointer;
   padding: 0;
+  transition: background-color 0.2s ease, transform 0.1s ease;
 }
 
 .add-to-queue-button:hover,
 .play-next-button:hover {
   background-color: #0056b3;
+}
+
+.add-to-queue-button:active,
+.play-next-button:active {
+  transform: scale(0.9);
+  background-color: #004a99;
+
 }
