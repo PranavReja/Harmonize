@@ -1040,27 +1040,40 @@ transform: scale(1.02);
 }
 
 .result-card {
-  position: relative; /* Ensure the button can be positioned relative to the card */
+  position: relative;
   cursor: default;
 }
 
-.add-to-queue-button {
-  position: absolute;
-  top: 5px; /* Adjust as needed */
-  right: 5px; /* Adjust as needed */
-  background-color: #007bff; /* Blue background */
+.action-buttons {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  margin-left: auto;
+}
+
+.add-to-queue-button,
+.play-next-button {
+  background-color: #007bff;
   color: white;
   border: none;
-  border-radius: 50%; /* Circular button */
-  width: 20px; /* Adjust as needed */
-  height: 20px; /* Adjust as needed */
-  font-size: 14px; /* Adjust as needed */
-  line-height: 18px; /* Center the plus icon */
+  border-radius: 50%;
+  width: 20px;
+  height: 20px;
+  font-size: 14px;
+  line-height: 18px;
   text-align: center;
   cursor: pointer;
   padding: 0;
+  transition: background-color 0.2s ease, transform 0.1s ease;
 }
 
-.add-to-queue-button:hover {
-  background-color: #0056b3; /* Darker blue on hover */
+.add-to-queue-button:hover,
+.play-next-button:hover {
+  background-color: #0056b3;
+}
+
+.add-to-queue-button:active,
+.play-next-button:active {
+  transform: scale(0.9);
+  background-color: #004a99;
 }

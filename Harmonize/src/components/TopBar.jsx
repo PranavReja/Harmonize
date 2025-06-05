@@ -90,6 +90,7 @@ const activeServices = ['YouTube', 'Spotify', 'SoundCloud']; // 👈 change this
             artist={`${service} Artist ${i + 1}`}
             service={service}
             onAdd={() => {}}
+            onPlayNext={() => {}}
           />
         ))}
       </div>
