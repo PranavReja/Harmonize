@@ -40,11 +40,10 @@ export default function UserCard({ user }) {
       <span className="username">{user.name}</span>
       {open && (
         <div className="contact-card" onPointerDown={(e) => e.stopPropagation()}>
-          <img
-            src={user.profilePic}
-            alt="profile"
-            className="contact-photo"
-          />
+          <div className="contact-icon">
+            <div className="head"></div>
+            <div className="body"></div>
+          </div>
           <div className="contact-name">{user.name}</div>
           <div className="contact-services">
             {user.services.map((s) => (
