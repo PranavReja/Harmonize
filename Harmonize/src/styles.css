@@ -1020,9 +1020,10 @@ transform: scale(1.02);
 
 .right-sidebar-container {
   display: flex;
-  transition: transform 0.3s ease, opacity 0.3s ease;
+  transition: transform 0.3s ease, opacity 0.3s ease, width 0.3s ease;
   height: 100%;
   position: relative;
+  overflow: hidden;
 }
 
 .right-sidebar-container.slide-in {
