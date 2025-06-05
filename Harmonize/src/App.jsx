@@ -193,6 +193,7 @@ function App() {
             className={`right-sidebar-container ${
               isRightSidebarVisible ? 'slide-in' : 'slide-out'
             }`}
+
           >
             <RightSidebar isVisible={isRightSidebarVisible} />
           </div>
