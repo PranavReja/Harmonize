@@ -417,6 +417,7 @@ transform: scale(1.02);
     gap: 8px;
     transition: background-color 0.2s ease, transform 0.1s ease;
     cursor: pointer;
+    position: relative; /* allow contact card positioning */
   }
   
   .user:hover {
@@ -459,9 +460,9 @@ transform: scale(1.02);
 
   .contact-card {
     position: absolute;
-    top: calc(100% + 8px);
+    top: 50%;
     left: 50%;
-    transform: translateX(-50%);
+    transform: translate(-50%, -50%);
     background-color: #1e1e1e;
     border: 1px solid #333;
     border-radius: 6px;

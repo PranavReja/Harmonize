@@ -14,14 +14,14 @@ export default function UserCard({ user }) {
   const toggle = () => setOpen((v) => !v);
 
   return (
-    <li className={`user ${user.admin ? 'admin' : ''}`} onClick={toggle}>
+    <li className={`user ${user.admin ? 'admin' : ''}`} onPointerDown={toggle}>
       <div className="user-icon">
         <div className="head"></div>
         <div className="body"></div>
       </div>
       <span className="username">{user.name}</span>
       {open && (
-        <div className="contact-card" onClick={(e) => e.stopPropagation()}>
+        <div className="contact-card" onPointerDown={(e) => e.stopPropagation()}>
           <img
             src={user.profilePic}
             alt="profile"
