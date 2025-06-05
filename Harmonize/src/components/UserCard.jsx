@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import YouTubeLogo from '../assets/youtube.png';
 import SoundCloudLogo from '../assets/soundcloud.svg';
 import SpotifyLogo from '../assets/spotify.svg';
@@ -11,10 +11,28 @@ const logoMap = {
 
 export default function UserCard({ user }) {
   const [open, setOpen] = useState(false);
+  const cardRef = useRef(null);
   const toggle = () => setOpen((v) => !v);
 
+  useEffect(() => {
+    if (!open) return;
+
+    const handleOutside = (e) => {
+      if (cardRef.current && !cardRef.current.contains(e.target)) {
+        setOpen(false);
+      }
+    };
+
+    document.addEventListener('pointerdown', handleOutside);
+    return () => document.removeEventListener('pointerdown', handleOutside);
+  }, [open]);
+
   return (
-    <li className={`user ${user.admin ? 'admin' : ''}`} onPointerDown={toggle}>
+    <li
+      ref={cardRef}
+      className={`user ${user.admin ? 'admin' : ''}`}
+      onPointerDown={toggle}
+    >
       <div className="user-icon">
         <div className="head"></div>
         <div className="body"></div>
