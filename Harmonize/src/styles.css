@@ -475,11 +475,28 @@ transform: scale(1.02);
     width: 160px;
   }
 
-  .contact-photo {
+  .contact-icon {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 4px;
     width: 60px;
     height: 60px;
-    object-fit: cover;
-    border-radius: 4px;
+  }
+
+  .contact-icon .head {
+    width: 20px;
+    height: 20px;
+    background-color: white;
+    border-radius: 50%;
+  }
+
+  .contact-icon .body {
+    width: 30px;
+    height: 16px;
+    background-color: white;
+    border-radius: 8px;
   }
 
   .contact-name {
