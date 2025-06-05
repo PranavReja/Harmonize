@@ -1,0 +1,45 @@
+import React, { useState } from 'react';
+import YouTubeLogo from '../assets/youtube.png';
+import SoundCloudLogo from '../assets/soundcloud.svg';
+import SpotifyLogo from '../assets/spotify.svg';
+
+const logoMap = {
+  YouTube: YouTubeLogo,
+  SoundCloud: SoundCloudLogo,
+  Spotify: SpotifyLogo,
+};
+
+export default function UserCard({ user }) {
+  const [open, setOpen] = useState(false);
+  const toggle = () => setOpen((v) => !v);
+
+  return (
+    <li className={`user ${user.admin ? 'admin' : ''}`} onClick={toggle}>
+      <div className="user-icon">
+        <div className="head"></div>
+        <div className="body"></div>
+      </div>
+      <span className="username">{user.name}</span>
+      {open && (
+        <div className="contact-card" onClick={(e) => e.stopPropagation()}>
+          <img
+            src={user.profilePic}
+            alt="profile"
+            className="contact-photo"
+          />
+          <div className="contact-name">{user.name}</div>
+          <div className="contact-services">
+            {user.services.map((s) => (
+              <img
+                key={s}
+                src={logoMap[s]}
+                alt={s}
+                className="service-logo"
+              />
+            ))}
+          </div>
+        </div>
+      )}
+    </li>
+  );
+}
