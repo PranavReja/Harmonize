@@ -190,13 +190,20 @@ function App() {
           </main>
 
           <div
-            className={`right-sidebar-container ${
-              isRightSidebarVisible ? 'slide-in' : 'slide-out'
-            }`}
-
-          >
-            <RightSidebar isVisible={isRightSidebarVisible} />
-          </div>
+            className="right-sidebar-container"
+              width: isRightSidebarVisible ? 'auto' : '0',
+              transition: 'width 0.3s ease'
+            <div
+              className={`right-sidebar-slide ${
+                isRightSidebarVisible ? 'slide-in' : 'slide-out'
+              }`}
+              style={{
+                width: isRightSidebarVisible ? undefined : 0,
+                overflow: 'hidden'
+              }}
+            >
+              <RightSidebar isVisible={isRightSidebarVisible} />
+            </div>
 
         </div>
       </div>
