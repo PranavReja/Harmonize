@@ -1076,4 +1076,5 @@ transform: scale(1.02);
 .play-next-button:active {
   transform: scale(0.9);
   background-color: #004a99;
+
 }

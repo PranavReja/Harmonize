@@ -18,6 +18,7 @@ export default function SearchResultCard({
       <div className="action-buttons">
         <button className="add-to-queue-button" onClick={onAdd}>+</button>
         <button className="play-next-button" onClick={onPlayNext}>↑</button>
+
       </div>
     </div>
   );
