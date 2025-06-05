@@ -2,6 +2,7 @@ import TopBar from './components/TopBar';
 import './styles.css';
 import React, { useState, useRef, useEffect } from 'react';
 import RightSidebar from './components/RightSidebar';
+import UserCard from './components/UserCard';
 
 function App() {
   const [isLeftSidebarVisible, setIsLeftSidebarVisible] = useState(true);
@@ -44,6 +45,30 @@ function App() {
   const [activeButton, setActiveButton] = useState(null);
 
   const progressBarRef = useRef(null);
+
+  const users = [
+    {
+      name: '🎧 Pranav (Admin)',
+      admin: true,
+      services: ['Spotify', 'YouTube'],
+    },
+    {
+      name: 'Sofia',
+      services: ['YouTube'],
+    },
+    {
+      name: 'Jake',
+      services: ['SoundCloud', 'Spotify'],
+    },
+    {
+      name: 'Jess',
+      services: ['SoundCloud'],
+    },
+    {
+      name: 'Zane',
+      services: ['Spotify'],
+    },
+  ];
 
   const handleSeekStart = (e) => {
     setIsSeeking(true);
@@ -109,14 +134,8 @@ function App() {
             <div className="sidebar-section">
               <h3 className="sidebar-subtitle">Listeners</h3>
               <ul className="user-list">
-                {['🎧 Pranav (Admin)', 'Sofia', 'Jake', 'Jess', 'Zane'].map((name, idx) => (
-                  <li className={`user ${idx === 0 ? 'admin' : ''}`} key={name}>
-                    <div className="user-icon">
-                      <div className="head"></div>
-                      <div className="body"></div>
-                    </div>
-                    <span className="username">{name}</span>
-                  </li>
+                {users.map((u) => (
+                  <UserCard key={u.name} user={u} />
                 ))}
               </ul>
             </div>
