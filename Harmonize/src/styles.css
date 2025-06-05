@@ -915,6 +915,7 @@ transform: scale(1.02);
 }
 
 .modal-content {
+  position: relative;
   background-color: #0d1117;
   padding: 2rem;
   border-radius: 12px;
