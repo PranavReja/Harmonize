@@ -69,6 +69,7 @@ export default function RightSidebar({isVisible}) {
       style={{
         width: isVisible ? width : 0,
         minWidth: isVisible ? minWidth : 0,
+        padding: isVisible ? '10px' : 0,
         opacity: isVisible ? 1 : 0,
         pointerEvents: isVisible ? 'auto' : 'none',
       }}
@@ -76,6 +77,7 @@ export default function RightSidebar({isVisible}) {
       <div
         className="sidebar-left-edge"
         onMouseDown={() => (isResizing.current = true)}
+        style={{ display: isVisible ? 'block' : 'none' }}
       />
 
       <div className="sidebar-section">
