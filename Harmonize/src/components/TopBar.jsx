@@ -78,7 +78,28 @@ const activeServices = ['YouTube', 'Spotify', 'SoundCloud']; // 👈 change this
 
 
 
-          <h2 className="modal-title">Search Results</h2>
+          <div className="modal-title">
+            <div className="unified-search-wrapper">
+              <input
+                type="text"
+                placeholder="Search music..."
+                className="unified-search-input"
+                autoFocus
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter') {
+                    setIsModalOpen(true);
+                  }
+                }}
+              />
+              <span
+                className="search-icon"
+                onClick={() => setIsModalOpen(true)}
+                style={{ cursor: 'pointer' }}
+              >
+                🔍
+              </span>
+            </div>
+          </div>
   <div className="multi-column-results">
     {activeServices.map((service) => (
       <div key={service} className="service-column">

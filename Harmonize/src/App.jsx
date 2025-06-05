@@ -193,11 +193,7 @@ function App() {
             className={`right-sidebar-container ${
               isRightSidebarVisible ? 'slide-in' : 'slide-out'
             }`}
-            style={{
-              width: isRightSidebarVisible ? 'auto' : 0,
-              transition: 'width 0.3s ease',
-              overflow: 'hidden'
-            }}
+
           >
             <RightSidebar isVisible={isRightSidebarVisible} />
           </div>
