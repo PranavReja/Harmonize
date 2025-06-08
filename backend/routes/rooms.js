@@ -1,6 +1,8 @@
 import express from 'express';      // Get the Express Router system
 import Room from '../models/Room.js'; // Import your Room model
+import User from '../models/User.js'; // Top of file
 import crypto from 'crypto';         // Use this to generate random room IDs
+
 
 const router = express.Router(); // Create a new router for /rooms endpoints
 
@@ -23,7 +25,7 @@ router.post('/create', async (req, res) => {
   });
   
 
-  // POST /rooms/:id/join
+  // POST /rooms/:id/join (deprecated)
 router.post('/:id/join', async (req, res) => {
     const roomId = req.params.id; // Get the room ID from the URL
     const room = await Room.findOne({ roomId }); // Look it up in the database
@@ -53,12 +55,15 @@ router.get('/:id/queue', async (req, res) => {
   
     try {
       const room = await Room.findOne({ roomId });
+      if (!room) return res.status(404).json({ error: 'Room not found' });
   
-      if (!room) {
-        return res.status(404).json({ error: 'Room not found' });
+      // Validate user
+      const user = await User.findOne({ userId: addedBy });
+      if (!user || user.currentRoom !== roomId) {
+        return res.status(400).json({ error: 'User must be in the room to queue a song' });
       }
   
-      // ✅ Block Spotify songs in guest-mode rooms
+      // Block Spotify in guest rooms
       if (room.mode === 'guest' && platform === 'spotify') {
         return res.status(400).json({ error: 'Spotify songs are not allowed in guest mode' });
       }
@@ -81,6 +86,7 @@ router.get('/:id/queue', async (req, res) => {
       res.status(500).json({ error: 'Internal server error' });
     }
   });
+  
 
 
   // PATCH /rooms/:id/queue/reorder
@@ -189,4 +195,100 @@ router.delete('/', async (req, res) => {
   });
   
 
+// PATCH /rooms/:id/join-user
+router.patch('/:id/join-user', async (req, res) => {
+  const { userId, username } = req.body;
+  const roomId = req.params.id;
+
+  const user = await User.findOne({ userId });
+  if (!user) return res.status(404).json({ error: 'User not found' });
+
+  // Leave previous room if needed
+  if (user.currentRoom && user.currentRoom !== roomId) {
+    const oldRoom = await Room.findOne({ roomId: user.currentRoom });
+    if (oldRoom) {
+      oldRoom.users = oldRoom.users.filter(u => u.userId !== userId);
+      await oldRoom.save();
+    }
+  }
+
+  // Join new room
+  const room = await Room.findOne({ roomId });
+  if (!room) return res.status(404).json({ error: 'Room not found' });
+
+  const alreadyIn = room.users.find(u => u.userId === userId);
+  if (!alreadyIn) {
+    room.users.push({ userId, username });
+    await room.save();
+  }
+
+  user.currentRoom = roomId;
+  await user.save();
+
+  res.json({ message: `User joined ${roomId}`, users: room.users });
+});
+
+// PATCH /rooms/:id/remove-user
+router.patch('/:id/remove-user', async (req, res) => {
+  const { userId } = req.body;
+  const room = await Room.findOne({ roomId: req.params.id });
+  if (!room) return res.status(404).json({ error: 'Room not found' });
+
+  room.users = room.users.filter(u => u.userId !== userId);
+  await room.save();
+
+  const user = await User.findOne({ userId });
+  if (user) {
+    user.currentRoom = null;
+    await user.save();
+  }
+
+  res.json({ message: 'User removed from room', users: room.users });
+});
+
+router.post('/:id/queue/next', async (req, res) => {
+  const roomId = req.params.id;
+  const { title, artist, platform, sourceId, addedBy } = req.body;
+
+  try {
+    const room = await Room.findOne({ roomId });
+    if (!room) return res.status(404).json({ error: 'Room not found' });
+
+    const user = await User.findOne({ userId: addedBy });
+    if (!user || user.currentRoom !== roomId) {
+      return res.status(400).json({ error: 'User must be in the room to queue a song' });
+    }
+
+    if (room.mode === 'guest' && platform === 'spotify') {
+      return res.status(400).json({ error: 'Spotify songs are not allowed in guest mode' });
+    }
+
+    const insertIndex = room.currentIndex + 1 || 0;
+
+    room.queue.splice(insertIndex, 0, {
+      title,
+      artist,
+      platform,
+      sourceId,
+      addedBy,
+      position: insertIndex
+    });
+
+    // Reassign all positions after inserting
+    room.queue = room.queue.map((song, i) => ({
+      ...song.toObject(),
+      position: i
+    }));
+
+    await room.save();
+    res.json({ message: 'Song added to play next', queue: room.queue });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
+
+
+  
 export default router;

@@ -5,11 +5,14 @@ curl -X POST http://localhost:3001/rooms/create -H "Content-Type: application/js
 curl -X POST http://localhost:3001/rooms/create -H "Content-Type: application/json" -d "{\"mode\":\"spotify\"}"
 
 
-Join Room:
+Join Room: (deprecated)
 curl -X POST http://localhost:3001/rooms/184852/join
 
 Queue Song:
-curl -X POST http://localhost:3001/rooms/7a111b/queue -H "Content-Type: application/json" -d "{\"title\":\"Lofi Chill\",\"artist\":\"DJ Zen\",\"platform\":\"youtube\",\"sourceId\":\"yt123\",\"addedBy\":\"pranav\"}"
+curl -X POST http://localhost:3001/rooms/abc123/queue -H "Content-Type: application/json" -d "{\"title\":\"Lo-fi Chill\",\"artist\":\"DJ Zen\",\"platform\":\"youtube\",\"sourceId\":\"abc123xyz\",\"addedBy\":\"f97268351b07e403\"}"
+
+//add next:
+curl -X POST http://localhost:3001/rooms/abc123/queue/next -H "Content-Type: application/json" -d "{\"title\":\"Lo-fi Chill\",\"artist\":\"DJ Zen\",\"platform\":\"youtube\",\"sourceId\":\"abc123xyz\",\"addedBy\":\"f97268351b07e403\"}"
 
 Display Queue:
 curl http://localhost:3001/rooms/184852/queue
@@ -28,8 +31,41 @@ curl -X DELETE http://localhost:3001/rooms/184852
 //Delete all rooms
 curl -X DELETE http://localhost:3001/rooms
 
+//create user
+curl -X POST http://localhost:3001/users -H "Content-Type: application/json" -d "{\"username\":\"vinny\"}"
+
+//join room as a user
+curl -X PATCH http://localhost:3001/rooms/746631/join-user -H "Content-Type: application/json" -d "{\"userId\":\"cf672dd1c09300fd\",\"username\":\"pranav\"}"
+
+//remove user from room 
+curl -X PATCH http://localhost:3001/rooms/746631/remove-user -H "Content-Type: application/json" -d "{\"userId\":\"cf672dd1c09300fd\"}"
+
+//user id 
+curl http://localhost:3001/users/f97268351b07e403
+
 
 Test-db (display all rooms and info)
 curl http://localhost:3001/test-db
+
+//find users
+curl http://localhost:3001/users/all
+curl http://localhost:3001/users/unjoined
+curl http://localhost:3001/users/in-room/746631
+
+
+delete a user
+curl -X DELETE http://localhost:3001/users/f97268351b07e403
+
+update username
+curl -X PATCH http://localhost:3001/users/useridhere -H "Content-Type: application/json" -d "{\"username\":\"newName\"}"
+
+update service
+curl -X PATCH http://localhost:3001/users/f97268351b07e403 -H "Content-Type: application/json" -d "{\"services\":{\"soundcloud\":{\"connected\":true}}}"
+
+
+update current song
+get current song 
+add song next 
+jump to song in queue.  - manage position numbers and delete routes 
 
 

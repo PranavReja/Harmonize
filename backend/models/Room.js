@@ -5,7 +5,12 @@ const RoomSchema = new mongoose.Schema({
   roomId: { type: String, required: true, unique: true }, // Short ID (e.g., abc123)
   mode: { type: String, enum: ['guest', 'spotify'], required: true }, // Type of room
   createdAt: { type: Date, default: Date.now }, // Auto-record when the room was created
-  users: [String], // Optional list of users (can be expanded later)
+  users: [
+    {
+      userId: String,
+      username: String
+    }
+  ], // Optional list of users (can be expanded later)
   queue: [
     {
       title: String,
@@ -15,7 +20,7 @@ const RoomSchema = new mongoose.Schema({
       addedBy: String,       // username or user ID
       position: Number
     }
-  ]
+]
 });
 
 
