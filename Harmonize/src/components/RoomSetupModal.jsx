@@ -24,18 +24,32 @@ export default function RoomSetupModal({ onClose }) {
 
   return (
     <div className="modal-overlay" onClick={onClose}>
-      <div className="modal-content" onClick={(e) => e.stopPropagation()}>
+      <div className="modal-content setup-modal-content" onClick={(e) => e.stopPropagation()}>
         <button className="modal-close-button" onClick={onClose} aria-label="Close Modal">
           &times;
         </button>
         {mode === null && (
-          <div className="intro-buttons">
-            <button className="submit-link-button" onClick={() => setMode('create')}>
-              Create Listening Room
-            </button>
-            <button className="submit-link-button" onClick={() => setMode('join')}>
-              Join Listening Room
-            </button>
+          <div className="intro-card">
+            <img
+              src="/src/assets/logo.png"
+              alt="Harmonize Logo"
+              className="intro-logo"
+            />
+            <h2 className="intro-title">Welcome to Harmonize</h2>
+            <div className="intro-buttons">
+              <button
+                className="submit-link-button"
+                onClick={() => setMode('create')}
+              >
+                Create Listening Room
+              </button>
+              <button
+                className="submit-link-button"
+                onClick={() => setMode('join')}
+              >
+                Join Listening Room
+              </button>
+            </div>
           </div>
         )}
         {mode === 'create' && (
