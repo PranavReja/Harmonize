@@ -3,6 +3,7 @@ import './styles.css';
 import React, { useState, useRef, useEffect } from 'react';
 import RightSidebar from './components/RightSidebar';
 import UserCard from './components/UserCard';
+import RoomSetupModal from './components/RoomSetupModal.jsx';
 
 function App() {
   const [isLeftSidebarVisible, setIsLeftSidebarVisible] = useState(true);
@@ -10,6 +11,7 @@ function App() {
   const [leftWidth, setLeftWidth] = useState(240);
   const minLeftWidth = 180;
   const maxLeftWidth = 400;
+  const [showRoomModal, setShowRoomModal] = useState(true);
 
   const isResizingLeft = useRef(false);
 
@@ -115,6 +117,7 @@ function App() {
 
   return (
     <>
+      {showRoomModal && <RoomSetupModal onClose={() => setShowRoomModal(false)} />}
       <TopBar />
       <div className="app-layout">
         {/* Left Sidebar */}

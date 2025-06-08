@@ -1160,3 +1160,29 @@ transform: scale(1.02);
 .link-modal-content {
   max-width: 600px;
 }
+
+/* Intro modal layout */
+.intro-buttons {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+}
+
+.intro-buttons button {
+  width: 220px;
+}
+
+.service-checkboxes {
+  display: flex;
+  justify-content: center;
+  gap: 12px;
+  margin-top: 1rem;
+  color: white;
+}
+
+.service-checkboxes label {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
