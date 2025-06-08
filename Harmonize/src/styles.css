@@ -1161,6 +1161,34 @@ transform: scale(1.02);
   max-width: 600px;
 }
 
+/* Room setup modal styling */
+.setup-modal-content {
+  max-width: 350px;
+  min-height: 500px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+
+.intro-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.intro-logo {
+  width: 80px;
+  margin-bottom: 1rem;
+}
+
+.intro-title {
+  color: white;
+  font-size: 1.75rem;
+  margin-bottom: 2rem;
+  text-align: center;
+}
+
 /* Intro modal layout */
 .intro-buttons {
   display: flex;
