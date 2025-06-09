@@ -32,6 +32,7 @@ export default function TopBar() {
         title: item.snippet.title,
         artist: item.snippet.channelTitle,
         thumbnail: item.snippet.thumbnails?.default?.url,
+        url: `https://www.youtube.com/watch?v=${item.id.videoId}`,
       }));
       setYoutubeResults(results);
     } catch (err) {
@@ -147,6 +148,7 @@ const activeServices = ['YouTube', 'Spotify', 'SoundCloud']; // 👈 change this
                 artist={r.artist}
                 service="YouTube"
                 thumbnail={r.thumbnail}
+                url={r.url}
                 onAdd={() => {}}
                 onPlayNext={() => {}}
               />
