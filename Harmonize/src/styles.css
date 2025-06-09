@@ -1160,6 +1160,27 @@ transform: scale(1.02);
   transition: background-color 0.2s ease, transform 0.1s ease;
 }
 
+.show-more-button {
+  background-color: #1e3a8a;
+  color: white;
+  border: none;
+  border-radius: 9999px;
+  padding: 4px 12px;
+  font-family: 'Roboto', sans-serif;
+  cursor: pointer;
+  margin: 8px auto 0;
+  width: fit-content;
+  transition: background-color 0.2s ease, transform 0.1s ease;
+}
+
+.show-more-button:hover {
+  background-color: #3b82f6;
+}
+
+.show-more-button:active {
+  transform: scale(0.95);
+}
+
 .submit-link-button:hover {
   background-color: #0056b3;
 }
