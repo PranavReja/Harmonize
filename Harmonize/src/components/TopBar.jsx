@@ -7,6 +7,9 @@ export default function TopBar() {
   const [linkInput, setLinkInput] = useState('');
   const [searchQuery, setSearchQuery] = useState('');
   const [youtubeResults, setYoutubeResults] = useState([]);
+  const [spotifyResults, setSpotifyResults] = useState([]);
+  const [soundcloudResults, setSoundcloudResults] = useState([]);
+  const [youtubeNextPageToken, setYoutubeNextPageToken] = useState(null);
   const YOUTUBE_API_KEY = 'AIzaSyC3rXjyr82BiM5baC4ZmzyEQzITvmuCczM';
 
   useEffect(() => {
@@ -20,11 +23,12 @@ export default function TopBar() {
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, []);
 
-  const searchYouTube = async (query) => {
+  const searchYouTube = async (query, pageToken = '') => {
     if (!query) return;
     try {
       const url =
-        `https://www.googleapis.com/youtube/v3/search?part=snippet&type=video&maxResults=10&q=${encodeURIComponent(query)}&key=${YOUTUBE_API_KEY}`;
+        `https://www.googleapis.com/youtube/v3/search?part=snippet&type=video&maxResults=10&q=${encodeURIComponent(query)}&key=${YOUTUBE_API_KEY}` +
+        (pageToken ? `&pageToken=${pageToken}` : '');
       const res = await fetch(url);
       const data = await res.json();
       const results = (data.items || []).map((item) => ({
@@ -34,10 +38,67 @@ export default function TopBar() {
         thumbnail: item.snippet.thumbnails?.default?.url,
         url: `https://www.youtube.com/watch?v=${item.id.videoId}`,
       }));
-      setYoutubeResults(results);
+      setYoutubeNextPageToken(data.nextPageToken || null);
+      if (pageToken) {
+        setYoutubeResults((prev) => [...prev, ...results]);
+      } else {
+        setYoutubeResults(results);
+      }
     } catch (err) {
       console.error('YouTube search error', err);
     }
+  };
+
+  const loadMoreYouTube = () => {
+    if (youtubeNextPageToken) {
+      searchYouTube(searchQuery, youtubeNextPageToken);
+    }
+  };
+
+  const searchSpotify = (query) => {
+    if (!query) return;
+    const results = Array.from({ length: 10 }, (_, i) => ({
+      id: `${query}-spotify-${i}`,
+      title: `${query} Spotify ${i + 1}`,
+      artist: `Spotify Artist ${i + 1}`,
+    }));
+    setSpotifyResults(results);
+  };
+
+  const loadMoreSpotify = () => {
+    const start = spotifyResults.length;
+    const more = Array.from({ length: 10 }, (_, i) => ({
+      id: `${searchQuery}-spotify-${start + i}`,
+      title: `${searchQuery} Spotify ${start + i + 1}`,
+      artist: `Spotify Artist ${start + i + 1}`,
+    }));
+    setSpotifyResults((prev) => [...prev, ...more]);
+  };
+
+  const searchSoundCloud = (query) => {
+    if (!query) return;
+    const results = Array.from({ length: 10 }, (_, i) => ({
+      id: `${query}-sc-${i}`,
+      title: `${query} SoundCloud ${i + 1}`,
+      artist: `SoundCloud Artist ${i + 1}`,
+    }));
+    setSoundcloudResults(results);
+  };
+
+  const loadMoreSoundCloud = () => {
+    const start = soundcloudResults.length;
+    const more = Array.from({ length: 10 }, (_, i) => ({
+      id: `${searchQuery}-sc-${start + i}`,
+      title: `${searchQuery} SoundCloud ${start + i + 1}`,
+      artist: `SoundCloud Artist ${start + i + 1}`,
+    }));
+    setSoundcloudResults((prev) => [...prev, ...more]);
+  };
+
+  const handleShowMore = (service) => {
+    if (service === 'YouTube') loadMoreYouTube();
+    if (service === 'Spotify') loadMoreSpotify();
+    if (service === 'SoundCloud') loadMoreSoundCloud();
   };
 
   // Hardcoded for now; can be updated dynamically later
@@ -64,6 +125,8 @@ const activeServices = ['YouTube', 'Spotify', 'SoundCloud']; // 👈 change this
             onKeyDown={(e) => {
               if (e.key === 'Enter') {
                 searchYouTube(searchQuery);
+                searchSpotify(searchQuery);
+                searchSoundCloud(searchQuery);
                 setIsModalOpen(true);
               }
             }}
@@ -72,6 +135,8 @@ const activeServices = ['YouTube', 'Spotify', 'SoundCloud']; // 👈 change this
               className="search-icon"
               onClick={() => {
                 searchYouTube(searchQuery);
+                searchSpotify(searchQuery);
+                searchSoundCloud(searchQuery);
                 setIsModalOpen(true);
               }}
               style={{ cursor: 'pointer' }}
@@ -124,12 +189,18 @@ const activeServices = ['YouTube', 'Spotify', 'SoundCloud']; // 👈 change this
                 onKeyDown={(e) => {
                   if (e.key === 'Enter') {
                     searchYouTube(searchQuery);
+                    searchSpotify(searchQuery);
+                    searchSoundCloud(searchQuery);
                   }
                 }}
               />
               <span
                 className="search-icon"
-                onClick={() => searchYouTube(searchQuery)}
+                onClick={() => {
+                  searchYouTube(searchQuery);
+                  searchSpotify(searchQuery);
+                  searchSoundCloud(searchQuery);
+                }}
                 style={{ cursor: 'pointer' }}
               >
                 🔍
@@ -140,29 +211,46 @@ const activeServices = ['YouTube', 'Spotify', 'SoundCloud']; // 👈 change this
     {activeServices.map((service) => (
       <div key={service} className="service-column">
         <h3 className="service-header">{service}</h3>
-        {service === 'YouTube'
-          ? youtubeResults.map((r) => (
-              <SearchResultCard
-                key={r.id}
-                title={r.title}
-                artist={r.artist}
-                thumbnail={r.thumbnail}
-                url={r.url}
-                onAdd={() => {}}
-                onPlayNext={() => {}}
-              />
-            ))
-          : Array.from({ length: 10 }, (_, i) => (
-              <SearchResultCard
-                key={i}
-                title={`${service} ${i + 1}`}
-                artist={`${service} Artist ${i + 1}`}
-                onAdd={() => {}}
-                onPlayNext={() => {}}
-              />
-            ))}
-        </div>
-      ))}
+        {service === 'YouTube' &&
+          youtubeResults.map((r) => (
+            <SearchResultCard
+              key={r.id}
+              title={r.title}
+              artist={r.artist}
+              thumbnail={r.thumbnail}
+              url={r.url}
+              onAdd={() => {}}
+              onPlayNext={() => {}}
+            />
+          ))}
+        {service === 'Spotify' &&
+          spotifyResults.map((r) => (
+            <SearchResultCard
+              key={r.id}
+              title={r.title}
+              artist={r.artist}
+              onAdd={() => {}}
+              onPlayNext={() => {}}
+            />
+          ))}
+        {service === 'SoundCloud' &&
+          soundcloudResults.map((r) => (
+            <SearchResultCard
+              key={r.id}
+              title={r.title}
+              artist={r.artist}
+              onAdd={() => {}}
+              onPlayNext={() => {}}
+            />
+          ))}
+        <button
+          className="show-more-button"
+          onClick={() => handleShowMore(service)}
+        >
+          Show More
+        </button>
+      </div>
+    ))}
   </div>
 
                 </div>
