@@ -7,7 +7,7 @@ export default function TopBar() {
   const [linkInput, setLinkInput] = useState('');
   const [searchQuery, setSearchQuery] = useState('');
   const [youtubeResults, setYoutubeResults] = useState([]);
-  const YOUTUBE_API_KEY = '';
+  const YOUTUBE_API_KEY = 'AIzaSyC3rXjyr82BiM5baC4ZmzyEQzITvmuCczM';
 
   useEffect(() => {
     const handleKeyDown = (e) => {
