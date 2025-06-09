@@ -774,6 +774,15 @@ transform: scale(1.02);
   gap: 8px;
 }
 
+.result-link {
+  display: flex;
+  align-items: center;
+  flex: 1;
+  gap: 8px;
+  text-decoration: none;
+  color: inherit;
+}
+
 .album-cover {
   width: 60px;
   height: 60px;
@@ -1093,6 +1102,15 @@ transform: scale(1.02);
 .result-card {
   position: relative;
   cursor: default;
+}
+
+.result-link {
+  display: flex;
+  align-items: center;
+  flex: 1;
+  gap: 8px;
+  text-decoration: none;
+  color: inherit;
 }
 
 .action-buttons {

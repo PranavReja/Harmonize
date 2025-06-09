@@ -7,7 +7,7 @@ export default function TopBar() {
   const [linkInput, setLinkInput] = useState('');
   const [searchQuery, setSearchQuery] = useState('');
   const [youtubeResults, setYoutubeResults] = useState([]);
-  const YOUTUBE_API_KEY = '';
+  const YOUTUBE_API_KEY = 'AIzaSyC3rXjyr82BiM5baC4ZmzyEQzITvmuCczM';
 
   useEffect(() => {
     const handleKeyDown = (e) => {
@@ -32,6 +32,7 @@ export default function TopBar() {
         title: item.snippet.title,
         artist: item.snippet.channelTitle,
         thumbnail: item.snippet.thumbnails?.default?.url,
+        url: `https://www.youtube.com/watch?v=${item.id.videoId}`,
       }));
       setYoutubeResults(results);
     } catch (err) {
@@ -147,6 +148,7 @@ const activeServices = ['YouTube', 'Spotify', 'SoundCloud']; // 👈 change this
                 artist={r.artist}
                 service="YouTube"
                 thumbnail={r.thumbnail}
+                url={r.url}
                 onAdd={() => {}}
                 onPlayNext={() => {}}
               />
