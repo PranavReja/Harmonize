@@ -146,7 +146,6 @@ const activeServices = ['YouTube', 'Spotify', 'SoundCloud']; // 👈 change this
                 key={r.id}
                 title={r.title}
                 artist={r.artist}
-                service="YouTube"
                 thumbnail={r.thumbnail}
                 url={r.url}
                 onAdd={() => {}}
@@ -158,7 +157,6 @@ const activeServices = ['YouTube', 'Spotify', 'SoundCloud']; // 👈 change this
                 key={i}
                 title={`${service} ${i + 1}`}
                 artist={`${service} Artist ${i + 1}`}
-                service={service}
                 onAdd={() => {}}
                 onPlayNext={() => {}}
               />
