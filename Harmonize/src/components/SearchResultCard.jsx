@@ -4,12 +4,17 @@ export default function SearchResultCard({
   title,
   artist,
   service,
+  thumbnail,
   onAdd,
   onPlayNext,
 }) {
   return (
     <div className="result-card">
-      <div className="album-cover-placeholder" />
+      {thumbnail ? (
+        <img src={thumbnail} alt="thumbnail" className="album-cover" />
+      ) : (
+        <div className="album-cover-placeholder" />
+      )}
       <div className="song-info">
         <div className="song-title">{title}</div>
         <div className="artist-name">{artist}</div>
