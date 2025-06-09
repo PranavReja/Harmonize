@@ -105,6 +105,21 @@ export default function TopBar() {
 const activeServices = ['YouTube', 'Spotify', 'SoundCloud']; // 👈 change this array to control visible columns
 
 
+  const executeSearch = () => {
+    const trimmed = searchQuery.trim();
+    if (!trimmed) return;
+    searchYouTube(trimmed);
+    searchSpotify(trimmed);
+    searchSoundCloud(trimmed);
+  };
+
+  const openSearchModal = () => {
+    executeSearch();
+    if (searchQuery.trim()) {
+      setIsModalOpen(true);
+    }
+  };
+
   return (
     <>
       <header className="top-bar">
@@ -124,20 +139,14 @@ const activeServices = ['YouTube', 'Spotify', 'SoundCloud']; // 👈 change this
             onChange={(e) => setSearchQuery(e.target.value)}
             onKeyDown={(e) => {
               if (e.key === 'Enter') {
-                searchYouTube(searchQuery);
-                searchSpotify(searchQuery);
-                searchSoundCloud(searchQuery);
-                setIsModalOpen(true);
+                openSearchModal();
               }
             }}
           />
             <span
               className="search-icon"
               onClick={() => {
-                searchYouTube(searchQuery);
-                searchSpotify(searchQuery);
-                searchSoundCloud(searchQuery);
-                setIsModalOpen(true);
+                openSearchModal();
               }}
               style={{ cursor: 'pointer' }}
             >
@@ -188,18 +197,14 @@ const activeServices = ['YouTube', 'Spotify', 'SoundCloud']; // 👈 change this
                 autoFocus
                 onKeyDown={(e) => {
                   if (e.key === 'Enter') {
-                    searchYouTube(searchQuery);
-                    searchSpotify(searchQuery);
-                    searchSoundCloud(searchQuery);
+                    executeSearch();
                   }
                 }}
               />
               <span
                 className="search-icon"
                 onClick={() => {
-                  searchYouTube(searchQuery);
-                  searchSpotify(searchQuery);
-                  searchSoundCloud(searchQuery);
+                  executeSearch();
                 }}
                 style={{ cursor: 'pointer' }}
               >
