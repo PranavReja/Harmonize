@@ -5,6 +5,9 @@ export default function TopBar() {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isLinkModalOpen, setIsLinkModalOpen] = useState(false);
   const [linkInput, setLinkInput] = useState('');
+  const [searchQuery, setSearchQuery] = useState('');
+  const [youtubeResults, setYoutubeResults] = useState([]);
+  const YOUTUBE_API_KEY = '';
 
   useEffect(() => {
     const handleKeyDown = (e) => {
@@ -16,6 +19,25 @@ export default function TopBar() {
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, []);
+
+  const searchYouTube = async (query) => {
+    if (!query) return;
+    try {
+      const url =
+        `https://www.googleapis.com/youtube/v3/search?part=snippet&type=video&maxResults=10&q=${encodeURIComponent(query)}&key=${YOUTUBE_API_KEY}`;
+      const res = await fetch(url);
+      const data = await res.json();
+      const results = (data.items || []).map((item) => ({
+        id: item.id.videoId,
+        title: item.snippet.title,
+        artist: item.snippet.channelTitle,
+        thumbnail: item.snippet.thumbnails?.default?.url,
+      }));
+      setYoutubeResults(results);
+    } catch (err) {
+      console.error('YouTube search error', err);
+    }
+  };
 
   // Hardcoded for now; can be updated dynamically later
 const activeServices = ['YouTube', 'Spotify', 'SoundCloud']; // 👈 change this array to control visible columns
@@ -33,18 +55,24 @@ const activeServices = ['YouTube', 'Spotify', 'SoundCloud']; // 👈 change this
         <div className="search-group-wrapper">
           <div className="unified-search-wrapper">
           <input
-  type="text"
-  placeholder="Search music..."
-  className="unified-search-input"
-  onKeyDown={(e) => {
-    if (e.key === 'Enter') {
-      setIsModalOpen(true);
-    }
-  }}
-/>
+            type="text"
+            placeholder="Search music..."
+            className="unified-search-input"
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            onKeyDown={(e) => {
+              if (e.key === 'Enter') {
+                searchYouTube(searchQuery);
+                setIsModalOpen(true);
+              }
+            }}
+          />
             <span
               className="search-icon"
-              onClick={() => setIsModalOpen(true)}
+              onClick={() => {
+                searchYouTube(searchQuery);
+                setIsModalOpen(true);
+              }}
               style={{ cursor: 'pointer' }}
             >
               🔍
@@ -89,16 +117,18 @@ const activeServices = ['YouTube', 'Spotify', 'SoundCloud']; // 👈 change this
                 type="text"
                 placeholder="Search music..."
                 className="unified-search-input"
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
                 autoFocus
                 onKeyDown={(e) => {
                   if (e.key === 'Enter') {
-                    setIsModalOpen(true);
+                    searchYouTube(searchQuery);
                   }
                 }}
               />
               <span
                 className="search-icon"
-                onClick={() => setIsModalOpen(true)}
+                onClick={() => searchYouTube(searchQuery)}
                 style={{ cursor: 'pointer' }}
               >
                 🔍
@@ -109,16 +139,28 @@ const activeServices = ['YouTube', 'Spotify', 'SoundCloud']; // 👈 change this
     {activeServices.map((service) => (
       <div key={service} className="service-column">
         <h3 className="service-header">{service}</h3>
-        {Array.from({ length: 10 }, (_, i) => (
-          <SearchResultCard
-            key={i}
-            title={`${service} ${i + 1}`}
-            artist={`${service} Artist ${i + 1}`}
-            service={service}
-            onAdd={() => {}}
-            onPlayNext={() => {}}
-          />
-        ))}
+        {service === 'YouTube'
+          ? youtubeResults.map((r) => (
+              <SearchResultCard
+                key={r.id}
+                title={r.title}
+                artist={r.artist}
+                service="YouTube"
+                thumbnail={r.thumbnail}
+                onAdd={() => {}}
+                onPlayNext={() => {}}
+              />
+            ))
+          : Array.from({ length: 10 }, (_, i) => (
+              <SearchResultCard
+                key={i}
+                title={`${service} ${i + 1}`}
+                artist={`${service} Artist ${i + 1}`}
+                service={service}
+                onAdd={() => {}}
+                onPlayNext={() => {}}
+              />
+            ))}
         </div>
       ))}
   </div>
