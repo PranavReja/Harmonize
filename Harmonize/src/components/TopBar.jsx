@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import SearchResultCard from './SearchResultCard.jsx';
 
 export default function TopBar() {
@@ -22,6 +22,21 @@ export default function TopBar() {
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, []);
+
+  useEffect(() => {
+    if (!isModalOpen) return;
+    const handler = setTimeout(() => {
+      if (searchQuery.trim()) {
+        executeSearch();
+      } else {
+        setYoutubeResults([]);
+        setSpotifyResults([]);
+        setSoundcloudResults([]);
+        setYoutubeNextPageToken(null);
+      }
+    }, 300);
+    return () => clearTimeout(handler);
+  }, [searchQuery, isModalOpen, executeSearch]);
 
   const searchYouTube = async (query, pageToken = '') => {
     if (!query) return;
@@ -105,16 +120,15 @@ export default function TopBar() {
 const activeServices = ['YouTube', 'Spotify', 'SoundCloud']; // 👈 change this array to control visible columns
 
 
-  const executeSearch = () => {
+  const executeSearch = useCallback(() => {
     const trimmed = searchQuery.trim();
     if (!trimmed) return;
     searchYouTube(trimmed);
     searchSpotify(trimmed);
     searchSoundCloud(trimmed);
-  };
+  }, [searchQuery]);
 
   const openSearchModal = () => {
-    executeSearch();
     if (searchQuery.trim()) {
       setIsModalOpen(true);
     }
@@ -145,9 +159,6 @@ const activeServices = ['YouTube', 'Spotify', 'SoundCloud']; // 👈 change this
           />
             <span
               className="search-icon"
-              onClick={() => {
-                openSearchModal();
-              }}
               style={{ cursor: 'pointer' }}
             >
               🔍
