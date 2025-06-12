@@ -70,24 +70,25 @@ export default function TopBar() {
     }
   };
 
-  const searchSpotify = (query) => {
+  const searchSpotify = async (query, offset = 0) => {
     if (!query) return;
-    const results = Array.from({ length: 10 }, (_, i) => ({
-      id: `${query}-spotify-${i}`,
-      title: `${query} Spotify ${i + 1}`,
-      artist: `Spotify Artist ${i + 1}`,
-    }));
-    setSpotifyResults(results);
+    try {
+      const res = await fetch(
+        `http://localhost:3001/spotify/search?q=${encodeURIComponent(query)}&offset=${offset}`
+      );
+      const data = await res.json();
+      if (offset === 0) {
+        setSpotifyResults(data.tracks || []);
+      } else {
+        setSpotifyResults((prev) => [...prev, ...(data.tracks || [])]);
+      }
+    } catch (err) {
+      console.error('Spotify search error', err);
+    }
   };
 
   const loadMoreSpotify = () => {
-    const start = spotifyResults.length;
-    const more = Array.from({ length: 10 }, (_, i) => ({
-      id: `${searchQuery}-spotify-${start + i}`,
-      title: `${searchQuery} Spotify ${start + i + 1}`,
-      artist: `Spotify Artist ${start + i + 1}`,
-    }));
-    setSpotifyResults((prev) => [...prev, ...more]);
+    searchSpotify(searchQuery, spotifyResults.length);
   };
 
   const searchSoundCloud = (query) => {
