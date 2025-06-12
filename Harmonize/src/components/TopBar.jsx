@@ -10,7 +10,7 @@ export default function TopBar() {
   const [spotifyResults, setSpotifyResults] = useState([]);
   const [soundcloudResults, setSoundcloudResults] = useState([]);
   const [youtubeNextPageToken, setYoutubeNextPageToken] = useState(null);
-  const YOUTUBE_API_KEY = 'AIzaSyC3rXjyr82BiM5baC4ZmzyEQzITvmuCczM';
+  const YOUTUBE_API_KEY = import.meta.env.VITE_YOUTUBE_API_KEY;
 
   useEffect(() => {
     const handleKeyDown = (e) => {
