@@ -12,6 +12,19 @@ export default function TopBar() {
   const [youtubeNextPageToken, setYoutubeNextPageToken] = useState(null);
   const YOUTUBE_API_KEY = import.meta.env.VITE_YOUTUBE_API_KEY;
 
+  const executeSearch = useCallback(() => {
+    const trimmed = searchQuery.trim();
+    if (!trimmed) return;
+    searchYouTube(trimmed);
+    searchSpotify(trimmed);
+    searchSoundCloud(trimmed);
+  }, [searchQuery]);
+
+  const openSearchModal = () => {
+    if (searchQuery.trim()) {
+      setIsModalOpen(true);
+    }
+  };
   useEffect(() => {
     const handleKeyDown = (e) => {
       if (e.key === 'Escape') {
@@ -120,19 +133,6 @@ export default function TopBar() {
 const activeServices = ['YouTube', 'Spotify', 'SoundCloud']; // 👈 change this array to control visible columns
 
 
-  const executeSearch = useCallback(() => {
-    const trimmed = searchQuery.trim();
-    if (!trimmed) return;
-    searchYouTube(trimmed);
-    searchSpotify(trimmed);
-    searchSoundCloud(trimmed);
-  }, [searchQuery]);
-
-  const openSearchModal = () => {
-    if (searchQuery.trim()) {
-      setIsModalOpen(true);
-    }
-  };
 
   return (
     <>
