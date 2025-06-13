@@ -4,7 +4,6 @@ import mongoose from 'mongoose';
 import dotenv from 'dotenv';
 import roomsRouter from './routes/rooms.js';
 import usersRouter from './routes/users.js';
-import spotifyRouter from './routes/spotify.js';
 
 
 
@@ -18,7 +17,6 @@ app.use(express.json());
 
 app.use('/rooms', roomsRouter);
 app.use('/users', usersRouter);
-app.use('/spotify', spotifyRouter);
 // MongoDB Connection
 mongoose.connect(process.env.MONGO_URI, {
   useNewUrlParser: true,
@@ -27,6 +25,9 @@ mongoose.connect(process.env.MONGO_URI, {
   .catch(err => console.error("❌ Mongo error:", err));
 
 // Routes
+app.use('/rooms', roomsRouter);
+
+app.use('/users', usersRouter);
 
 
 app.get('/test-db', async (req, res) => {
