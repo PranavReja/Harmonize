@@ -82,7 +82,6 @@ export default function TopBar() {
       searchYouTube(searchQuery, youtubeNextPageToken);
     }
   };
-
   const searchSpotify = async (query, offset = 0) => {
     if (!query) return;
     try {
@@ -134,8 +133,6 @@ export default function TopBar() {
 
   // Hardcoded for now; can be updated dynamically later
 const activeServices = ['YouTube', 'Spotify', 'SoundCloud']; // 👈 change this array to control visible columns
-
-
 
   return (
     <>
