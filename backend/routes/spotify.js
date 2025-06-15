@@ -31,7 +31,7 @@ router.get('/search', async (req, res) => {
   }
   try {
     const token = await getAccessToken();
-    const url = `https://api.spotify.com/v1/search?q=${encodeURIComponent(query)}&type=track&limit=10&offset=${offset}`;
+    const url = `https://api.spotify.com/v1/search?q=${encodeURIComponent(query)}&type=track&limit=14&offset=${offset}`;
     const resp = await fetch(url, {
       headers: { Authorization: `Bearer ${token}` }
     });
