@@ -82,25 +82,27 @@ export default function TopBar() {
       searchYouTube(searchQuery, youtubeNextPageToken);
     }
   };
-
-  const searchSpotify = (query) => {
+  const searchSpotify = async (query, offset = 0) => {
     if (!query) return;
-    const results = Array.from({ length: 10 }, (_, i) => ({
-      id: `${query}-spotify-${i}`,
-      title: `${query} Spotify ${i + 1}`,
-      artist: `Spotify Artist ${i + 1}`,
-    }));
-    setSpotifyResults(results);
+    try {
+      const url =
+        `http://localhost:3001/spotify/search?q=${encodeURIComponent(query)}&offset=${offset}`;
+      const res = await fetch(url);
+      const data = await res.json();
+      const tracks = data.tracks || [];
+      if (offset) {
+        setSpotifyResults((prev) => [...prev, ...tracks]);
+      } else {
+        setSpotifyResults(tracks);
+      }
+    } catch (err) {
+      console.error('Spotify search error', err);
+    }
   };
 
   const loadMoreSpotify = () => {
-    const start = spotifyResults.length;
-    const more = Array.from({ length: 10 }, (_, i) => ({
-      id: `${searchQuery}-spotify-${start + i}`,
-      title: `${searchQuery} Spotify ${start + i + 1}`,
-      artist: `Spotify Artist ${start + i + 1}`,
-    }));
-    setSpotifyResults((prev) => [...prev, ...more]);
+    const offset = spotifyResults.length;
+    searchSpotify(searchQuery, offset);
   };
 
   const searchSoundCloud = (query) => {
@@ -131,8 +133,6 @@ export default function TopBar() {
 
   // Hardcoded for now; can be updated dynamically later
 const activeServices = ['YouTube', 'Spotify', 'SoundCloud']; // 👈 change this array to control visible columns
-
-
 
   return (
     <>
@@ -245,6 +245,8 @@ const activeServices = ['YouTube', 'Spotify', 'SoundCloud']; // 👈 change this
               key={r.id}
               title={r.title}
               artist={r.artist}
+              thumbnail={r.thumbnail}
+              url={r.url}
               onAdd={() => {}}
               onPlayNext={() => {}}
             />

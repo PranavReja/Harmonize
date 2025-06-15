@@ -2,6 +2,7 @@
   "dependencies": {
     "debug": "^4.4.1",
     "dotenv": "^16.5.0",
+    "mongodb": "^6.17.0",
     "spotify-web-api-node": "^5.0.2"
   }
 }

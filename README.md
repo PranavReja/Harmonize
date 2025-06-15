@@ -10,6 +10,8 @@ The backend requires a `.env` file inside the `backend/` directory with the foll
 MONGO_URI=<MongoDB connection string>
 PORT=<port number for the API server>
 YOUTUBE_API_KEY=<YouTube API key>
+SPOTIFY_CLIENT_ID=<Spotify client ID>
+SPOTIFY_CLIENT_SECRET=<Spotify client secret>
 ```
 
 The `.env` file is excluded from version control via the root `.gitignore`.
