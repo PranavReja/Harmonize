@@ -67,16 +67,22 @@ export default function RightSidebar({ isVisible, queue, setQueue }) {
         <h2 className="sidebar-title">Shared Queue</h2>
       </div>
 
-      <DndContext collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
-        <SortableContext
-          items={queue.map((q) => q.id)}
-          strategy={verticalListSortingStrategy}
-        >
-          {queue.map((item) => (
-            <SortableQueueItem key={item.id} id={item.id} item={item} />
-          ))}
-        </SortableContext>
-      </DndContext>
+      {queue.length === 0 ? (
+        <div className="empty-queue-message">
+          Empty Queue, Search or Add Links to Starting Listening
+        </div>
+      ) : (
+        <DndContext collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
+          <SortableContext
+            items={queue.map((q) => q.id)}
+            strategy={verticalListSortingStrategy}
+          >
+            {queue.map((item) => (
+              <SortableQueueItem key={item.id} id={item.id} item={item} />
+            ))}
+          </SortableContext>
+        </DndContext>
+      )}
     </div>
   );
 }
