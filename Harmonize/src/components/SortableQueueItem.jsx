@@ -20,8 +20,18 @@ export default function SortableQueueItem({ id, item }) {
   };
 
   return (
-    <div ref={setNodeRef} style={style} className="queue-card" {...attributes} {...listeners}>
-      <div className="album-cover-placeholder" />
+    <div
+      ref={setNodeRef}
+      style={style}
+      className="queue-card"
+      {...attributes}
+      {...listeners}
+    >
+      {item.albumCover ? (
+        <img src={item.albumCover} alt="album cover" className="album-cover" />
+      ) : (
+        <div className="album-cover-placeholder" />
+      )}
       <div className="song-info">
         <div className="song-title">{item.title}</div>
         <div className="artist-name">{item.artist}</div>
