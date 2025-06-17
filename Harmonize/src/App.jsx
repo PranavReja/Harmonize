@@ -41,6 +41,36 @@ function App() {
     };
   }, []);
 
+  useEffect(() => {
+    const setupRoom = async () => {
+      const prev = localStorage.getItem('roomId');
+      if (prev) {
+        try {
+          await fetch(`http://localhost:3001/rooms/${prev}`, { method: 'DELETE' });
+        } catch (err) {
+          console.error('delete room error', err);
+        }
+      }
+
+      try {
+        const res = await fetch('http://localhost:3001/rooms/create', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ mode: 'spotify' }),
+        });
+        const data = await res.json();
+        const id = data.roomId;
+        setRoomId(id);
+        localStorage.setItem('roomId', id);
+        fetchQueue(id);
+      } catch (err) {
+        console.error('create room error', err);
+      }
+    };
+
+    setupRoom();
+  }, []);
+
   const songTitle = 'Song Name 🎵';
   const totalDuration = 200;
 
@@ -80,23 +110,61 @@ function App() {
     },
   ];
 
-  const initialQueue = [
-    { id: '1', albumCover: 'https://via.placeholder.com/60', title: 'Midnight Pulse', artist: 'Luna Waves', serviceLogo: SpotifyLogo, queuedBy: 'Jake' },
-    { id: '2', albumCover: 'https://via.placeholder.com/60', title: 'Skyline Dreams', artist: 'Nova Drive', serviceLogo: YouTubeLogo, queuedBy: 'Sofia' },
-    { id: '3', albumCover: 'https://via.placeholder.com/60', title: 'Neon Nightfall', artist: 'Echo Riders', serviceLogo: SoundCloudLogo, queuedBy: 'Jess' },
-    { id: '4', albumCover: 'https://via.placeholder.com/60', title: 'Synth Horizon', artist: 'Retro Nova', serviceLogo: SpotifyLogo, queuedBy: 'Pranav' },
-    { id: '5', albumCover: 'https://via.placeholder.com/60', title: 'Solar Drift', artist: 'Galaxy Flow', serviceLogo: YouTubeLogo, queuedBy: 'Zane' },
-    { id: '6', albumCover: 'https://via.placeholder.com/60', title: 'Electric Fade', artist: 'Vaporline', serviceLogo: SoundCloudLogo, queuedBy: 'Jake' },
-    { id: '7', albumCover: 'https://via.placeholder.com/60', title: 'Golden Hour', artist: 'Sunset Run', serviceLogo: SpotifyLogo, queuedBy: 'Jess' },
-    { id: '8', albumCover: 'https://via.placeholder.com/60', title: 'Ocean Drive', artist: 'Coral Keys', serviceLogo: YouTubeLogo, queuedBy: 'Sofia' },
-    { id: '9', albumCover: 'https://via.placeholder.com/60', title: 'Pulse Shift', artist: 'Tempo Blaze', serviceLogo: SoundCloudLogo, queuedBy: 'Zane' },
-    { id: '10', albumCover: 'https://via.placeholder.com/60', title: 'Static Bloom', artist: 'Signal Bloom', serviceLogo: SpotifyLogo, queuedBy: 'Pranav' },
-  ];
+  const [roomId, setRoomId] = useState(null);
+  const [queue, setQueue] = useState([]);
 
-  const [queue, setQueue] = useState(initialQueue);
+  const getServiceLogo = (platform) => {
+    if (platform === 'spotify') return SpotifyLogo;
+    if (platform === 'youtube') return YouTubeLogo;
+    return SoundCloudLogo;
+  };
 
-  const addToQueueTop = (item) => setQueue((prev) => [item, ...prev]);
-  const addToQueueBottom = (item) => setQueue((prev) => [...prev, item]);
+  const fetchQueue = async (id = roomId) => {
+    if (!id) return;
+    try {
+      const res = await fetch(`http://localhost:3001/rooms/${id}/queue`);
+      const data = await res.json();
+      const items = (data.queue || []).map((song) => ({
+        id: song.position.toString(),
+        title: song.title,
+        artist: song.artist,
+        platform: song.platform,
+        sourceId: song.sourceId,
+        serviceLogo: getServiceLogo(song.platform),
+        albumCover: 'https://via.placeholder.com/60',
+        queuedBy: song.addedBy,
+      }));
+      setQueue(items);
+    } catch (err) {
+      console.error('fetch queue error', err);
+    }
+  };
+
+  const addSong = async (item, playNext = false) => {
+    if (!roomId) return;
+    const endpoint = playNext ?
+      `/rooms/${roomId}/queue/next` :
+      `/rooms/${roomId}/queue`;
+    try {
+      await fetch(`http://localhost:3001${endpoint}`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          title: item.title,
+          artist: item.artist,
+          platform: item.platform,
+          sourceId: item.sourceId,
+          addedBy: 'frontend',
+        }),
+      });
+      fetchQueue();
+    } catch (err) {
+      console.error('add song error', err);
+    }
+  };
+
+  const addToQueueTop = (item) => addSong(item, true);
+  const addToQueueBottom = (item) => addSong(item, false);
 
   const handleSeekStart = (e) => {
     setIsSeeking(true);
@@ -247,6 +315,7 @@ function App() {
             isVisible={isRightSidebarVisible}
             queue={queue}
             setQueue={setQueue}
+            roomId={roomId}
           />
         </div>
 
