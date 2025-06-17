@@ -1,7 +1,10 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import SearchResultCard from './SearchResultCard.jsx';
+import YouTubeLogo from '../assets/youtube.png';
+import SoundCloudLogo from '../assets/soundcloud.svg';
+import SpotifyLogo from '../assets/spotify.svg';
 
-export default function TopBar() {
+export default function TopBar({ addToQueueTop, addToQueueBottom }) {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isLinkModalOpen, setIsLinkModalOpen] = useState(false);
   const [linkInput, setLinkInput] = useState('');
@@ -125,14 +128,29 @@ export default function TopBar() {
     setSoundcloudResults((prev) => [...prev, ...more]);
   };
 
-  const handleShowMore = (service) => {
-    if (service === 'YouTube') loadMoreYouTube();
-    if (service === 'Spotify') loadMoreSpotify();
-    if (service === 'SoundCloud') loadMoreSoundCloud();
+const handleShowMore = (service) => {
+  if (service === 'YouTube') loadMoreYouTube();
+  if (service === 'Spotify') loadMoreSpotify();
+  if (service === 'SoundCloud') loadMoreSoundCloud();
+};
+
+// Hardcoded for now; can be updated dynamically later
+const activeServices = ['YouTube', 'Spotify', 'SoundCloud']; // 👈 change this array to control visible columns
+
+  const serviceLogoMap = {
+    YouTube: YouTubeLogo,
+    Spotify: SpotifyLogo,
+    SoundCloud: SoundCloudLogo,
   };
 
-  // Hardcoded for now; can be updated dynamically later
-const activeServices = ['YouTube', 'Spotify', 'SoundCloud']; // 👈 change this array to control visible columns
+  const createQueueItem = (result, service) => ({
+    id: Date.now().toString(),
+    albumCover: result.thumbnail || 'https://via.placeholder.com/60',
+    title: result.title,
+    artist: result.artist,
+    serviceLogo: serviceLogoMap[service],
+    queuedBy: 'Pranav',
+  });
 
   return (
     <>
@@ -235,8 +253,8 @@ const activeServices = ['YouTube', 'Spotify', 'SoundCloud']; // 👈 change this
               artist={r.artist}
               thumbnail={r.thumbnail}
               url={r.url}
-              onAdd={() => {}}
-              onPlayNext={() => {}}
+              onAdd={() => addToQueueBottom(createQueueItem(r, 'YouTube'))}
+              onPlayNext={() => addToQueueTop(createQueueItem(r, 'YouTube'))}
             />
           ))}
         {service === 'Spotify' &&
@@ -247,8 +265,8 @@ const activeServices = ['YouTube', 'Spotify', 'SoundCloud']; // 👈 change this
               artist={r.artist}
               thumbnail={r.thumbnail}
               url={r.url}
-              onAdd={() => {}}
-              onPlayNext={() => {}}
+              onAdd={() => addToQueueBottom(createQueueItem(r, 'Spotify'))}
+              onPlayNext={() => addToQueueTop(createQueueItem(r, 'Spotify'))}
             />
           ))}
         {service === 'SoundCloud' &&
@@ -257,8 +275,8 @@ const activeServices = ['YouTube', 'Spotify', 'SoundCloud']; // 👈 change this
               key={r.id}
               title={r.title}
               artist={r.artist}
-              onAdd={() => {}}
-              onPlayNext={() => {}}
+              onAdd={() => addToQueueBottom(createQueueItem(r, 'SoundCloud'))}
+              onPlayNext={() => addToQueueTop(createQueueItem(r, 'SoundCloud'))}
             />
           ))}
         <button
