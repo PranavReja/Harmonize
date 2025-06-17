@@ -738,6 +738,12 @@ transform: scale(1.02);
   position: relative;
 }
 
+.empty-queue-message {
+  text-align: center;
+  color: #ccc;
+  margin-top: 20px;
+}
+
 .queue-card {
   display: flex;
   align-items: center;

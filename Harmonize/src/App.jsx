@@ -80,18 +80,7 @@ function App() {
     },
   ];
 
-  const initialQueue = [
-    { id: '1', albumCover: 'https://via.placeholder.com/60', title: 'Midnight Pulse', artist: 'Luna Waves', serviceLogo: SpotifyLogo, queuedBy: 'Jake' },
-    { id: '2', albumCover: 'https://via.placeholder.com/60', title: 'Skyline Dreams', artist: 'Nova Drive', serviceLogo: YouTubeLogo, queuedBy: 'Sofia' },
-    { id: '3', albumCover: 'https://via.placeholder.com/60', title: 'Neon Nightfall', artist: 'Echo Riders', serviceLogo: SoundCloudLogo, queuedBy: 'Jess' },
-    { id: '4', albumCover: 'https://via.placeholder.com/60', title: 'Synth Horizon', artist: 'Retro Nova', serviceLogo: SpotifyLogo, queuedBy: 'Pranav' },
-    { id: '5', albumCover: 'https://via.placeholder.com/60', title: 'Solar Drift', artist: 'Galaxy Flow', serviceLogo: YouTubeLogo, queuedBy: 'Zane' },
-    { id: '6', albumCover: 'https://via.placeholder.com/60', title: 'Electric Fade', artist: 'Vaporline', serviceLogo: SoundCloudLogo, queuedBy: 'Jake' },
-    { id: '7', albumCover: 'https://via.placeholder.com/60', title: 'Golden Hour', artist: 'Sunset Run', serviceLogo: SpotifyLogo, queuedBy: 'Jess' },
-    { id: '8', albumCover: 'https://via.placeholder.com/60', title: 'Ocean Drive', artist: 'Coral Keys', serviceLogo: YouTubeLogo, queuedBy: 'Sofia' },
-    { id: '9', albumCover: 'https://via.placeholder.com/60', title: 'Pulse Shift', artist: 'Tempo Blaze', serviceLogo: SoundCloudLogo, queuedBy: 'Zane' },
-    { id: '10', albumCover: 'https://via.placeholder.com/60', title: 'Static Bloom', artist: 'Signal Bloom', serviceLogo: SpotifyLogo, queuedBy: 'Pranav' },
-  ];
+  const initialQueue = [];
 
   const [queue, setQueue] = useState(initialQueue);
 
