@@ -7,7 +7,7 @@ import {
 } from '@dnd-kit/sortable';
 import SortableQueueItem from './SortableQueueItem.jsx';
 
-export default function RightSidebar({ isVisible, queue, setQueue }) {
+export default function RightSidebar({ isVisible, queue, setQueue, roomId }) {
   const [width, setWidth] = useState(300);
   const minWidth = 200;
   const maxWidth = 500;
@@ -36,7 +36,7 @@ export default function RightSidebar({ isVisible, queue, setQueue }) {
     };
   }, []);
 
-  const handleDragEnd = (event) => {
+  const handleDragEnd = async (event) => {
     const { active, over } = event;
     if (over && active.id !== over.id) {
       setQueue((items) => {
@@ -44,6 +44,19 @@ export default function RightSidebar({ isVisible, queue, setQueue }) {
         const newIndex = items.findIndex((i) => i.id === over.id);
         return arrayMove(items, oldIndex, newIndex);
       });
+      if (roomId) {
+        const oldIndex = queue.findIndex((i) => i.id === active.id);
+        const newIndex = queue.findIndex((i) => i.id === over.id);
+        try {
+          await fetch(`http://localhost:3001/rooms/${roomId}/queue/reorder`, {
+            method: 'PATCH',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ sourceIndex: oldIndex, destinationIndex: newIndex }),
+          });
+        } catch (err) {
+          console.error('reorder error', err);
+        }
+      }
     }
   };
   return (
