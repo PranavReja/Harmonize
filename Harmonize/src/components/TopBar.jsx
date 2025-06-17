@@ -150,6 +150,8 @@ const activeServices = ['YouTube', 'Spotify', 'SoundCloud']; // 👈 change this
     artist: result.artist,
     serviceLogo: serviceLogoMap[service],
     queuedBy: 'Pranav',
+    platform: service.toLowerCase(),
+    sourceId: result.id,
   });
 
   return (

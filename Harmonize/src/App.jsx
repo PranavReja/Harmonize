@@ -8,6 +8,13 @@ import YouTubeLogo from './assets/youtube.png';
 import SoundCloudLogo from './assets/soundcloud.svg';
 import SpotifyLogo from './assets/spotify.svg';
 
+const API_BASE = 'http://localhost:3001';
+const serviceLogoMap = {
+  spotify: SpotifyLogo,
+  youtube: YouTubeLogo,
+  soundcloud: SoundCloudLogo,
+};
+
 function App() {
   const [isLeftSidebarVisible, setIsLeftSidebarVisible] = useState(true);
   const [isRightSidebarVisible, setIsRightSidebarVisible] = useState(true);
@@ -15,6 +22,7 @@ function App() {
   const minLeftWidth = 180;
   const maxLeftWidth = 400;
   const [showRoomModal, setShowRoomModal] = useState(true);
+  const [roomId, setRoomId] = useState(null);
 
   const isResizingLeft = useRef(false);
 
@@ -84,8 +92,96 @@ function App() {
 
   const [queue, setQueue] = useState(initialQueue);
 
-  const addToQueueTop = (item) => setQueue((prev) => [item, ...prev]);
-  const addToQueueBottom = (item) => setQueue((prev) => [...prev, item]);
+  useEffect(() => {
+    const setupRoom = async () => {
+      try {
+        await fetch(`${API_BASE}/rooms`, { method: 'DELETE' });
+        const res = await fetch(`${API_BASE}/rooms/create`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ mode: 'spotify' }),
+        });
+        const data = await res.json();
+        setRoomId(data.roomId);
+        fetchQueue(data.roomId);
+      } catch (err) {
+        console.error('Room setup error', err);
+      }
+    };
+    setupRoom();
+  }, []);
+
+  const fetchQueue = async (id) => {
+    try {
+      const res = await fetch(`${API_BASE}/rooms/${id}/queue`);
+      const data = await res.json();
+      const mapped = (data.queue || []).map((q) => ({
+        id: q.position.toString(),
+        title: q.title,
+        artist: q.artist,
+        albumCover: null,
+        serviceLogo: serviceLogoMap[q.platform],
+        queuedBy: q.addedBy,
+      }));
+      setQueue(mapped);
+    } catch (err) {
+      console.error('Fetch queue error', err);
+    }
+  };
+
+  const addToQueueTop = async (item) => {
+    if (!roomId) return;
+    try {
+      await fetch(`${API_BASE}/rooms/${roomId}/queue/next`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          title: item.title,
+          artist: item.artist,
+          platform: item.platform,
+          sourceId: item.sourceId,
+          addedBy: item.queuedBy,
+        }),
+      });
+      fetchQueue(roomId);
+    } catch (err) {
+      console.error('Add to queue next error', err);
+    }
+  };
+
+  const addToQueueBottom = async (item) => {
+    if (!roomId) return;
+    try {
+      await fetch(`${API_BASE}/rooms/${roomId}/queue`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          title: item.title,
+          artist: item.artist,
+          platform: item.platform,
+          sourceId: item.sourceId,
+          addedBy: item.queuedBy,
+        }),
+      });
+      fetchQueue(roomId);
+    } catch (err) {
+      console.error('Add to queue error', err);
+    }
+  };
+
+  const reorderQueue = async (sourceIndex, destinationIndex) => {
+    if (!roomId) return;
+    try {
+      await fetch(`${API_BASE}/rooms/${roomId}/queue/reorder`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ sourceIndex, destinationIndex }),
+      });
+      fetchQueue(roomId);
+    } catch (err) {
+      console.error('Reorder queue error', err);
+    }
+  };
 
   const handleSeekStart = (e) => {
     setIsSeeking(true);
@@ -236,6 +332,7 @@ function App() {
             isVisible={isRightSidebarVisible}
             queue={queue}
             setQueue={setQueue}
+            onReorder={reorderQueue}
           />
         </div>
 

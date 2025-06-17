@@ -7,7 +7,7 @@ import {
 } from '@dnd-kit/sortable';
 import SortableQueueItem from './SortableQueueItem.jsx';
 
-export default function RightSidebar({ isVisible, queue, setQueue }) {
+export default function RightSidebar({ isVisible, queue, setQueue, onReorder }) {
   const [width, setWidth] = useState(300);
   const minWidth = 200;
   const maxWidth = 500;
@@ -42,6 +42,7 @@ export default function RightSidebar({ isVisible, queue, setQueue }) {
       setQueue((items) => {
         const oldIndex = items.findIndex((i) => i.id === active.id);
         const newIndex = items.findIndex((i) => i.id === over.id);
+        if (onReorder) onReorder(oldIndex, newIndex);
         return arrayMove(items, oldIndex, newIndex);
       });
     }
