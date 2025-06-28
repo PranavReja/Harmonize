@@ -15,6 +15,7 @@ function App() {
   const minLeftWidth = 180;
   const maxLeftWidth = 400;
   const [showRoomModal, setShowRoomModal] = useState(true);
+  const [roomId, setRoomId] = useState(null);
 
   const isResizingLeft = useRef(false);
 
@@ -125,9 +126,19 @@ function App() {
     setTimeout(() => setActiveButton(null), 200);
   };
 
+  const handleRoomJoined = (id) => {
+    setRoomId(id);
+    setShowRoomModal(false);
+  };
+
   return (
     <>
-      {showRoomModal && <RoomSetupModal onClose={() => setShowRoomModal(false)} />}
+      {showRoomModal && (
+        <RoomSetupModal
+          onClose={() => setShowRoomModal(false)}
+          onRoomJoined={handleRoomJoined}
+        />
+      )}
       <TopBar addToQueueTop={addToQueueTop} addToQueueBottom={addToQueueBottom} />
       <div className="app-layout">
         {/* Left Sidebar */}
@@ -146,8 +157,8 @@ function App() {
               onMouseDown={() => (isResizingLeft.current = true)}
             />
             <div className="sidebar-section">
-              <h2 className="sidebar-title">Room: Harmonize HQ</h2>
-              <button className="copy-button">Room Invite Link</button>
+              <h2 className="sidebar-title">Room: {roomId || 'Not Connected'}</h2>
+              <button className="copy-button" disabled={!roomId}>Room Invite Link</button>
             </div>
             <div className="sidebar-section">
               <h3 className="sidebar-subtitle">Listeners</h3>
