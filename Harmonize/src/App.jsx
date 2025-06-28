@@ -4,6 +4,7 @@ import React, { useState, useRef, useEffect } from 'react';
 import RightSidebar from './components/RightSidebar';
 import UserCard from './components/UserCard';
 import RoomSetupModal from './components/RoomSetupModal.jsx';
+import UsernamePrompt from './components/UsernamePrompt.jsx';
 import YouTubeLogo from './assets/youtube.png';
 import SoundCloudLogo from './assets/soundcloud.svg';
 import SpotifyLogo from './assets/spotify.svg';
@@ -15,6 +16,8 @@ function App() {
   const minLeftWidth = 180;
   const maxLeftWidth = 400;
   const [showRoomModal, setShowRoomModal] = useState(true);
+  const [user, setUser] = useState(null);
+  const [showUserPrompt, setShowUserPrompt] = useState(false);
 
   const isResizingLeft = useRef(false);
 
@@ -41,6 +44,20 @@ function App() {
     };
   }, []);
 
+  useEffect(() => {
+    const stored = localStorage.getItem('user');
+    if (stored) {
+      try {
+        setUser(JSON.parse(stored));
+      } catch (err) {
+        console.error('Failed to parse stored user', err);
+        setShowUserPrompt(true);
+      }
+    } else {
+      setShowUserPrompt(true);
+    }
+  }, []);
+
   const songTitle = 'Song Name 🎵';
   const totalDuration = 200;
 
@@ -51,34 +68,15 @@ function App() {
 
   const progressBarRef = useRef(null);
 
-  const users = [
-    {
-      name: '🎧 Pranav (Admin)',
-      admin: true,
-      profilePic: 'https://via.placeholder.com/60',
-      services: ['Spotify', 'YouTube'],
-    },
-    {
-      name: 'Sofia',
-      profilePic: 'https://via.placeholder.com/60',
-      services: ['YouTube'],
-    },
-    {
-      name: 'Jake',
-      profilePic: 'https://via.placeholder.com/60',
-      services: ['SoundCloud', 'Spotify'],
-    },
-    {
-      name: 'Jess',
-      profilePic: 'https://via.placeholder.com/60',
-      services: ['SoundCloud'],
-    },
-    {
-      name: 'Zane',
-      profilePic: 'https://via.placeholder.com/60',
-      services: ['Spotify'],
-    },
-  ];
+  const users = user
+    ? [
+        {
+          name: user.username,
+          admin: false,
+          services: [],
+        },
+      ]
+    : [];
 
   const initialQueue = [];
 
@@ -125,8 +123,16 @@ function App() {
     setTimeout(() => setActiveButton(null), 200);
   };
 
+  const handleUserComplete = (data) => {
+    if (data) setUser(data);
+    setShowUserPrompt(false);
+  };
+
   return (
     <>
+      {showUserPrompt && (
+        <UsernamePrompt existingUser={user} onComplete={handleUserComplete} />
+      )}
       {showRoomModal && <RoomSetupModal onClose={() => setShowRoomModal(false)} />}
       <TopBar addToQueueTop={addToQueueTop} addToQueueBottom={addToQueueBottom} />
       <div className="app-layout">
@@ -148,6 +154,9 @@ function App() {
             <div className="sidebar-section">
               <h2 className="sidebar-title">Room: Harmonize HQ</h2>
               <button className="copy-button">Room Invite Link</button>
+              <button className="copy-button" onClick={() => setShowUserPrompt(true)}>
+                Change Username
+              </button>
             </div>
             <div className="sidebar-section">
               <h3 className="sidebar-subtitle">Listeners</h3>
