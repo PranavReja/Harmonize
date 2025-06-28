@@ -52,6 +52,7 @@ export default function RoomSetupModal({ onClose }) {
                 <button
                   className="submit-link-button"
                   onClick={() => setMode('choose')}
+                  disabled={!userName.trim()}
                 >
                   Continue
                 </button>
