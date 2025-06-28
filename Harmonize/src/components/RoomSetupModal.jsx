@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 
 export default function RoomSetupModal({ onClose }) {
   const [mode, setMode] = useState('name'); // 'name', 'choose', 'create', 'join'
@@ -10,6 +10,15 @@ export default function RoomSetupModal({ onClose }) {
     Spotify: true,
     SoundCloud: true,
   });
+  const defaultRoomName = userName ? `${userName}'s Listening Room` : '';
+  const roomNameInputRef = useRef(null);
+
+  // Set default room name when entering the create mode
+  useEffect(() => {
+    if (mode === 'create') {
+      setRoomName(defaultRoomName);
+    }
+  }, [mode, userName, defaultRoomName]);
 
   useEffect(() => {
     const handleKey = (e) => {
@@ -21,6 +30,12 @@ export default function RoomSetupModal({ onClose }) {
 
   const toggleService = (name) => {
     setServices((s) => ({ ...s, [name]: !s[name] }));
+  };
+
+  const handleRoomNameFocus = (e) => {
+    if (roomName === defaultRoomName) {
+      e.target.select();
+    }
   };
 
   return (
@@ -94,6 +109,8 @@ export default function RoomSetupModal({ onClose }) {
                 placeholder="Room Name"
                 value={roomName}
                 onChange={(e) => setRoomName(e.target.value)}
+                onFocus={handleRoomNameFocus}
+                ref={roomNameInputRef}
               />
             </div>
             <div className="service-checkboxes">
