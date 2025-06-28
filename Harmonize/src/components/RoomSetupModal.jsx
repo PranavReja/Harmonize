@@ -1,8 +1,9 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 
-export default function RoomSetupModal({ onClose }) {
+export default function RoomSetupModal({ onClose, defaultRoomName }) {
   const [mode, setMode] = useState(null); // null, 'create', 'join'
   const [roomName, setRoomName] = useState('');
+  const roomInputRef = useRef(null);
   const [roomCode, setRoomCode] = useState('');
   const [services, setServices] = useState({
     YouTube: true,
@@ -21,6 +22,14 @@ export default function RoomSetupModal({ onClose }) {
   const toggleService = (name) => {
     setServices((s) => ({ ...s, [name]: !s[name] }));
   };
+
+  useEffect(() => {
+    if (mode === 'create' && !roomName && defaultRoomName) {
+      setRoomName(defaultRoomName);
+      // select text on next tick
+      setTimeout(() => roomInputRef.current?.select(), 0);
+    }
+  }, [mode, defaultRoomName, roomName]);
 
   return (
     <div className="modal-overlay" onClick={onClose}>
@@ -61,7 +70,9 @@ export default function RoomSetupModal({ onClose }) {
                 className="unified-search-input"
                 placeholder="Room Name"
                 value={roomName}
+                ref={roomInputRef}
                 onChange={(e) => setRoomName(e.target.value)}
+                onFocus={(e) => e.target.select()}
               />
             </div>
             <div className="service-checkboxes">

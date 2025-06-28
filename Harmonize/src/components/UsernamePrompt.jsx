@@ -66,7 +66,12 @@ export default function UsernamePrompt({ onComplete, existingUser }) {
               autoFocus
             />
           </div>
-          <button type="submit" className="submit-link-button" style={{ marginTop: '1rem' }}>
+          <button
+            type="submit"
+            className="submit-link-button"
+            style={{ marginTop: '1rem' }}
+            disabled={!username.trim()}
+          >
             Submit
           </button>
         </form>

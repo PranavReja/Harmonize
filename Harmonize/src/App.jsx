@@ -133,7 +133,12 @@ function App() {
       {showUserPrompt && (
         <UsernamePrompt existingUser={user} onComplete={handleUserComplete} />
       )}
-      {showRoomModal && <RoomSetupModal onClose={() => setShowRoomModal(false)} />}
+      {showRoomModal && (
+        <RoomSetupModal
+          onClose={() => setShowRoomModal(false)}
+          defaultRoomName={user ? `${user.username}'s Room` : ''}
+        />
+      )}
       <TopBar addToQueueTop={addToQueueTop} addToQueueBottom={addToQueueBottom} />
       <div className="app-layout">
         {/* Left Sidebar */}
