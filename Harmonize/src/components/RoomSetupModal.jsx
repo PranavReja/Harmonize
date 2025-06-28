@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from 'react';
 
 export default function RoomSetupModal({ onClose }) {
-  const [mode, setMode] = useState(null); // null, 'create', 'join'
+  const [mode, setMode] = useState('name'); // 'name', 'choose', 'create', 'join'
+  const [userName, setUserName] = useState('');
   const [roomName, setRoomName] = useState('');
   const [roomCode, setRoomCode] = useState('');
   const [services, setServices] = useState({
@@ -28,7 +29,37 @@ export default function RoomSetupModal({ onClose }) {
         <button className="modal-close-button" onClick={onClose} aria-label="Close Modal">
           &times;
         </button>
-        {mode === null && (
+        {mode === 'name' && (
+          <div className="intro-card">
+            <img
+              src="/src/assets/logo.png"
+              alt="Harmonize Logo"
+              className="intro-logo"
+            />
+            <h2 className="intro-title">Welcome to Harmonize</h2>
+            <div className="intro-buttons">
+              <div className="link-input-group">
+                <div className="unified-search-wrapper" style={{ maxWidth: '220px', marginRight: '12px' }}>
+                  <input
+                    type="text"
+                    className="unified-search-input"
+                    placeholder="Your Name"
+                    value={userName}
+                    onChange={(e) => setUserName(e.target.value)}
+                    autoFocus
+                  />
+                </div>
+                <button
+                  className="submit-link-button"
+                  onClick={() => setMode('choose')}
+                >
+                  Continue
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
+        {mode === 'choose' && (
           <div className="intro-card">
             <img
               src="/src/assets/logo.png"
