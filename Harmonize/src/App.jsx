@@ -86,6 +86,9 @@ function App() {
 
   const [queue, setQueue] = useState(initialQueue);
 
+  const [showConfirmLeave, setShowConfirmLeave] = useState(false);
+  const [roomEnded, setRoomEnded] = useState(false);
+
   const addToQueueTop = (item) => setQueue((prev) => [item, ...prev]);
   const addToQueueBottom = (item) => setQueue((prev) => [...prev, item]);
 
@@ -127,11 +130,38 @@ function App() {
     setTimeout(() => setActiveButton(null), 200);
   };
 
+  const handleConfirmLeave = async () => {
+    if (!roomId || !currentUserId) return;
+    if (isAdmin) {
+      try {
+        await fetch(`http://localhost:3001/rooms/${roomId}`, { method: 'DELETE' });
+      } catch (err) {
+        console.error('Delete room error', err);
+      }
+      setRoomEnded(true);
+    } else {
+      try {
+        await fetch(`http://localhost:3001/rooms/${roomId}/remove-user`, {
+          method: 'PATCH',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ userId: currentUserId }),
+        });
+      } catch (err) {
+        console.error('Leave room error', err);
+      }
+    }
+    clearSession();
+    setShowConfirmLeave(false);
+  };
+
   const fetchRoomUsers = async (id, handleMissing = false) => {
     try {
       const res = await fetch(`http://localhost:3001/rooms/${id}/users`);
       if (res.status === 404) {
-        if (handleMissing) clearSession();
+        if (handleMissing) {
+          clearSession();
+          setRoomEnded(true);
+        }
         return false;
       }
       const data = await res.json();
@@ -162,6 +192,19 @@ function App() {
       fetchRoomUsers(roomId);
     }
   }, [roomId]);
+
+  useEffect(() => {
+    if (!roomId) return;
+    const id = setInterval(() => {
+      fetchRoomUsers(roomId, true).then((ok) => {
+        if (!ok) setRoomEnded(true);
+      });
+    }, 5000);
+    return () => clearInterval(id);
+  }, [roomId]);
+
+  const currentUser = users.find((u) => u.userId === currentUserId);
+  const isAdmin = currentUser?.isAdmin;
 
   return (
     <>
@@ -199,6 +242,15 @@ function App() {
                   <UserCard key={u.userId} user={u} isCurrent={u.userId === currentUserId} />
                 ))}
               </ul>
+            </div>
+            <div className="sidebar-section leave-section">
+              <button
+                className="leave-room-button"
+                onClick={() => setShowConfirmLeave(true)}
+                disabled={!roomId}
+              >
+                {isAdmin ? 'End Listening Room' : 'Leave Room'}
+              </button>
             </div>
           </div>
           </div>
@@ -275,12 +327,35 @@ function App() {
             isRightSidebarVisible ? 'slide-in' : 'slide-out'
           }`}
         >
-          <RightSidebar
-            isVisible={isRightSidebarVisible}
-            queue={queue}
-            setQueue={setQueue}
-          />
+        <RightSidebar
+          isVisible={isRightSidebarVisible}
+          queue={queue}
+          setQueue={setQueue}
+        />
+      </div>
+
+      {showConfirmLeave && (
+        <div className="modal-overlay" onClick={() => setShowConfirmLeave(false)}>
+          <div className="modal-content" onClick={(e) => e.stopPropagation()}>
+            <p className="modal-title" style={{ marginBottom: '1rem' }}>Are you sure?</p>
+            <div style={{ display: 'flex', justifyContent: 'center', gap: '12px' }}>
+              <button className="submit-link-button" onClick={handleConfirmLeave}>Yes</button>
+              <button className="submit-link-button" onClick={() => setShowConfirmLeave(false)}>No</button>
+            </div>
+          </div>
         </div>
+      )}
+
+      {roomEnded && (
+        <div className="modal-overlay" onClick={() => setRoomEnded(false)}>
+          <div className="modal-content" onClick={(e) => e.stopPropagation()}>
+            <p className="modal-title" style={{ marginBottom: '1rem' }}>
+              Listening room has ended
+            </p>
+            <button className="submit-link-button" onClick={() => setRoomEnded(false)}>OK</button>
+          </div>
+        </div>
+      )}
 
       </div>
     </>
