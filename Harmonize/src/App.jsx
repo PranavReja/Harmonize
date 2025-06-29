@@ -40,6 +40,35 @@ function App() {
     };
   }, []);
 
+  const clearSession = () => {
+    setRoomId(null);
+    setRoomName('');
+    setCurrentUserId(null);
+    setUsers([]);
+    setShowRoomModal(true);
+    localStorage.removeItem('roomId');
+    localStorage.removeItem('roomName');
+    localStorage.removeItem('userId');
+    localStorage.removeItem('userName');
+  };
+
+  useEffect(() => {
+    const savedRoomId = localStorage.getItem('roomId');
+    const savedUserId = localStorage.getItem('userId');
+    if (savedRoomId && savedUserId) {
+      const verify = async () => {
+        const ok = await fetchRoomUsers(savedRoomId, true);
+        if (ok) {
+          setRoomId(savedRoomId);
+          setRoomName(localStorage.getItem('roomName') || '');
+          setCurrentUserId(savedUserId);
+          setShowRoomModal(false);
+        }
+      };
+      verify();
+    }
+  }, []);
+
   const songTitle = 'Song Name 🎵';
   const totalDuration = 200;
 
@@ -98,23 +127,33 @@ function App() {
     setTimeout(() => setActiveButton(null), 200);
   };
 
-  const fetchRoomUsers = async (id) => {
+  const fetchRoomUsers = async (id, handleMissing = false) => {
     try {
       const res = await fetch(`http://localhost:3001/rooms/${id}/users`);
+      if (res.status === 404) {
+        if (handleMissing) clearSession();
+        return false;
+      }
       const data = await res.json();
       if (res.ok) {
         setUsers(data.users);
+        return true;
       }
     } catch (err) {
       console.error('Fetch users error', err);
     }
+    return false;
   };
 
-  const handleRoomJoined = (id, name, uid) => {
+  const handleRoomJoined = (id, name, uid, uname) => {
     setRoomId(id);
     setRoomName(name || '');
     setCurrentUserId(uid);
     setShowRoomModal(false);
+    localStorage.setItem('roomId', id);
+    localStorage.setItem('roomName', name || '');
+    localStorage.setItem('userId', uid);
+    if (uname) localStorage.setItem('userName', uname);
     fetchRoomUsers(id);
   };
 
