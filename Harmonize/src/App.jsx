@@ -16,6 +16,7 @@ function App() {
   const maxLeftWidth = 400;
   const [showRoomModal, setShowRoomModal] = useState(true);
   const [roomId, setRoomId] = useState(null);
+  const [roomName, setRoomName] = useState('');
 
   const isResizingLeft = useRef(false);
 
@@ -126,8 +127,9 @@ function App() {
     setTimeout(() => setActiveButton(null), 200);
   };
 
-  const handleRoomJoined = (id) => {
+  const handleRoomJoined = (id, name) => {
     setRoomId(id);
+    setRoomName(name || '');
     setShowRoomModal(false);
   };
 
@@ -157,7 +159,7 @@ function App() {
               onMouseDown={() => (isResizingLeft.current = true)}
             />
             <div className="sidebar-section">
-              <h2 className="sidebar-title">Room: {roomId || 'Not Connected'}</h2>
+              <h2 className="sidebar-title">Room: {roomName || 'Not Connected'}</h2>
               <button className="copy-button" disabled={!roomId}>Room Invite Link</button>
             </div>
             <div className="sidebar-section">

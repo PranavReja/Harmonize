@@ -9,19 +9,19 @@ const router = express.Router(); // Create a new router for /rooms endpoints
 
 // POST /rooms/create
 router.post('/create', async (req, res) => {
-    const { mode } = req.body; // Get "mode" from the request body: 'guest' or 'spotify'
-  
+    const { mode, name } = req.body; // Get "mode" and room name
+
     // Generate a random 6-character room ID (like abc123)
     const roomId = crypto.randomBytes(3).toString('hex');
-  
+
     // Make a new room based on schema
-    const room = new Room({ roomId, mode });
-  
+    const room = new Room({ roomId, mode, name });
+
     // Save the room to the MongoDB database
     await room.save();
-  
+
     // Send back the room ID to the frontend
-    res.json({ roomId });
+    res.json({ roomId, roomName: room.name });
   });
   
 
@@ -29,11 +29,11 @@ router.post('/create', async (req, res) => {
 router.post('/:id/join', async (req, res) => {
     const roomId = req.params.id; // Get the room ID from the URL
     const room = await Room.findOne({ roomId }); // Look it up in the database
-  
+
     if (!room) return res.status(404).json({ error: 'Room not found' }); // Error if not found
-  
+
     // You could add logic here to track users in the room
-    res.json({ message: 'Joined room', mode: room.mode }); // Send back confirmation
+    res.json({ message: 'Joined room', mode: room.mode, roomName: room.name }); // Send back confirmation
   });
   
   
