@@ -1,11 +1,20 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { DndContext, closestCenter } from '@dnd-kit/core';
+import { DndContext, closestCenter, useDroppable } from '@dnd-kit/core';
 import {
   SortableContext,
   verticalListSortingStrategy,
   arrayMove,
 } from '@dnd-kit/sortable';
 import SortableQueueItem from './SortableQueueItem.jsx';
+
+function TrashCan() {
+  const { setNodeRef } = useDroppable({ id: 'trash' });
+  return (
+    <div ref={setNodeRef} className="trash-can">
+      <span role="img" aria-label="trash">🗑️</span>
+    </div>
+  );
+}
 
 export default function RightSidebar({ isVisible, queue, setQueue }) {
   const [width, setWidth] = useState(300);
@@ -38,7 +47,10 @@ export default function RightSidebar({ isVisible, queue, setQueue }) {
 
   const handleDragEnd = (event) => {
     const { active, over } = event;
-    if (over && active.id !== over.id) {
+    if (!over) return;
+    if (over.id === 'trash') {
+      setQueue((items) => items.filter((i) => i.id !== active.id));
+    } else if (active.id !== over.id) {
       setQueue((items) => {
         const oldIndex = items.findIndex((i) => i.id === active.id);
         const newIndex = items.findIndex((i) => i.id === over.id);
@@ -67,22 +79,25 @@ export default function RightSidebar({ isVisible, queue, setQueue }) {
         <h2 className="sidebar-title">Shared Queue</h2>
       </div>
 
-      {queue.length === 0 ? (
-        <div className="empty-queue-message">
-          Empty Queue, Search or Add Links to Starting Listening
-        </div>
-      ) : (
-        <DndContext collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
-          <SortableContext
-            items={queue.map((q) => q.id)}
-            strategy={verticalListSortingStrategy}
-          >
-            {queue.map((item) => (
-              <SortableQueueItem key={item.id} id={item.id} item={item} />
-            ))}
-          </SortableContext>
-        </DndContext>
-      )}
+      <div className="queue-container">
+        {queue.length === 0 ? (
+          <div className="empty-queue-message">
+            Empty Queue, Search or Add Links to Starting Listening
+          </div>
+        ) : (
+          <DndContext collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
+            <SortableContext
+              items={queue.map((q) => q.id)}
+              strategy={verticalListSortingStrategy}
+            >
+              {queue.map((item) => (
+                <SortableQueueItem key={item.id} id={item.id} item={item} />
+              ))}
+            </SortableContext>
+            <TrashCan />
+          </DndContext>
+        )}
+      </div>
     </div>
   );
 }

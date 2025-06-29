@@ -1295,3 +1295,22 @@ transform: scale(1.02);
   align-items: center;
   gap: 4px;
 }
+
+/* Queue container inside the right sidebar */
+.queue-container {
+  flex: 1;
+  overflow-y: auto;
+}
+
+/* Trash can drop zone */
+.trash-can {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  border: 2px dotted #777;
+  margin-top: 8px;
+  padding: 12px 0;
+  opacity: 0.6;
+  width: 100%;
+  box-sizing: border-box;
+}
