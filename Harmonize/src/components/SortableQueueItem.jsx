@@ -19,12 +19,10 @@ export default function SortableQueueItem({ id, item, onRightClick }) {
     cursor: isDragging ? 'grabbing' : 'grab',
   };
 
-  const handleMouseDown = (e) => {
-    if (e.button === 2) {
-      e.preventDefault();
-      e.stopPropagation();
-      onRightClick?.(e, id);
-    }
+  const handleContextMenu = (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    onRightClick?.(e, id);
   };
 
   return (
@@ -32,10 +30,9 @@ export default function SortableQueueItem({ id, item, onRightClick }) {
       ref={setNodeRef}
       style={style}
       className="queue-card"
-      onContextMenu={(e) => e.preventDefault()}
-      onMouseDown={handleMouseDown}
       {...attributes}
       {...listeners}
+      onContextMenu={handleContextMenu}
     >
       {item.albumCover ? (
         <img src={item.albumCover} alt="album cover" className="album-cover" />
