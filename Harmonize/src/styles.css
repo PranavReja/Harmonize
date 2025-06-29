@@ -399,11 +399,15 @@ transform: scale(1.02);
   }
 
   
-  .user.admin {
-    border-color: #3b82f6;
-    color: #3b82f6;
-    font-weight: 600;
-  }
+.user.admin {
+  border-color: #3b82f6;
+  color: #3b82f6;
+  font-weight: 600;
+}
+
+.user.current {
+  box-shadow: 0 0 0 2px #3b82f6;
+}
   
   .user {
     display: flex;

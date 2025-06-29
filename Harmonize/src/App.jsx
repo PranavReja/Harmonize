@@ -4,9 +4,6 @@ import React, { useState, useRef, useEffect } from 'react';
 import RightSidebar from './components/RightSidebar';
 import UserCard from './components/UserCard';
 import RoomSetupModal from './components/RoomSetupModal.jsx';
-import YouTubeLogo from './assets/youtube.png';
-import SoundCloudLogo from './assets/soundcloud.svg';
-import SpotifyLogo from './assets/spotify.svg';
 
 function App() {
   const [isLeftSidebarVisible, setIsLeftSidebarVisible] = useState(true);
@@ -53,34 +50,8 @@ function App() {
 
   const progressBarRef = useRef(null);
 
-  const users = [
-    {
-      name: '🎧 Pranav (Admin)',
-      admin: true,
-      profilePic: 'https://via.placeholder.com/60',
-      services: ['Spotify', 'YouTube'],
-    },
-    {
-      name: 'Sofia',
-      profilePic: 'https://via.placeholder.com/60',
-      services: ['YouTube'],
-    },
-    {
-      name: 'Jake',
-      profilePic: 'https://via.placeholder.com/60',
-      services: ['SoundCloud', 'Spotify'],
-    },
-    {
-      name: 'Jess',
-      profilePic: 'https://via.placeholder.com/60',
-      services: ['SoundCloud'],
-    },
-    {
-      name: 'Zane',
-      profilePic: 'https://via.placeholder.com/60',
-      services: ['Spotify'],
-    },
-  ];
+  const [users, setUsers] = useState([]);
+  const [currentUserId, setCurrentUserId] = useState(null);
 
   const initialQueue = [];
 
@@ -127,11 +98,31 @@ function App() {
     setTimeout(() => setActiveButton(null), 200);
   };
 
-  const handleRoomJoined = (id, name) => {
+  const fetchRoomUsers = async (id) => {
+    try {
+      const res = await fetch(`http://localhost:3001/rooms/${id}/users`);
+      const data = await res.json();
+      if (res.ok) {
+        setUsers(data.users);
+      }
+    } catch (err) {
+      console.error('Fetch users error', err);
+    }
+  };
+
+  const handleRoomJoined = (id, name, uid) => {
     setRoomId(id);
     setRoomName(name || '');
+    setCurrentUserId(uid);
     setShowRoomModal(false);
+    fetchRoomUsers(id);
   };
+
+  useEffect(() => {
+    if (roomId) {
+      fetchRoomUsers(roomId);
+    }
+  }, [roomId]);
 
   return (
     <>
@@ -166,7 +157,7 @@ function App() {
               <h3 className="sidebar-subtitle">Listeners</h3>
               <ul className="user-list">
                 {users.map((u) => (
-                  <UserCard key={u.name} user={u} />
+                  <UserCard key={u.userId} user={u} isCurrent={u.userId === currentUserId} />
                 ))}
               </ul>
             </div>

@@ -9,7 +9,8 @@ const RoomSchema = new mongoose.Schema({
   users: [
     {
       userId: String,
-      username: String
+      username: String,
+      isAdmin: { type: Boolean, default: false }
     }
   ], // Optional list of users (can be expanded later)
   queue: [
