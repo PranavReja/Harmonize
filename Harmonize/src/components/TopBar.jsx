@@ -152,6 +152,31 @@ const activeServices = ['YouTube', 'Spotify', 'SoundCloud']; // 👈 change this
     queuedBy: 'Pranav',
   });
 
+  const handleLinkSubmit = async () => {
+    const link = linkInput.trim();
+    if (!link) return;
+    try {
+      const res = await fetch(
+        `http://localhost:3001/resolve?link=${encodeURIComponent(link)}`
+      );
+      const data = await res.json();
+      if (!data.error) {
+        addToQueueBottom(
+          createQueueItem(
+            { title: data.title, artist: data.artist, thumbnail: data.thumbnail },
+            data.service
+          )
+        );
+        setIsLinkModalOpen(false);
+        setLinkInput('');
+      } else {
+        console.error('Link resolve error', data.error);
+      }
+    } catch (err) {
+      console.error('Link submit error', err);
+    }
+  };
+
   return (
     <>
       <header className="top-bar">
@@ -318,7 +343,9 @@ const activeServices = ['YouTube', 'Spotify', 'SoundCloud']; // 👈 change this
                   autoFocus
                 />
               </div>
-              <button className="submit-link-button">Submit</button>
+              <button className="submit-link-button" onClick={handleLinkSubmit}>
+                Submit
+              </button>
             </div>
           </div>
         </div>
