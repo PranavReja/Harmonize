@@ -9,7 +9,8 @@ const router = express.Router(); // Create a new router for /rooms endpoints
 
 // POST /rooms/create
 router.post('/create', async (req, res) => {
-    const { mode, name } = req.body; // Get "mode" and room name
+    const { mode: requestedMode, name } = req.body; // Get requested mode and room name
+    const mode = requestedMode === 'spotify' ? 'spotify' : 'guest';
 
     // Generate a random 6-character room ID (like abc123)
     const roomId = crypto.randomBytes(3).toString('hex');
