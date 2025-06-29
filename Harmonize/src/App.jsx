@@ -4,9 +4,6 @@ import React, { useState, useRef, useEffect } from 'react';
 import RightSidebar from './components/RightSidebar';
 import UserCard from './components/UserCard';
 import RoomSetupModal from './components/RoomSetupModal.jsx';
-import YouTubeLogo from './assets/youtube.png';
-import SoundCloudLogo from './assets/soundcloud.svg';
-import SpotifyLogo from './assets/spotify.svg';
 
 function App() {
   const [isLeftSidebarVisible, setIsLeftSidebarVisible] = useState(true);
@@ -16,6 +13,8 @@ function App() {
   const maxLeftWidth = 400;
   const [showRoomModal, setShowRoomModal] = useState(true);
   const [roomId, setRoomId] = useState(null);
+  const [currentUserId, setCurrentUserId] = useState(null);
+  const [users, setUsers] = useState([]);
 
   const isResizingLeft = useRef(false);
 
@@ -52,34 +51,6 @@ function App() {
 
   const progressBarRef = useRef(null);
 
-  const users = [
-    {
-      name: '🎧 Pranav (Admin)',
-      admin: true,
-      profilePic: 'https://via.placeholder.com/60',
-      services: ['Spotify', 'YouTube'],
-    },
-    {
-      name: 'Sofia',
-      profilePic: 'https://via.placeholder.com/60',
-      services: ['YouTube'],
-    },
-    {
-      name: 'Jake',
-      profilePic: 'https://via.placeholder.com/60',
-      services: ['SoundCloud', 'Spotify'],
-    },
-    {
-      name: 'Jess',
-      profilePic: 'https://via.placeholder.com/60',
-      services: ['SoundCloud'],
-    },
-    {
-      name: 'Zane',
-      profilePic: 'https://via.placeholder.com/60',
-      services: ['Spotify'],
-    },
-  ];
 
   const initialQueue = [];
 
@@ -126,8 +97,34 @@ function App() {
     setTimeout(() => setActiveButton(null), 200);
   };
 
-  const handleRoomJoined = (id) => {
+  const fetchUsers = async (id) => {
+    try {
+      const res = await fetch(`http://localhost:3001/users/in-room/${id}`);
+      const data = await res.json();
+      if (res.ok) {
+        setUsers(
+          data.users.map((u) => ({
+            id: u.userId,
+            name: u.username,
+            services: u.services,
+            admin: u.admin,
+          }))
+        );
+      }
+    } catch (err) {
+      console.error('Fetch users error', err);
+    }
+  };
+
+  useEffect(() => {
+    if (roomId) {
+      fetchUsers(roomId);
+    }
+  }, [roomId]);
+
+  const handleRoomJoined = (id, userId) => {
     setRoomId(id);
+    setCurrentUserId(userId);
     setShowRoomModal(false);
   };
 
@@ -164,7 +161,7 @@ function App() {
               <h3 className="sidebar-subtitle">Listeners</h3>
               <ul className="user-list">
                 {users.map((u) => (
-                  <UserCard key={u.name} user={u} />
+                  <UserCard key={u.id} user={u} isCurrent={u.id === currentUserId} />
                 ))}
               </ul>
             </div>

@@ -9,7 +9,7 @@ const logoMap = {
   Spotify: SpotifyLogo,
 };
 
-export default function UserCard({ user }) {
+export default function UserCard({ user, isCurrent }) {
   const [open, setOpen] = useState(false);
   const cardRef = useRef(null);
   const toggle = () => setOpen((v) => !v);
@@ -30,7 +30,7 @@ export default function UserCard({ user }) {
   return (
     <li
       ref={cardRef}
-      className={`user ${user.admin ? 'admin' : ''}`}
+      className={`user ${user.admin ? 'admin' : ''} ${isCurrent ? 'current' : ''}`}
       onPointerDown={toggle}
     >
       <div className="user-icon">
