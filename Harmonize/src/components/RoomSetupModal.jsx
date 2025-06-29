@@ -80,10 +80,11 @@ export default function RoomSetupModal({ onClose, onRoomJoined }) {
   const handleCreate = async () => {
     setError('');
     try {
+      const roomMode = services.Spotify ? 'spotify' : 'guest';
       const res = await fetch('http://localhost:3001/rooms/create', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ mode: 'guest' })
+        body: JSON.stringify({ mode: roomMode })
       });
       const data = await res.json();
       if (res.ok) {
