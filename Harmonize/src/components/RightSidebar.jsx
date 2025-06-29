@@ -12,24 +12,6 @@ export default function RightSidebar({ isVisible, queue, setQueue }) {
   const minWidth = 200;
   const maxWidth = 500;
   const isResizing = useRef(false);
-  const [contextMenu, setContextMenu] = useState(null);
-
-  const handleContextMenu = (e, id) => {
-    e.preventDefault();
-    setContextMenu({ id, x: e.clientX, y: e.clientY });
-  };
-
-  const removeFromQueue = (id) => {
-    setQueue((q) => q.filter((item) => item.id !== id));
-    setContextMenu(null);
-  };
-
-  useEffect(() => {
-    if (!contextMenu) return;
-    const close = () => setContextMenu(null);
-    window.addEventListener('click', close);
-    return () => window.removeEventListener('click', close);
-  }, [contextMenu]);
 
   useEffect(() => {
     const handleMouseMove = (e) => {
@@ -96,28 +78,10 @@ export default function RightSidebar({ isVisible, queue, setQueue }) {
             strategy={verticalListSortingStrategy}
           >
             {queue.map((item) => (
-              <SortableQueueItem
-                key={item.id}
-                id={item.id}
-                item={item}
-                onContextMenu={(e) => handleContextMenu(e, item.id)}
-              />
+              <SortableQueueItem key={item.id} id={item.id} item={item} />
             ))}
           </SortableContext>
         </DndContext>
-      )}
-      {contextMenu && (
-        <div
-          className="context-menu"
-          style={{ top: contextMenu.y, left: contextMenu.x }}
-        >
-          <button
-            className="delete-button"
-            onClick={() => removeFromQueue(contextMenu.id)}
-          >
-            Delete
-          </button>
-        </div>
       )}
     </div>
   );
