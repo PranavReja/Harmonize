@@ -37,14 +37,20 @@ export default function UserCard({ user, isCurrent }) {
         <div className="head"></div>
         <div className="body"></div>
       </div>
-      <span className="username">{user.username}</span>
+      <span className="username">
+        {user.username}
+        {user.isAdmin && ' (Admin)'}
+      </span>
       {open && (
         <div className="contact-card" onPointerDown={(e) => e.stopPropagation()}>
           <div className="contact-icon">
             <div className="head"></div>
             <div className="body"></div>
           </div>
-          <div className="contact-name">{user.username}</div>
+          <div className="contact-name">
+            {user.username}
+            {user.isAdmin && ' (Admin)'}
+          </div>
           <div className="contact-services">
             {user.services.map((s) => (
               <img
