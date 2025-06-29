@@ -1,5 +1,6 @@
 import express from 'express';
 import User from '../models/User.js';
+import Room from '../models/Room.js';
 import crypto from 'crypto';
 
 const router = express.Router();
@@ -42,18 +43,33 @@ router.get('/all', async (req, res) => {
     }
   });
   
-  // GET /users/in-room/:roomId → List users in a specific room
+// GET /users/in-room/:roomId → List users in a specific room with admin first
 router.get('/in-room/:roomId', async (req, res) => {
-    const { roomId } = req.params;
-  
-    try {
-      const users = await User.find({ currentRoom: roomId });
-      res.json({ users });
-    } catch (err) {
-      console.error(err);
-      res.status(500).json({ error: 'Failed to fetch users in room' });
-    }
-  });
+  const { roomId } = req.params;
+
+  try {
+    const room = await Room.findOne({ roomId });
+    if (!room) return res.status(404).json({ error: 'Room not found' });
+
+    const userDocs = await Promise.all(
+      room.users.map((u) => User.findOne({ userId: u.userId }))
+    );
+
+    const users = userDocs
+      .filter(Boolean)
+      .map((u, idx) => ({
+        userId: u.userId,
+        username: u.username,
+        services: Object.keys(u.services).filter((s) => u.services[s]?.connected),
+        admin: idx === 0,
+      }));
+
+    res.json({ users });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: 'Failed to fetch users in room' });
+  }
+});
   
 // Get user info
 router.get('/:id', async (req, res) => {

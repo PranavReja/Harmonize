@@ -88,7 +88,7 @@ export default function RoomSetupModal({ onClose, onRoomJoined }) {
       const data = await res.json();
       if (res.ok) {
         await joinUserToRoom(data.roomId);
-        onRoomJoined?.(data.roomId);
+        onRoomJoined?.(data.roomId, userId);
         onClose();
       } else {
         setError(data.error || 'Failed to create room');
@@ -108,7 +108,7 @@ export default function RoomSetupModal({ onClose, onRoomJoined }) {
       const data = await res.json();
       if (res.ok) {
         await joinUserToRoom(roomCode);
-        onRoomJoined?.(roomCode);
+        onRoomJoined?.(roomCode, userId);
         onClose();
       } else {
         setError(data.error || 'Room not found');
