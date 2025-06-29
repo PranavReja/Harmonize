@@ -1265,23 +1265,3 @@ transform: scale(1.02);
   align-items: center;
   gap: 4px;
 }
-
-.context-menu {
-  position: fixed;
-  background-color: #222;
-  border: 1px solid #444;
-  border-radius: 4px;
-  padding: 4px 0;
-  z-index: 2000;
-  width: 150px;
-  color: white;
-}
-
-.context-menu-item {
-  padding: 6px 12px;
-  cursor: pointer;
-}
-
-.context-menu-item:hover {
-  background-color: #555;
-}
