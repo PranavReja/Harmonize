@@ -3,6 +3,7 @@ import mongoose from 'mongoose'; // Get access to Mongoose
 // Define what a "Room" should look like in the database
 const RoomSchema = new mongoose.Schema({
   roomId: { type: String, required: true, unique: true }, // Short ID (e.g., abc123)
+  name: { type: String, required: true }, // Human friendly room name
   mode: { type: String, enum: ['guest', 'spotify'], required: true }, // Type of room
   createdAt: { type: Date, default: Date.now }, // Auto-record when the room was created
   users: [

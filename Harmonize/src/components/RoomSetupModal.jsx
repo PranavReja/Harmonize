@@ -83,12 +83,12 @@ export default function RoomSetupModal({ onClose, onRoomJoined }) {
       const res = await fetch('http://localhost:3001/rooms/create', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ mode: 'guest' })
+        body: JSON.stringify({ mode: 'guest', name: roomName })
       });
       const data = await res.json();
       if (res.ok) {
         await joinUserToRoom(data.roomId);
-        onRoomJoined?.(data.roomId);
+        onRoomJoined?.(data.roomId, data.roomName);
         onClose();
       } else {
         setError(data.error || 'Failed to create room');
@@ -108,7 +108,7 @@ export default function RoomSetupModal({ onClose, onRoomJoined }) {
       const data = await res.json();
       if (res.ok) {
         await joinUserToRoom(roomCode);
-        onRoomJoined?.(roomCode);
+        onRoomJoined?.(roomCode, data.roomName);
         onClose();
       } else {
         setError(data.error || 'Room not found');
