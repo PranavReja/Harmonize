@@ -218,7 +218,13 @@ router.patch('/:id/join-user', async (req, res) => {
 
   const alreadyIn = room.users.find(u => u.userId === userId);
   if (!alreadyIn) {
-    room.users.push({ userId, username });
+    const isAdmin = room.users.length === 0;
+    const newUser = { userId, username, isAdmin };
+    if (isAdmin) {
+      room.users.unshift(newUser);
+    } else {
+      room.users.push(newUser);
+    }
     await room.save();
   }
 
@@ -226,6 +232,38 @@ router.patch('/:id/join-user', async (req, res) => {
   await user.save();
 
   res.json({ message: `User joined ${roomId}`, users: room.users });
+});
+
+// GET /rooms/:id/users → List users in a room with services
+router.get('/:id/users', async (req, res) => {
+  try {
+    const room = await Room.findOne({ roomId: req.params.id });
+    if (!room) return res.status(404).json({ error: 'Room not found' });
+
+    const userIds = room.users.map(u => u.userId);
+    const usersData = await User.find({ userId: { $in: userIds } });
+
+    const servicesMap = {};
+    usersData.forEach(u => {
+      const connected = [];
+      for (const [name, info] of Object.entries(u.services)) {
+        if (info.connected) connected.push(name.charAt(0).toUpperCase() + name.slice(1));
+      }
+      servicesMap[u.userId] = connected;
+    });
+
+    const users = room.users.map(u => ({
+      userId: u.userId,
+      username: u.username,
+      isAdmin: u.isAdmin,
+      services: servicesMap[u.userId] || []
+    }));
+
+    res.json({ users });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: 'Failed to fetch room users' });
+  }
 });
 
 // PATCH /rooms/:id/remove-user

@@ -9,7 +9,7 @@ const logoMap = {
   Spotify: SpotifyLogo,
 };
 
-export default function UserCard({ user }) {
+export default function UserCard({ user, isCurrent }) {
   const [open, setOpen] = useState(false);
   const cardRef = useRef(null);
   const toggle = () => setOpen((v) => !v);
@@ -30,21 +30,21 @@ export default function UserCard({ user }) {
   return (
     <li
       ref={cardRef}
-      className={`user ${user.admin ? 'admin' : ''}`}
+      className={`user ${user.isAdmin ? 'admin' : ''} ${isCurrent ? 'current' : ''}`}
       onPointerDown={toggle}
     >
       <div className="user-icon">
         <div className="head"></div>
         <div className="body"></div>
       </div>
-      <span className="username">{user.name}</span>
+      <span className="username">{user.username}</span>
       {open && (
         <div className="contact-card" onPointerDown={(e) => e.stopPropagation()}>
           <div className="contact-icon">
             <div className="head"></div>
             <div className="body"></div>
           </div>
-          <div className="contact-name">{user.name}</div>
+          <div className="contact-name">{user.username}</div>
           <div className="contact-services">
             {user.services.map((s) => (
               <img
