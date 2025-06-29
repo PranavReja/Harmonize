@@ -795,6 +795,29 @@ transform: scale(1.02);
   cursor: grabbing;
 }
 
+.queue-context-menu {
+  position: fixed;
+  background-color: #1e1e1e;
+  border: 1px solid #333;
+  border-radius: 4px;
+  padding: 4px;
+  z-index: 1000;
+}
+
+.queue-context-menu button {
+  background: none;
+  border: none;
+  color: white;
+  padding: 4px 8px;
+  width: 100%;
+  text-align: left;
+  cursor: pointer;
+}
+
+.queue-context-menu button:hover {
+  background-color: #333;
+}
+
 .result-card {
   display: flex;
   align-items: center;

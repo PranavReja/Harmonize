@@ -2,7 +2,7 @@ import React from 'react';
 import { useSortable } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
 
-export default function SortableQueueItem({ id, item }) {
+export default function SortableQueueItem({ id, item, onRightClick }) {
   const {
     attributes,
     listeners,
@@ -24,6 +24,7 @@ export default function SortableQueueItem({ id, item }) {
       ref={setNodeRef}
       style={style}
       className="queue-card"
+      onContextMenu={(e) => onRightClick?.(e, id)}
       {...attributes}
       {...listeners}
     >
