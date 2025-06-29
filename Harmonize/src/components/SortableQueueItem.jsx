@@ -2,7 +2,7 @@ import React from 'react';
 import { useSortable } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
 
-export default function SortableQueueItem({ id, item }) {
+export default function SortableQueueItem({ id, item, onContextMenu }) {
   const {
     attributes,
     listeners,
@@ -26,6 +26,7 @@ export default function SortableQueueItem({ id, item }) {
       className="queue-card"
       {...attributes}
       {...listeners}
+      onContextMenu={onContextMenu}
     >
       {item.albumCover ? (
         <img src={item.albumCover} alt="album cover" className="album-cover" />
