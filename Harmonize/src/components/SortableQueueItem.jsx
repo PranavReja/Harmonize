@@ -1,8 +1,9 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { useSortable } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
+import { useSwipeable } from 'react-swipeable';
 
-export default function SortableQueueItem({ id, item }) {
+export default function SortableQueueItem({ id, item, onDelete }) {
   const {
     attributes,
     listeners,
@@ -11,6 +12,14 @@ export default function SortableQueueItem({ id, item }) {
     transition,
     isDragging,
   } = useSortable({ id });
+
+  const [showDelete, setShowDelete] = useState(false);
+
+  const handlers = useSwipeable({
+    onSwipedLeft: () => setShowDelete(true),
+    onSwipedRight: () => setShowDelete(true),
+    trackMouse: true,
+  });
 
   const style = {
     transform: CSS.Transform.toString(transform),
@@ -26,6 +35,7 @@ export default function SortableQueueItem({ id, item }) {
       className="queue-card"
       {...attributes}
       {...listeners}
+      {...handlers}
     >
       {item.albumCover ? (
         <img src={item.albumCover} alt="album cover" className="album-cover" />
@@ -44,6 +54,11 @@ export default function SortableQueueItem({ id, item }) {
         />
         <div className="queued-by">{item.queuedBy}</div>
       </div>
+      {showDelete && (
+        <button className="delete-button" onClick={onDelete}>
+          Delete
+        </button>
+      )}
     </div>
   );
 }

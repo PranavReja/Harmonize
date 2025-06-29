@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { DndContext, closestCenter } from '@dnd-kit/core';
+import { restrictToVerticalAxis } from '@dnd-kit/modifiers';
 import {
   SortableContext,
   verticalListSortingStrategy,
@@ -72,13 +73,24 @@ export default function RightSidebar({ isVisible, queue, setQueue }) {
           Empty Queue, Search or Add Links to Starting Listening
         </div>
       ) : (
-        <DndContext collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
+        <DndContext
+          collisionDetection={closestCenter}
+          onDragEnd={handleDragEnd}
+          modifiers={[restrictToVerticalAxis]}
+        >
           <SortableContext
             items={queue.map((q) => q.id)}
             strategy={verticalListSortingStrategy}
           >
             {queue.map((item) => (
-              <SortableQueueItem key={item.id} id={item.id} item={item} />
+              <SortableQueueItem
+                key={item.id}
+                id={item.id}
+                item={item}
+                onDelete={() =>
+                  setQueue((items) => items.filter((i) => i.id !== item.id))
+                }
+              />
             ))}
           </SortableContext>
         </DndContext>

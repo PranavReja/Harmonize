@@ -772,6 +772,7 @@ transform: scale(1.02);
 }
 
 .queue-card {
+  position: relative;
   display: flex;
   align-items: center;
   background-color: #1E1E1E;
@@ -793,6 +794,23 @@ transform: scale(1.02);
   transform: scale(0.98);
   background-color: #3b3b3b;
   cursor: grabbing;
+}
+
+.delete-button {
+  position: absolute;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  width: 80px;
+  background-color: #e74c3c;
+  color: white;
+  border: none;
+  border-radius: 0 6px 6px 0;
+  cursor: pointer;
+}
+
+.delete-button:hover {
+  background-color: #c0392b;
 }
 
 .result-card {
