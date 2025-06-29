@@ -15,6 +15,13 @@ export default function RoomSetupModal({ onClose, onRoomJoined }) {
   const defaultRoomName = userName ? `${userName}'s Listening Room` : '';
   const roomNameInputRef = useRef(null);
 
+  useEffect(() => {
+    const savedName = localStorage.getItem('userName');
+    const savedId = localStorage.getItem('userId');
+    if (savedName) setUserName(savedName);
+    if (savedId) setUserId(savedId);
+  }, []);
+
   // Set default room name when entering the create mode
   useEffect(() => {
     if (mode === 'create') {
@@ -48,6 +55,8 @@ export default function RoomSetupModal({ onClose, onRoomJoined }) {
       const data = await res.json();
       if (res.ok) {
         setUserId(data.userId);
+        localStorage.setItem('userId', data.userId);
+        localStorage.setItem('userName', userName);
         setMode('choose');
       } else {
         setError(data.error || 'Failed to create user');
@@ -88,7 +97,7 @@ export default function RoomSetupModal({ onClose, onRoomJoined }) {
       const data = await res.json();
       if (res.ok) {
         await joinUserToRoom(data.roomId);
-        onRoomJoined?.(data.roomId, data.roomName, userId);
+        onRoomJoined?.(data.roomId, data.roomName, userId, userName);
         onClose();
       } else {
         setError(data.error || 'Failed to create room');
@@ -108,7 +117,7 @@ export default function RoomSetupModal({ onClose, onRoomJoined }) {
       const data = await res.json();
       if (res.ok) {
         await joinUserToRoom(roomCode);
-        onRoomJoined?.(roomCode, data.roomName, userId);
+        onRoomJoined?.(roomCode, data.roomName, userId, userName);
         onClose();
       } else {
         setError(data.error || 'Room not found');

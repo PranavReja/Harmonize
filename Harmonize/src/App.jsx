@@ -40,6 +40,18 @@ function App() {
     };
   }, []);
 
+  useEffect(() => {
+    const savedRoomId = localStorage.getItem('roomId');
+    const savedUserId = localStorage.getItem('userId');
+    if (savedRoomId && savedUserId) {
+      setRoomId(savedRoomId);
+      setRoomName(localStorage.getItem('roomName') || '');
+      setCurrentUserId(savedUserId);
+      setShowRoomModal(false);
+      fetchRoomUsers(savedRoomId);
+    }
+  }, []);
+
   const songTitle = 'Song Name 🎵';
   const totalDuration = 200;
 
@@ -110,11 +122,15 @@ function App() {
     }
   };
 
-  const handleRoomJoined = (id, name, uid) => {
+  const handleRoomJoined = (id, name, uid, uname) => {
     setRoomId(id);
     setRoomName(name || '');
     setCurrentUserId(uid);
     setShowRoomModal(false);
+    localStorage.setItem('roomId', id);
+    localStorage.setItem('roomName', name || '');
+    localStorage.setItem('userId', uid);
+    if (uname) localStorage.setItem('userName', uname);
     fetchRoomUsers(id);
   };
 
