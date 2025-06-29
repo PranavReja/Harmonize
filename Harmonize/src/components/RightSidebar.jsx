@@ -56,6 +56,7 @@ export default function RightSidebar({ isVisible, queue, setQueue }) {
 
   const handleContextMenu = (e, id) => {
     e.preventDefault();
+    e.stopPropagation();
     setContextMenu({ x: e.clientX, y: e.clientY, id });
   };
 

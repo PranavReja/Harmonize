@@ -24,9 +24,9 @@ export default function SortableQueueItem({ id, item, onContextMenu }) {
       ref={setNodeRef}
       style={style}
       className="queue-card"
-      onContextMenu={onContextMenu}
       {...attributes}
       {...listeners}
+      onContextMenu={onContextMenu}
     >
       {item.albumCover ? (
         <img src={item.albumCover} alt="album cover" className="album-cover" />
