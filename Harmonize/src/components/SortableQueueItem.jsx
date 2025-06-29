@@ -19,12 +19,21 @@ export default function SortableQueueItem({ id, item, onRightClick }) {
     cursor: isDragging ? 'grabbing' : 'grab',
   };
 
+  const handleMouseDown = (e) => {
+    if (e.button === 2) {
+      e.preventDefault();
+      e.stopPropagation();
+      onRightClick?.(e, id);
+    }
+  };
+
   return (
     <div
       ref={setNodeRef}
       style={style}
       className="queue-card"
-      onContextMenu={(e) => onRightClick?.(e, id)}
+      onContextMenu={(e) => e.preventDefault()}
+      onMouseDown={handleMouseDown}
       {...attributes}
       {...listeners}
     >
