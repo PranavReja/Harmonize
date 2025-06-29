@@ -3,6 +3,7 @@ import React, { useState, useEffect, useRef } from 'react';
 export default function RoomSetupModal({ onClose, onRoomJoined }) {
   const [mode, setMode] = useState('name'); // 'name', 'choose', 'create', 'join'
   const [userName, setUserName] = useState('');
+  const [userId, setUserId] = useState(null);
   const [roomName, setRoomName] = useState('');
   const [roomCode, setRoomCode] = useState('');
   const [error, setError] = useState('');
@@ -37,6 +38,39 @@ export default function RoomSetupModal({ onClose, onRoomJoined }) {
     setError('');
   }, [mode]);
 
+  const createUser = async () => {
+    try {
+      const res = await fetch('http://localhost:3001/users', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ username: userName })
+      });
+      const data = await res.json();
+      if (res.ok) {
+        setUserId(data.userId);
+        setMode('choose');
+      } else {
+        setError(data.error || 'Failed to create user');
+      }
+    } catch (err) {
+      console.error('User create error', err);
+      setError('Failed to create user');
+    }
+  };
+
+  const joinUserToRoom = async (id) => {
+    if (!userId) return;
+    try {
+      await fetch(`http://localhost:3001/rooms/${id}/join-user`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ userId, username: userName })
+      });
+    } catch (err) {
+      console.error('Join user error', err);
+    }
+  };
+
   const handleRoomNameFocus = (e) => {
     if (roomName === defaultRoomName) {
       e.target.select();
@@ -53,6 +87,7 @@ export default function RoomSetupModal({ onClose, onRoomJoined }) {
       });
       const data = await res.json();
       if (res.ok) {
+        await joinUserToRoom(data.roomId);
         onRoomJoined?.(data.roomId);
         onClose();
       } else {
@@ -72,6 +107,7 @@ export default function RoomSetupModal({ onClose, onRoomJoined }) {
       });
       const data = await res.json();
       if (res.ok) {
+        await joinUserToRoom(roomCode);
         onRoomJoined?.(roomCode);
         onClose();
       } else {
@@ -111,7 +147,7 @@ export default function RoomSetupModal({ onClose, onRoomJoined }) {
                 </div>
                 <button
                   className="submit-link-button"
-                  onClick={() => setMode('choose')}
+                  onClick={createUser}
                   disabled={!userName.trim()}
                 >
                   Continue
