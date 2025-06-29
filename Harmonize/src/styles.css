@@ -736,7 +736,7 @@ transform: scale(1.02);
   width: fit-content;
 }
 .sidebar.left-sidebar .leave-room-button {
-  margin-top: 0px;
+  margin-top: 20px;
   padding: 4px 12px;
   font-size: 14px;
   width: fit-content;
