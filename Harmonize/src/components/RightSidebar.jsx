@@ -7,7 +7,13 @@ import {
 } from '@dnd-kit/sortable';
 import SortableQueueItem from './SortableQueueItem.jsx';
 
-export default function RightSidebar({ isVisible, queue, setQueue }) {
+export default function RightSidebar({
+  isVisible,
+  queue,
+  setQueue,
+  roomId,
+  fetchRoomQueue,
+}) {
   const [width, setWidth] = useState(300);
   const [selectMode, setSelectMode] = useState(false);
   const [selectedIds, setSelectedIds] = useState(new Set());
@@ -66,10 +72,24 @@ export default function RightSidebar({ isVisible, queue, setQueue }) {
     });
   };
 
-  const handleDeleteSelected = () => {
-    setQueue((items) => items.filter((i) => !selectedIds.has(i.id)));
+  const handleDeleteSelected = async () => {
+    if (!roomId) return;
+    const itemsToDelete = queue
+      .filter((i) => selectedIds.has(i.id))
+      .sort((a, b) => b.position - a.position);
+    for (const item of itemsToDelete) {
+      try {
+        await fetch(
+          `http://localhost:3001/rooms/${roomId}/queue/${item.position}`,
+          { method: 'DELETE' }
+        );
+      } catch (err) {
+        console.error('Delete queue item error', err);
+      }
+    }
     setSelectedIds(new Set());
     setSelectMode(false);
+    fetchRoomQueue(roomId);
   };
   return (
     <div

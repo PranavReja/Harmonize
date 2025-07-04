@@ -164,6 +164,7 @@ function App() {
                 (users.find((u) => u.userId === q.addedBy)?.username || 'Unknown'),
               platform: q.platform,
               sourceId: q.sourceId,
+              position: q.position,
             };
           })
         );
@@ -450,6 +451,8 @@ function App() {
           isVisible={isRightSidebarVisible}
           queue={queue}
           setQueue={setQueue}
+          roomId={roomId}
+          fetchRoomQueue={fetchRoomQueue}
         />
       </div>
 
