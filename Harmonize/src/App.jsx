@@ -149,12 +149,12 @@ function App() {
       if (res.ok) {
         const keepKeys = new Set();
         const mapped = await Promise.all(
-          data.queue.map(async (q, index) => {
+          data.queue.map(async (q) => {
             const key = `${q.platform}:${q.sourceId}`;
             keepKeys.add(key);
             const albumCover = await getAlbumCover(q.platform, q.sourceId);
             return {
-              id: q.sourceId || `${q.title}-${index}`,
+              id: `pos-${q.position}`,
               albumCover,
               title: q.title,
               artist: q.artist,
