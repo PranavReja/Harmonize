@@ -111,13 +111,38 @@ function App() {
     }
   };
 
-  const addToQueueTop = (item) => {
-    setQueue((prev) => [item, ...prev]);
-    sendSong(item, true);
+  const fetchRoomQueue = async (id) => {
+    try {
+      const res = await fetch(`http://localhost:3001/rooms/${id}/queue`);
+      const data = await res.json();
+      if (res.ok) {
+        setQueue(
+          data.queue.map((q, index) => ({
+            id: q.sourceId || `${q.title}-${index}`,
+            albumCover: '',
+            title: q.title,
+            artist: q.artist,
+            serviceLogo: '',
+            queuedBy: q.addedByName || 'Unknown',
+            platform: q.platform,
+            sourceId: q.sourceId,
+          }))
+        );
+        return true;
+      }
+    } catch (err) {
+      console.error('Fetch queue error', err);
+    }
+    return false;
   };
-  const addToQueueBottom = (item) => {
-    setQueue((prev) => [...prev, item]);
-    sendSong(item, false);
+
+  const addToQueueTop = async (item) => {
+    await sendSong(item, true);
+    fetchRoomQueue(roomId);
+  };
+  const addToQueueBottom = async (item) => {
+    await sendSong(item, false);
+    fetchRoomQueue(roomId);
   };
 
   const handleSeekStart = (e) => {
@@ -213,11 +238,13 @@ function App() {
     localStorage.setItem('userId', uid);
     if (uname) localStorage.setItem('userName', uname);
     fetchRoomUsers(id);
+    fetchRoomQueue(id);
   };
 
   useEffect(() => {
     if (roomId) {
       fetchRoomUsers(roomId);
+      fetchRoomQueue(roomId);
     }
   }, [roomId]);
 
@@ -227,6 +254,7 @@ function App() {
       fetchRoomUsers(roomId, true).then((ok) => {
         if (!ok) setRoomEnded(true);
       });
+      fetchRoomQueue(roomId);
     }, 5000);
     return () => clearInterval(id);
   }, [roomId]);
@@ -242,7 +270,12 @@ function App() {
           onRoomJoined={handleRoomJoined}
         />
       )}
-      <TopBar addToQueueTop={addToQueueTop} addToQueueBottom={addToQueueBottom} />
+      <TopBar
+        addToQueueTop={addToQueueTop}
+        addToQueueBottom={addToQueueBottom}
+        users={users}
+        currentUserId={currentUserId}
+      />
       <div className="app-layout">
         {/* Left Sidebar */}
 <div
