@@ -1,6 +1,9 @@
 import TopBar from './components/TopBar';
 import './styles.css';
 import React, { useState, useRef, useEffect } from 'react';
+import YouTubeLogo from './assets/youtube.png';
+import SpotifyLogo from './assets/spotify.svg';
+import SoundCloudLogo from './assets/soundcloud.svg';
 import RightSidebar from './components/RightSidebar';
 import UserCard from './components/UserCard';
 import RoomSetupModal from './components/RoomSetupModal.jsx';
@@ -85,6 +88,34 @@ function App() {
   const initialQueue = [];
 
   const [queue, setQueue] = useState(initialQueue);
+  const [albumCovers, setAlbumCovers] = useState({});
+
+  const logoMap = {
+    youtube: YouTubeLogo,
+    spotify: SpotifyLogo,
+    soundcloud: SoundCloudLogo,
+  };
+
+  const getAlbumCover = async (platform, sourceId) => {
+    const key = `${platform}:${sourceId}`;
+    if (albumCovers[key]) return albumCovers[key];
+    let url = '';
+    try {
+      if (platform === 'youtube') {
+        url = `https://img.youtube.com/vi/${sourceId}/default.jpg`;
+      } else if (platform === 'spotify') {
+        const res = await fetch(`http://localhost:3001/spotify/track/${sourceId}`);
+        const data = await res.json();
+        if (res.ok) url = data.thumbnail || '';
+      }
+    } catch (err) {
+      console.error('Album cover fetch error', err);
+    }
+    if (url) {
+      setAlbumCovers((prev) => ({ ...prev, [key]: url }));
+    }
+    return url;
+  };
 
   const [showConfirmLeave, setShowConfirmLeave] = useState(false);
   const [roomEnded, setRoomEnded] = useState(false);
@@ -116,18 +147,35 @@ function App() {
       const res = await fetch(`http://localhost:3001/rooms/${id}/queue`);
       const data = await res.json();
       if (res.ok) {
-        setQueue(
-          data.queue.map((q, index) => ({
-            id: q.sourceId || `${q.title}-${index}`,
-            albumCover: '',
-            title: q.title,
-            artist: q.artist,
-            serviceLogo: '',
-            queuedBy: q.addedByName || 'Unknown',
-            platform: q.platform,
-            sourceId: q.sourceId,
-          }))
+        const keepKeys = new Set();
+        const mapped = await Promise.all(
+          data.queue.map(async (q, index) => {
+            const key = `${q.platform}:${q.sourceId}`;
+            keepKeys.add(key);
+            const albumCover = await getAlbumCover(q.platform, q.sourceId);
+            return {
+              id: q.sourceId || `${q.title}-${index}`,
+              albumCover,
+              title: q.title,
+              artist: q.artist,
+              serviceLogo: logoMap[q.platform] || '',
+              queuedBy:
+                q.addedByName ||
+                (users.find((u) => u.userId === q.addedBy)?.username || 'Unknown'),
+              platform: q.platform,
+              sourceId: q.sourceId,
+            };
+          })
         );
+        // Clean up album cache
+        setAlbumCovers((prev) => {
+          const updated = {};
+          for (const k of Object.keys(prev)) {
+            if (keepKeys.has(k)) updated[k] = prev[k];
+          }
+          return updated;
+        });
+        setQueue(mapped);
         return true;
       }
     } catch (err) {
@@ -136,11 +184,21 @@ function App() {
     return false;
   };
 
+  const storeAlbumCover = (item) => {
+    if (!item.sourceId) return;
+    const key = `${item.platform}:${item.sourceId}`;
+    if (item.albumCover) {
+      setAlbumCovers((prev) => ({ ...prev, [key]: item.albumCover }));
+    }
+  };
+
   const addToQueueTop = async (item) => {
+    storeAlbumCover(item);
     await sendSong(item, true);
     fetchRoomQueue(roomId);
   };
   const addToQueueBottom = async (item) => {
+    storeAlbumCover(item);
     await sendSong(item, false);
     fetchRoomQueue(roomId);
   };

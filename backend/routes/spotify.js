@@ -50,4 +50,21 @@ router.get('/search', async (req, res) => {
   }
 });
 
+router.get('/track/:id', async (req, res) => {
+  const id = req.params.id;
+  try {
+    const token = await getAccessToken();
+    const resp = await fetch(`https://api.spotify.com/v1/tracks/${id}`, {
+      headers: { Authorization: `Bearer ${token}` },
+    });
+    const data = await resp.json();
+    if (data.error) return res.status(400).json({ error: 'Track not found' });
+    const thumbnail = data.album?.images?.[data.album.images.length - 1]?.url || null;
+    res.json({ thumbnail });
+  } catch (err) {
+    console.error('Spotify track error', err);
+    res.status(500).json({ error: 'Failed to fetch track' });
+  }
+});
+
 export default router;
