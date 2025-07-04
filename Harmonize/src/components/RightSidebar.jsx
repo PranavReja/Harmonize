@@ -9,6 +9,7 @@ import SortableQueueItem from './SortableQueueItem.jsx';
 
 export default function RightSidebar({ isVisible, queue, setQueue }) {
   const [width, setWidth] = useState(300);
+  const [deleteMode, setDeleteMode] = useState(false);
   const minWidth = 200;
   const maxWidth = 500;
   const isResizing = useRef(false);
@@ -46,6 +47,10 @@ export default function RightSidebar({ isVisible, queue, setQueue }) {
       });
     }
   };
+
+  const toggleDeleteMode = () => setDeleteMode((prev) => !prev);
+  const handleDeleteItem = (id) =>
+    setQueue((items) => items.filter((i) => i.id !== id));
   return (
     <div
       className="right-sidebar"
@@ -63,8 +68,11 @@ export default function RightSidebar({ isVisible, queue, setQueue }) {
         style={{ display: isVisible ? 'block' : 'none' }}
       />
 
-      <div className="sidebar-section">
+      <div className="sidebar-section queue-header">
         <h2 className="sidebar-title">Shared Queue</h2>
+        <button className="copy-button" onClick={toggleDeleteMode}>
+          {deleteMode ? 'Finish Deleting' : 'Delete Tracks'}
+        </button>
       </div>
 
       {queue.length === 0 ? (
@@ -72,13 +80,22 @@ export default function RightSidebar({ isVisible, queue, setQueue }) {
           Empty Queue, Search or Add Links to Starting Listening
         </div>
       ) : (
-        <DndContext collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
+        <DndContext
+          collisionDetection={closestCenter}
+          onDragEnd={handleDragEnd}
+        >
           <SortableContext
             items={queue.map((q) => q.id)}
             strategy={verticalListSortingStrategy}
           >
             {queue.map((item) => (
-              <SortableQueueItem key={item.id} id={item.id} item={item} />
+              <SortableQueueItem
+                key={item.id}
+                id={item.id}
+                item={item}
+                deleteMode={deleteMode}
+                onDelete={handleDeleteItem}
+              />
             ))}
           </SortableContext>
         </DndContext>

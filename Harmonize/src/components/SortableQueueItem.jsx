@@ -2,7 +2,7 @@ import React from 'react';
 import { useSortable } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
 
-export default function SortableQueueItem({ id, item }) {
+export default function SortableQueueItem({ id, item, deleteMode, onDelete }) {
   const {
     attributes,
     listeners,
@@ -10,13 +10,13 @@ export default function SortableQueueItem({ id, item }) {
     transform,
     transition,
     isDragging,
-  } = useSortable({ id });
+  } = useSortable({ id, disabled: deleteMode });
 
   const style = {
     transform: CSS.Transform.toString(transform),
     transition,
     opacity: isDragging ? 0.5 : 1,
-    cursor: isDragging ? 'grabbing' : 'grab',
+    cursor: deleteMode ? 'pointer' : isDragging ? 'grabbing' : 'grab',
   };
 
   return (
@@ -24,8 +24,9 @@ export default function SortableQueueItem({ id, item }) {
       ref={setNodeRef}
       style={style}
       className="queue-card"
-      {...attributes}
-      {...listeners}
+      {...(!deleteMode && attributes)}
+      {...(!deleteMode && listeners)}
+      onClick={deleteMode ? () => onDelete(id) : undefined}
     >
       {item.albumCover ? (
         <img src={item.albumCover} alt="album cover" className="album-cover" />

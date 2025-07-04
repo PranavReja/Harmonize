@@ -765,6 +765,12 @@ transform: scale(1.02);
   position: relative;
 }
 
+.queue-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
 .empty-queue-message {
   text-align: center;
   color: #ccc;
