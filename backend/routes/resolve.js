@@ -41,6 +41,7 @@ router.get('/', async (req, res) => {
       if (!item) return res.status(404).json({ error: 'Video not found' });
       const result = {
         service: 'YouTube',
+        id: videoId,
         title: item.snippet.title,
         artist: item.snippet.channelTitle,
         thumbnail: item.snippet.thumbnails?.default?.url || null,
@@ -62,6 +63,7 @@ router.get('/', async (req, res) => {
       const thumbnail = data.album?.images?.[data.album.images.length - 1]?.url || null;
       const result = {
         service: 'Spotify',
+        id,
         title: data.name,
         artist: data.artists.map((a) => a.name).join(', '),
         thumbnail,

@@ -170,7 +170,12 @@ const activeServices = ['YouTube', 'Spotify', 'SoundCloud']; // 👈 change this
       if (!data.error) {
         addToQueueBottom(
           createQueueItem(
-            { title: data.title, artist: data.artist, thumbnail: data.thumbnail },
+            {
+              id: data.id,
+              title: data.title,
+              artist: data.artist,
+              thumbnail: data.thumbnail,
+            },
             data.service
           )
         );
