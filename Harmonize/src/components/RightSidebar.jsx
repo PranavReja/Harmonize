@@ -9,6 +9,8 @@ import SortableQueueItem from './SortableQueueItem.jsx';
 
 export default function RightSidebar({ isVisible, queue, setQueue }) {
   const [width, setWidth] = useState(300);
+  const [selectMode, setSelectMode] = useState(false);
+  const [selectedIds, setSelectedIds] = useState(new Set());
   const minWidth = 200;
   const maxWidth = 500;
   const isResizing = useRef(false);
@@ -46,6 +48,29 @@ export default function RightSidebar({ isVisible, queue, setQueue }) {
       });
     }
   };
+
+  const toggleSelectMode = () => {
+    setSelectMode((prev) => !prev);
+    setSelectedIds(new Set());
+  };
+
+  const handleSelectItem = (id) => {
+    setSelectedIds((prev) => {
+      const newSet = new Set(prev);
+      if (newSet.has(id)) {
+        newSet.delete(id);
+      } else {
+        newSet.add(id);
+      }
+      return newSet;
+    });
+  };
+
+  const handleDeleteSelected = () => {
+    setQueue((items) => items.filter((i) => !selectedIds.has(i.id)));
+    setSelectedIds(new Set());
+    setSelectMode(false);
+  };
   return (
     <div
       className="right-sidebar"
@@ -63,8 +88,14 @@ export default function RightSidebar({ isVisible, queue, setQueue }) {
         style={{ display: isVisible ? 'block' : 'none' }}
       />
 
-      <div className="sidebar-section">
+      <div className="sidebar-section queue-header">
         <h2 className="sidebar-title">Shared Queue</h2>
+        <button
+          className="copy-button queue-select-button"
+          onClick={selectMode ? handleDeleteSelected : toggleSelectMode}
+        >
+          {selectMode ? 'Delete' : 'Select'}
+        </button>
       </div>
 
       {queue.length === 0 ? (
@@ -72,13 +103,23 @@ export default function RightSidebar({ isVisible, queue, setQueue }) {
           Empty Queue, Search or Add Links to Starting Listening
         </div>
       ) : (
-        <DndContext collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
+        <DndContext
+          collisionDetection={closestCenter}
+          onDragEnd={handleDragEnd}
+        >
           <SortableContext
             items={queue.map((q) => q.id)}
             strategy={verticalListSortingStrategy}
           >
             {queue.map((item) => (
-              <SortableQueueItem key={item.id} id={item.id} item={item} />
+              <SortableQueueItem
+                key={item.id}
+                id={item.id}
+                item={item}
+                selectMode={selectMode}
+                selected={selectedIds.has(item.id)}
+                onSelect={handleSelectItem}
+              />
             ))}
           </SortableContext>
         </DndContext>

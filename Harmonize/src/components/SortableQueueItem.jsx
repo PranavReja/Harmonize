@@ -2,7 +2,13 @@ import React from 'react';
 import { useSortable } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
 
-export default function SortableQueueItem({ id, item }) {
+export default function SortableQueueItem({
+  id,
+  item,
+  selectMode,
+  selected,
+  onSelect,
+}) {
   const {
     attributes,
     listeners,
@@ -10,13 +16,13 @@ export default function SortableQueueItem({ id, item }) {
     transform,
     transition,
     isDragging,
-  } = useSortable({ id });
+  } = useSortable({ id, disabled: selectMode });
 
   const style = {
     transform: CSS.Transform.toString(transform),
     transition,
     opacity: isDragging ? 0.5 : 1,
-    cursor: isDragging ? 'grabbing' : 'grab',
+    cursor: selectMode ? 'pointer' : isDragging ? 'grabbing' : 'grab',
   };
 
   return (
@@ -24,8 +30,9 @@ export default function SortableQueueItem({ id, item }) {
       ref={setNodeRef}
       style={style}
       className="queue-card"
-      {...attributes}
-      {...listeners}
+      {...(!selectMode && attributes)}
+      {...(!selectMode && listeners)}
+      onClick={selectMode ? () => onSelect(id) : undefined}
     >
       {item.albumCover ? (
         <img src={item.albumCover} alt="album cover" className="album-cover" />
@@ -36,14 +43,18 @@ export default function SortableQueueItem({ id, item }) {
         <div className="song-title">{item.title}</div>
         <div className="artist-name">{item.artist}</div>
       </div>
-      <div className="service-info">
-        <img
-          src={item.serviceLogo}
-          alt="service"
-          style={{ width: 20, height: 20, marginBottom: 4 }}
-        />
-        <div className="queued-by">{item.queuedBy}</div>
-      </div>
+      {selectMode ? (
+        <div className={`checkbox ${selected ? 'checked' : ''}`} />
+      ) : (
+        <div className="service-info">
+          <img
+            src={item.serviceLogo}
+            alt="service"
+            style={{ width: 20, height: 20, marginBottom: 4 }}
+          />
+          <div className="queued-by">{item.queuedBy}</div>
+        </div>
+      )}
     </div>
   );
 }
