@@ -44,14 +44,29 @@ export default function RightSidebar({
     };
   }, []);
 
-  const handleDragEnd = (event) => {
+  const handleDragEnd = async (event) => {
     const { active, over } = event;
-    if (over && active.id !== over.id) {
-      setQueue((items) => {
-        const oldIndex = items.findIndex((i) => i.id === active.id);
-        const newIndex = items.findIndex((i) => i.id === over.id);
-        return arrayMove(items, oldIndex, newIndex);
-      });
+    if (!over || active.id === over.id) return;
+
+    let oldIndex;
+    let newIndex;
+    setQueue((items) => {
+      oldIndex = items.findIndex((i) => i.id === active.id);
+      newIndex = items.findIndex((i) => i.id === over.id);
+      return arrayMove(items, oldIndex, newIndex);
+    });
+
+    if (roomId != null) {
+      try {
+        await fetch(`http://localhost:3001/rooms/${roomId}/queue/reorder`, {
+          method: 'PATCH',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ sourceIndex: oldIndex, destinationIndex: newIndex }),
+        });
+      } catch (err) {
+        console.error('Reorder queue error', err);
+      }
+      fetchRoomQueue(roomId);
     }
   };
 
