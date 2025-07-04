@@ -149,7 +149,9 @@ const activeServices = ['YouTube', 'Spotify', 'SoundCloud']; // 👈 change this
     title: result.title,
     artist: result.artist,
     serviceLogo: serviceLogoMap[service],
-    queuedBy: 'Pranav',
+    queuedBy: localStorage.getItem('userName') || 'Unknown',
+    platform: service.toLowerCase(),
+    sourceId: result.id || null,
   });
 
   const handleLinkSubmit = async () => {

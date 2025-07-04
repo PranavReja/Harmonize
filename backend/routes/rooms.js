@@ -75,6 +75,7 @@ router.get('/:id/queue', async (req, res) => {
         platform,
         sourceId,
         addedBy,
+        addedByName: user.username,
         position: room.queue.length
       };
   
@@ -310,6 +311,7 @@ router.post('/:id/queue/next', async (req, res) => {
       platform,
       sourceId,
       addedBy,
+      addedByName: user.username,
       position: insertIndex
     });
 

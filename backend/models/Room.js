@@ -20,6 +20,7 @@ const RoomSchema = new mongoose.Schema({
       platform: String,     // 'spotify', 'youtube', 'soundcloud'
       sourceId: String,     // Spotify URI, YouTube video ID, etc.
       addedBy: String,       // username or user ID
+      addedByName: String,   // display name of the user who queued the song
       position: Number
     }
 ]

@@ -89,8 +89,36 @@ function App() {
   const [showConfirmLeave, setShowConfirmLeave] = useState(false);
   const [roomEnded, setRoomEnded] = useState(false);
 
-  const addToQueueTop = (item) => setQueue((prev) => [item, ...prev]);
-  const addToQueueBottom = (item) => setQueue((prev) => [...prev, item]);
+  const sendSong = async (song, playNext = false) => {
+    if (!roomId || !currentUserId) return;
+    const endpoint = playNext
+      ? `http://localhost:3001/rooms/${roomId}/queue/next`
+      : `http://localhost:3001/rooms/${roomId}/queue`;
+    try {
+      await fetch(endpoint, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          title: song.title,
+          artist: song.artist,
+          platform: song.platform,
+          sourceId: song.sourceId,
+          addedBy: currentUserId,
+        }),
+      });
+    } catch (err) {
+      console.error('Queue song error', err);
+    }
+  };
+
+  const addToQueueTop = (item) => {
+    setQueue((prev) => [item, ...prev]);
+    sendSong(item, true);
+  };
+  const addToQueueBottom = (item) => {
+    setQueue((prev) => [...prev, item]);
+    sendSong(item, false);
+  };
 
   const handleSeekStart = (e) => {
     setIsSeeking(true);
