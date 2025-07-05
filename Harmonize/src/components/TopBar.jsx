@@ -4,7 +4,7 @@ import YouTubeLogo from '../assets/youtube.png';
 import SoundCloudLogo from '../assets/soundcloud.svg';
 import SpotifyLogo from '../assets/spotify.svg';
 
-export default function TopBar({ addToQueueTop, addToQueueBottom }) {
+export default function TopBar({ addToQueueTop, addToQueueBottom, users, currentUserId }) {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isLinkModalOpen, setIsLinkModalOpen] = useState(false);
   const [linkInput, setLinkInput] = useState('');
@@ -143,13 +143,20 @@ const activeServices = ['YouTube', 'Spotify', 'SoundCloud']; // 👈 change this
     SoundCloud: SoundCloudLogo,
   };
 
+  const getCurrentUserName = () => {
+    const user = users.find((u) => u.userId === currentUserId);
+    return user?.username || 'Unknown';
+  };
+
   const createQueueItem = (result, service) => ({
     id: Date.now().toString(),
     albumCover: result.thumbnail || 'https://via.placeholder.com/60',
     title: result.title,
     artist: result.artist,
     serviceLogo: serviceLogoMap[service],
-    queuedBy: 'Pranav',
+    queuedBy: getCurrentUserName(),
+    platform: service.toLowerCase(),
+    sourceId: result.id || null,
   });
 
   const handleLinkSubmit = async () => {
@@ -163,7 +170,12 @@ const activeServices = ['YouTube', 'Spotify', 'SoundCloud']; // 👈 change this
       if (!data.error) {
         addToQueueBottom(
           createQueueItem(
-            { title: data.title, artist: data.artist, thumbnail: data.thumbnail },
+            {
+              id: data.id,
+              title: data.title,
+              artist: data.artist,
+              thumbnail: data.thumbnail,
+            },
             data.service
           )
         );

@@ -7,7 +7,13 @@ import {
 } from '@dnd-kit/sortable';
 import SortableQueueItem from './SortableQueueItem.jsx';
 
-export default function RightSidebar({ isVisible, queue, setQueue }) {
+export default function RightSidebar({
+  isVisible,
+  queue,
+  setQueue,
+  roomId,
+  fetchRoomQueue,
+}) {
   const [width, setWidth] = useState(300);
   const [selectMode, setSelectMode] = useState(false);
   const [selectedIds, setSelectedIds] = useState(new Set());
@@ -38,14 +44,29 @@ export default function RightSidebar({ isVisible, queue, setQueue }) {
     };
   }, []);
 
-  const handleDragEnd = (event) => {
+  const handleDragEnd = async (event) => {
     const { active, over } = event;
-    if (over && active.id !== over.id) {
-      setQueue((items) => {
-        const oldIndex = items.findIndex((i) => i.id === active.id);
-        const newIndex = items.findIndex((i) => i.id === over.id);
-        return arrayMove(items, oldIndex, newIndex);
-      });
+    if (!over || active.id === over.id) return;
+
+    let oldIndex;
+    let newIndex;
+    setQueue((items) => {
+      oldIndex = items.findIndex((i) => i.id === active.id);
+      newIndex = items.findIndex((i) => i.id === over.id);
+      return arrayMove(items, oldIndex, newIndex);
+    });
+
+    if (roomId != null) {
+      try {
+        await fetch(`http://localhost:3001/rooms/${roomId}/queue/reorder`, {
+          method: 'PATCH',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ sourceIndex: oldIndex, destinationIndex: newIndex }),
+        });
+      } catch (err) {
+        console.error('Reorder queue error', err);
+      }
+      fetchRoomQueue(roomId);
     }
   };
 
@@ -66,10 +87,24 @@ export default function RightSidebar({ isVisible, queue, setQueue }) {
     });
   };
 
-  const handleDeleteSelected = () => {
-    setQueue((items) => items.filter((i) => !selectedIds.has(i.id)));
+  const handleDeleteSelected = async () => {
+    if (!roomId) return;
+    const itemsToDelete = queue
+      .filter((i) => selectedIds.has(i.id))
+      .sort((a, b) => b.position - a.position);
+    for (const item of itemsToDelete) {
+      try {
+        await fetch(
+          `http://localhost:3001/rooms/${roomId}/queue/${item.position}`,
+          { method: 'DELETE' }
+        );
+      } catch (err) {
+        console.error('Delete queue item error', err);
+      }
+    }
     setSelectedIds(new Set());
     setSelectMode(false);
+    fetchRoomQueue(roomId);
   };
   return (
     <div
