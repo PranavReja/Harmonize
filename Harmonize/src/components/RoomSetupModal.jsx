@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 
-export default function RoomSetupModal({ onClose, onRoomJoined }) {
+export default function RoomSetupModal({ onClose, onRoomJoined, joinRoomId }) {
   const [mode, setMode] = useState('name'); // 'name', 'choose', 'create', 'join'
   const [userName, setUserName] = useState('');
   const [userId, setUserId] = useState(null);
@@ -45,35 +45,54 @@ export default function RoomSetupModal({ onClose, onRoomJoined }) {
     setError('');
   }, [mode]);
 
-  const createUser = async () => {
+  const handleContinue = async () => {
+    setError('');
+    let id = userId;
     try {
-      const res = await fetch('http://localhost:3001/users', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ username: userName })
-      });
-      const data = await res.json();
-      if (res.ok) {
-        setUserId(data.userId);
-        localStorage.setItem('userId', data.userId);
-        localStorage.setItem('userName', userName);
-        setMode('choose');
+      if (!id) {
+        const res = await fetch('http://localhost:3001/users', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ username: userName })
+        });
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.error || 'Failed to create user');
+        id = data.userId;
+        setUserId(id);
+      } else if (userName !== localStorage.getItem('userName')) {
+        await fetch(`http://localhost:3001/users/${id}`, {
+          method: 'PATCH',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ username: userName })
+        });
+      }
+
+      localStorage.setItem('userId', id);
+      localStorage.setItem('userName', userName);
+
+      if (joinRoomId) {
+        const resJoin = await fetch(`http://localhost:3001/rooms/${joinRoomId}/join`, { method: 'POST' });
+        const dataJoin = await resJoin.json();
+        if (!resJoin.ok) throw new Error(dataJoin.error || 'Room not found');
+        await joinUserToRoom(joinRoomId, id);
+        onRoomJoined?.(joinRoomId, dataJoin.roomName, id, userName);
+        onClose();
       } else {
-        setError(data.error || 'Failed to create user');
+        setMode('choose');
       }
     } catch (err) {
       console.error('User create error', err);
-      setError('Failed to create user');
+      setError(err.message || 'Failed to continue');
     }
   };
 
-  const joinUserToRoom = async (id) => {
-    if (!userId) return;
+  const joinUserToRoom = async (id, uid = userId) => {
+    if (!uid) return;
     try {
       await fetch(`http://localhost:3001/rooms/${id}/join-user`, {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ userId, username: userName })
+        body: JSON.stringify({ userId: uid, username: userName })
       });
     } catch (err) {
       console.error('Join user error', err);
@@ -97,7 +116,7 @@ export default function RoomSetupModal({ onClose, onRoomJoined }) {
       });
       const data = await res.json();
       if (res.ok) {
-        await joinUserToRoom(data.roomId);
+        await joinUserToRoom(data.roomId, userId);
         onRoomJoined?.(data.roomId, data.roomName, userId, userName);
         onClose();
       } else {
@@ -117,7 +136,7 @@ export default function RoomSetupModal({ onClose, onRoomJoined }) {
       });
       const data = await res.json();
       if (res.ok) {
-        await joinUserToRoom(roomCode);
+        await joinUserToRoom(roomCode, userId);
         onRoomJoined?.(roomCode, data.roomName, userId, userName);
         onClose();
       } else {
@@ -157,7 +176,7 @@ export default function RoomSetupModal({ onClose, onRoomJoined }) {
                 </div>
                 <button
                   className="submit-link-button"
-                  onClick={createUser}
+                  onClick={handleContinue}
                   disabled={!userName.trim()}
                 >
                   Continue

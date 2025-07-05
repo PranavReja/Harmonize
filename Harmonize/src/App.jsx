@@ -17,6 +17,11 @@ function App() {
   const [showRoomModal, setShowRoomModal] = useState(true);
   const [roomId, setRoomId] = useState(null);
   const [roomName, setRoomName] = useState('');
+  const [copySuccess, setCopySuccess] = useState(false);
+  const pathRoomId = (() => {
+    const p = window.location.pathname.slice(1);
+    return /^[A-Za-z0-9]{6}$/.test(p) ? p : null;
+  })();
 
   const isResizingLeft = useRef(false);
 
@@ -55,7 +60,20 @@ function App() {
     localStorage.removeItem('userName');
   };
 
+  const handleCopyInviteLink = async () => {
+    if (!roomId) return;
+    const url = `${window.location.origin}/${roomId}`;
+    try {
+      await navigator.clipboard.writeText(url);
+      setCopySuccess(true);
+      setTimeout(() => setCopySuccess(false), 1500);
+    } catch (err) {
+      console.error('Copy link error', err);
+    }
+  };
+
   useEffect(() => {
+    if (pathRoomId) return;
     const savedRoomId = localStorage.getItem('roomId');
     const savedUserId = localStorage.getItem('userId');
     if (savedRoomId && savedUserId) {
@@ -327,6 +345,7 @@ function App() {
         <RoomSetupModal
           onClose={() => setShowRoomModal(false)}
           onRoomJoined={handleRoomJoined}
+          joinRoomId={pathRoomId}
         />
       )}
       <TopBar
@@ -353,7 +372,16 @@ function App() {
             />
             <div className="sidebar-section">
               <h2 className="sidebar-title">Room: {roomName || 'Not Connected'}</h2>
-              <button className="copy-button" disabled={!roomId}>Room Invite Link</button>
+              {roomId && (
+                <h3 className="sidebar-subtitle">Room Code: {roomId}</h3>
+              )}
+              <button
+                className={`copy-button${copySuccess ? ' active' : ''}`}
+                onClick={handleCopyInviteLink}
+                disabled={!roomId}
+              >
+                {copySuccess ? 'Copied!' : 'Room Invite Link'}
+              </button>
             </div>
             <div className="sidebar-section">
               <h3 className="sidebar-subtitle">Listeners</h3>
