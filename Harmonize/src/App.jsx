@@ -17,6 +17,10 @@ function App() {
   const [showRoomModal, setShowRoomModal] = useState(true);
   const [roomId, setRoomId] = useState(null);
   const [roomName, setRoomName] = useState('');
+  const pathRoomId = (() => {
+    const p = window.location.pathname.slice(1);
+    return /^[A-Za-z0-9]{6}$/.test(p) ? p : null;
+  })();
 
   const isResizingLeft = useRef(false);
 
@@ -56,6 +60,7 @@ function App() {
   };
 
   useEffect(() => {
+    if (pathRoomId) return;
     const savedRoomId = localStorage.getItem('roomId');
     const savedUserId = localStorage.getItem('userId');
     if (savedRoomId && savedUserId) {
@@ -327,6 +332,7 @@ function App() {
         <RoomSetupModal
           onClose={() => setShowRoomModal(false)}
           onRoomJoined={handleRoomJoined}
+          joinRoomId={pathRoomId}
         />
       )}
       <TopBar
