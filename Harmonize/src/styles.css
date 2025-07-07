@@ -21,10 +21,9 @@ html, body {
     padding-right: 20px;
     width: 100%;
     box-sizing: border-box;
-    overflow-x: auto;
+    overflow: hidden; /* prevent scrollbars */
     padding-left: 0px;
-    overflow-y: visible; /* allow dropdowns */
-    position: relative; /* position context for dropdown */
+    position: relative; /* context for overlays */
   }
   
   .logo {
