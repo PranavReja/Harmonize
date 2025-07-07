@@ -51,7 +51,7 @@ export default function TopBar({
     const handleClick = (e) => {
       if (
         !e.target.closest('.account-button') &&
-        !e.target.closest('.account-dropdown')
+        !e.target.closest('.account-popup')
       ) {
         setIsAccountMenuOpen(false);
       }
@@ -274,7 +274,7 @@ const activeServices = ['YouTube', 'Spotify', 'SoundCloud']; // 👈 change this
             <div className="body"></div>
           </button>
           {isAccountMenuOpen && (
-            <div className="account-dropdown">
+            <div className="account-popup">
               {!hasSpotify && (
                 <button className="dropdown-item" onClick={handleLinkSpotify}>
                   <img

@@ -357,7 +357,7 @@ transform: scale(1.02);
   background-color: #60a5fa; /* light blue on hover */
 }
 
-  .account-dropdown {
+  .account-popup {
     position: absolute;
     right: 0;
     top: 48px;
@@ -371,7 +371,7 @@ transform: scale(1.02);
     z-index: 50;
   }
 
-  .account-dropdown .dropdown-item {
+  .account-popup .dropdown-item {
     display: flex;
     align-items: center;
     gap: 8px;
@@ -384,7 +384,7 @@ transform: scale(1.02);
     text-align: left;
   }
 
-  .account-dropdown .dropdown-item:hover {
+  .account-popup .dropdown-item:hover {
     background-color: #112240;
   }
 
