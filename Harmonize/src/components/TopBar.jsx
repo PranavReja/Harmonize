@@ -4,7 +4,13 @@ import YouTubeLogo from '../assets/youtube.png';
 import SoundCloudLogo from '../assets/soundcloud.svg';
 import SpotifyLogo from '../assets/spotify.svg';
 
-export default function TopBar({ addToQueueTop, addToQueueBottom, users, currentUserId }) {
+export default function TopBar({
+  addToQueueTop,
+  addToQueueBottom,
+  users,
+  currentUserId,
+  refreshUsers,
+}) {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isLinkModalOpen, setIsLinkModalOpen] = useState(false);
   const [linkInput, setLinkInput] = useState('');
@@ -148,6 +154,9 @@ const activeServices = ['YouTube', 'Spotify', 'SoundCloud']; // 👈 change this
     return user?.username || 'Unknown';
   };
 
+  const currentUser = users.find((u) => u.userId === currentUserId);
+  const hasSpotify = currentUser?.services.includes('Spotify');
+
   const createQueueItem = (result, service) => ({
     id: Date.now().toString(),
     albumCover: result.thumbnail || 'https://via.placeholder.com/60',
@@ -158,6 +167,21 @@ const activeServices = ['YouTube', 'Spotify', 'SoundCloud']; // 👈 change this
     platform: service.toLowerCase(),
     sourceId: result.id || null,
   });
+
+  const handleLinkSpotify = () => {
+    if (!currentUserId) return;
+    const authWindow = window.open(
+      `http://localhost:3001/auth/spotify/login?userId=${currentUserId}`,
+      '_blank',
+      'width=500,height=600'
+    );
+    const timer = setInterval(() => {
+      if (authWindow.closed) {
+        clearInterval(timer);
+        refreshUsers && refreshUsers();
+      }
+    }, 1000);
+  };
 
   const handleLinkSubmit = async () => {
     const link = linkInput.trim();
@@ -226,6 +250,11 @@ const activeServices = ['YouTube', 'Spotify', 'SoundCloud']; // 👈 change this
           <button className="copy-button" onClick={() => setIsLinkModalOpen(true)}>
             Insert Music Links
           </button>
+          {!hasSpotify && (
+            <button className="copy-button" onClick={handleLinkSpotify}>
+              Link Spotify
+            </button>
+          )}
           <button className="icon-button settings-button" aria-label="Settings">
             <div className="dot"></div>
             <div className="dot"></div>
