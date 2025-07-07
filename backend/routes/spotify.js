@@ -60,7 +60,9 @@ router.get('/track/:id', async (req, res) => {
     const data = await resp.json();
     if (data.error) return res.status(400).json({ error: 'Track not found' });
     const thumbnail = data.album?.images?.[data.album.images.length - 1]?.url || null;
-    res.json({ thumbnail });
+    const preview_url = data.preview_url || null;
+    const duration_ms = data.duration_ms;
+    res.json({ thumbnail, preview_url, duration_ms });
   } catch (err) {
     console.error('Spotify track error', err);
     res.status(500).json({ error: 'Failed to fetch track' });
