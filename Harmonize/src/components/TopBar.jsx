@@ -273,22 +273,23 @@ const activeServices = ['YouTube', 'Spotify', 'SoundCloud']; // 👈 change this
             <div className="head"></div>
             <div className="body"></div>
           </button>
-          {isAccountMenuOpen && (
-            <div className="account-popup">
-              {!hasSpotify && (
-                <button className="dropdown-item" onClick={handleLinkSpotify}>
-                  <img
-                    src={SpotifyLogo}
-                    alt="Spotify"
-                    style={{ width: 20, height: 20 }}
-                  />
-                  Link Spotify
-                </button>
-              )}
-            </div>
-          )}
         </div>
       </header>
+
+      {isAccountMenuOpen && (
+        <div className="account-popup">
+          {!hasSpotify && (
+            <button className="dropdown-item" onClick={handleLinkSpotify}>
+              <img
+                src={SpotifyLogo}
+                alt="Spotify"
+                style={{ width: 20, height: 20 }}
+              />
+              Link Spotify
+            </button>
+          )}
+        </div>
+      )}
 
       {/* Modal Overlay */}
       {isModalOpen && (
