@@ -13,6 +13,7 @@ export default function TopBar({
 }) {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isLinkModalOpen, setIsLinkModalOpen] = useState(false);
+  const [isAccountMenuOpen, setIsAccountMenuOpen] = useState(false);
   const [linkInput, setLinkInput] = useState('');
   const [searchQuery, setSearchQuery] = useState('');
   const [youtubeResults, setYoutubeResults] = useState([]);
@@ -39,10 +40,24 @@ export default function TopBar({
       if (e.key === 'Escape') {
         setIsModalOpen(false);
         setIsLinkModalOpen(false);
+        setIsAccountMenuOpen(false);
       }
     };
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
+  }, []);
+
+  useEffect(() => {
+    const handleClick = (e) => {
+      if (
+        !e.target.closest('.account-button') &&
+        !e.target.closest('.account-dropdown')
+      ) {
+        setIsAccountMenuOpen(false);
+      }
+    };
+    document.addEventListener('click', handleClick);
+    return () => document.removeEventListener('click', handleClick);
   }, []);
 
   useEffect(() => {
@@ -250,20 +265,28 @@ const activeServices = ['YouTube', 'Spotify', 'SoundCloud']; // 👈 change this
           <button className="copy-button" onClick={() => setIsLinkModalOpen(true)}>
             Insert Music Links
           </button>
-          {!hasSpotify && (
-            <button className="copy-button" onClick={handleLinkSpotify}>
-              Link Spotify
-            </button>
-          )}
-          <button className="icon-button settings-button" aria-label="Settings">
-            <div className="dot"></div>
-            <div className="dot"></div>
-            <div className="dot"></div>
-          </button>
-          <button className="icon-button account-button" aria-label="Account">
+          <button
+            className="icon-button account-button"
+            aria-label="Account"
+            onClick={() => setIsAccountMenuOpen((p) => !p)}
+          >
             <div className="head"></div>
             <div className="body"></div>
           </button>
+          {isAccountMenuOpen && (
+            <div className="account-dropdown">
+              {!hasSpotify && (
+                <button className="dropdown-item" onClick={handleLinkSpotify}>
+                  <img
+                    src={SpotifyLogo}
+                    alt="Spotify"
+                    style={{ width: 20, height: 20 }}
+                  />
+                  Link Spotify
+                </button>
+              )}
+            </div>
+          )}
         </div>
       </header>
 
