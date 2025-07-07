@@ -21,10 +21,9 @@ html, body {
     padding-right: 20px;
     width: 100%;
     box-sizing: border-box;
-    overflow-x: auto;
+    overflow: hidden; /* prevent scrollbars */
     padding-left: 0px;
-    overflow: hidden;
-    overflow-x: hidden;
+    position: relative; /* context for overlays */
   }
   
   .logo {
@@ -145,11 +144,12 @@ html, body {
   
   
   /* RIGHT SIDE BUTTONS */
-  .topbar-right {
+.topbar-right {
     display: flex;
     align-items: center;
     gap: 12px;
     flex-shrink: 0;
+    position: relative;
   }
   
   .copy-button {
@@ -322,30 +322,6 @@ transform: scale(1.02);
   transform: scale(1.02);
 }
 
-.settings-button {
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    align-items: center;
-    gap: 3px; /* spacing between dots */
-    width: 36px;
-    height: 36px;
-    padding: 0;
-    background-color: transparent;
-    border: none;
-    cursor: pointer;
-  }
-  
-  .settings-button .dot {
-    width: 5px;
-    height: 5px;
-    background-color: white;
-    border-radius: 50%;
-  }
-
-  .settings-button:hover .dot {
-    background-color: #60a5fa; /* light blue on hover */
-  }
   
   .account-button {
     display: flex;
@@ -375,10 +351,41 @@ transform: scale(1.02);
     border-radius: 6px;
   }
 
-  .account-button:hover .head,
+.account-button:hover .head,
 .account-button:hover .body {
   background-color: #60a5fa; /* light blue on hover */
 }
+
+  .account-popup {
+    position: fixed;
+    right: 20px;
+    top: 60px;
+    background-color: #0d1117;
+    border: 1px solid #3b82f6;
+    border-radius: 6px;
+    padding: 8px 0;
+    display: flex;
+    flex-direction: column;
+    min-width: 160px;
+    z-index: 50;
+  }
+
+  .account-popup .dropdown-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 6px 16px;
+    background: transparent;
+    color: white;
+    border: none;
+    cursor: pointer;
+    font-family: 'Roboto', sans-serif;
+    text-align: left;
+  }
+
+  .account-popup .dropdown-item:hover {
+    background-color: #112240;
+  }
 
 .app-layout {
     display: flex;

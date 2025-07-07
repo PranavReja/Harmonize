@@ -353,6 +353,7 @@ function App() {
         addToQueueBottom={addToQueueBottom}
         users={users}
         currentUserId={currentUserId}
+        refreshUsers={() => roomId && fetchRoomUsers(roomId)}
       />
       <div className="app-layout">
         {/* Left Sidebar */}

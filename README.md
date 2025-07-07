@@ -12,6 +12,7 @@ PORT=<port number for the API server>
 YOUTUBE_API_KEY=<YouTube API key>
 SPOTIFY_CLIENT_ID=<Spotify client ID>
 SPOTIFY_CLIENT_SECRET=<Spotify client secret>
+SPOTIFY_REDIRECT_URI=<Spotify OAuth redirect URI>
 ```
 
 The `.env` file is excluded from version control via the root `.gitignore`.

@@ -5,6 +5,7 @@ import dotenv from 'dotenv';
 import roomsRouter from './routes/rooms.js';
 import usersRouter from './routes/users.js';
 import spotifyRouter from './routes/spotify.js';
+import spotifyAuthRouter from './routes/spotifyAuth.js';
 import resolveRouter from './routes/resolve.js';
 
 
@@ -20,6 +21,7 @@ app.use(express.json());
 app.use('/rooms', roomsRouter);
 app.use('/users', usersRouter);
 app.use('/spotify', spotifyRouter);
+app.use('/auth/spotify', spotifyAuthRouter);
 app.use('/resolve', resolveRouter);
 // MongoDB Connection
 mongoose.connect(process.env.MONGO_URI, {
