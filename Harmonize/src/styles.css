@@ -23,8 +23,8 @@ html, body {
     box-sizing: border-box;
     overflow-x: auto;
     padding-left: 0px;
-    overflow: hidden;
-    overflow-x: hidden;
+    overflow-y: visible; /* allow dropdowns */
+    position: relative; /* position context for dropdown */
   }
   
   .logo {
