@@ -244,10 +244,17 @@ function App() {
     if (roomId) fetchRoomQueue(roomId);
   };
 
-  const prevSong = () => {
+  const prevSong = async () => {
     if (songHistory.length === 0) return;
     const [last, ...rest] = songHistory;
     setSongHistory(rest);
+    if (currentSong) {
+      setQueue((q) => [currentSong, ...q]);
+      if (roomId) {
+        await sendSong(currentSong, true);
+        fetchRoomQueue(roomId);
+      }
+    }
     setCurrentSong(last);
   };
 
