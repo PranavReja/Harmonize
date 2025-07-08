@@ -170,7 +170,7 @@ const activeServices = ['YouTube', 'Spotify', 'SoundCloud']; // 👈 change this
   };
 
   const currentUser = users.find((u) => u.userId === currentUserId);
-  const hasSpotify = currentUser?.services.includes('Spotify');
+  const hasSpotify = currentUser?.services?.spotify?.connected;
 
   const createQueueItem = (result, service) => ({
     id: Date.now().toString(),
