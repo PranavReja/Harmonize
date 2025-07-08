@@ -109,6 +109,7 @@ function App() {
   const [queue, setQueue] = useState(initialQueue);
   const [albumCovers, setAlbumCovers] = useState({});
   const [currentSong, setCurrentSong] = useState(null);
+  const [songHistory, setSongHistory] = useState([]);
 
   const logoMap = {
     youtube: YouTubeLogo,
@@ -197,7 +198,7 @@ function App() {
           return updated;
         });
         setQueue(mapped);
-        setCurrentSong(mapped[0] || null);
+        setCurrentSong((prev) => prev || mapped[0] || null);
         return true;
       }
     } catch (err) {
@@ -223,6 +224,31 @@ function App() {
     storeAlbumCover(item);
     await sendSong(item, false);
     fetchRoomQueue(roomId);
+  };
+
+  const nextSong = async () => {
+    if (!currentSong || queue.length === 0) return;
+    setSongHistory((prev) => [currentSong, ...prev].slice(0, 6));
+    if (roomId) {
+      try {
+        await fetch(`http://localhost:3001/rooms/${roomId}/queue/0`, {
+          method: 'DELETE',
+        });
+      } catch (err) {
+        console.error('Next song error', err);
+      }
+    }
+    const newQueue = queue.slice(1);
+    setQueue(newQueue);
+    setCurrentSong(newQueue[0] || null);
+    if (roomId) fetchRoomQueue(roomId);
+  };
+
+  const prevSong = () => {
+    if (songHistory.length === 0) return;
+    const [last, ...rest] = songHistory;
+    setSongHistory(rest);
+    setCurrentSong(last);
   };
 
   const handleSeekStart = (e) => {
@@ -417,7 +443,12 @@ function App() {
           </div>
 
           <main className="main-content">
-            <Player currentSong={currentSong} isAdmin={isAdmin} />
+            <Player
+              currentSong={currentSong}
+              isAdmin={isAdmin}
+              onNext={nextSong}
+              onPrev={prevSong}
+            />
 
             <div className="sidebar-handle right-handle" onClick={() => setIsRightSidebarVisible(prev => !prev)}>
               {isRightSidebarVisible ? '⮞' : '⮜'}

@@ -1348,3 +1348,9 @@ transform: scale(1.02);
   height: calc(min(80vw, 560px) * 9 / 16);
   border: none;
 }
+
+.player-wrapper {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
