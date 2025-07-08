@@ -7,6 +7,7 @@ import SoundCloudLogo from './assets/soundcloud.svg';
 import RightSidebar from './components/RightSidebar';
 import UserCard from './components/UserCard';
 import RoomSetupModal from './components/RoomSetupModal.jsx';
+import Player from './components/Player.jsx';
 
 function App() {
   const [isLeftSidebarVisible, setIsLeftSidebarVisible] = useState(true);
@@ -107,6 +108,7 @@ function App() {
 
   const [queue, setQueue] = useState(initialQueue);
   const [albumCovers, setAlbumCovers] = useState({});
+  const [currentSong, setCurrentSong] = useState(null);
 
   const logoMap = {
     youtube: YouTubeLogo,
@@ -195,6 +197,7 @@ function App() {
           return updated;
         });
         setQueue(mapped);
+        setCurrentSong(mapped[0] || null);
         return true;
       }
     } catch (err) {
@@ -414,56 +417,7 @@ function App() {
           </div>
 
           <main className="main-content">
-            <div className="now-playing-container">
-              <div className="now-playing-cover">
-                <div className="cover-placeholder">Album Cover</div>
-              </div>
-
-              <div className="now-playing-text">
-                <div className="now-playing-title">{songTitle}</div>
-                <div className="now-playing-artist">Artist Name</div>
-              </div>
-
-              <div className="now-playing-progress">
-                <div
-                  className="progress-bar"
-                  onMouseDown={handleSeekStart}
-                  onMouseMove={handleSeekMove}
-                  onMouseUp={handleSeekEnd}
-                  onMouseLeave={handleSeekEnd}
-                  ref={progressBarRef}
-                >
-                  <div className="progress-fill" style={{ width: `${progress}%` }}></div>
-                  <div className="progress-thumb" style={{ left: `${progress}%` }}></div>
-                </div>
-
-                <div className="progress-time">
-                  <span className="current-time">
-                    {formatTime((progress / 100) * totalDuration)}
-                  </span>
-                  <span className="total-time">{formatTime(totalDuration)}</span>
-                </div>
-              </div>
-
-              <div className="player-controls">
-                <button className={`skip-button ${activeButton === 'prev' ? 'active' : ''}`} onClick={() => handleSkip('prev')}>
-                  &#9198;
-                </button>
-                <button className={`pause-button ${activeButton === 'play' ? 'active' : ''}`} onClick={handleTogglePlay}>
-                  {isPlaying ? (
-                    <div className="pause-icon">
-                      <div className="bar"></div>
-                      <div className="bar"></div>
-                    </div>
-                  ) : (
-                    <div className="play-icon">&#9658;</div>
-                  )}
-                </button>
-                <button className={`skip-button ${activeButton === 'next' ? 'active' : ''}`} onClick={() => handleSkip('next')}>
-                  &#9197;
-                </button>
-              </div>
-            </div>
+            <Player currentSong={currentSong} isAdmin={isAdmin} />
 
             <div className="sidebar-handle right-handle" onClick={() => setIsRightSidebarVisible(prev => !prev)}>
               {isRightSidebarVisible ? '⮞' : '⮜'}

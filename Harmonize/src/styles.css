@@ -1335,3 +1335,16 @@ transform: scale(1.02);
   align-items: center;
   gap: 4px;
 }
+
+.youtube-player-wrapper {
+  display: flex;
+  justify-content: center;
+  width: 100%;
+  padding: 1rem 0;
+}
+
+.youtube-player {
+  width: min(80vw, 560px);
+  height: calc(min(80vw, 560px) * 9 / 16);
+  border: none;
+}
