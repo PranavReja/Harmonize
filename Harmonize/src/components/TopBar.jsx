@@ -22,6 +22,85 @@ export default function TopBar({
   const [youtubeNextPageToken, setYoutubeNextPageToken] = useState(null);
   const YOUTUBE_API_KEY = import.meta.env.VITE_YOUTUBE_API_KEY;
 
+  const searchYouTube = useCallback(async (query, pageToken = '') => {
+    if (!query) return;
+    try {
+      const url =
+        `https://www.googleapis.com/youtube/v3/search?part=snippet&type=video&maxResults=10&q=${encodeURIComponent(query)}&key=${YOUTUBE_API_KEY}` +
+        (pageToken ? `&pageToken=${pageToken}` : '');
+      const res = await fetch(url);
+      const data = await res.json();
+      const results = (data.items || []).map((item) => ({
+        id: item.id.videoId,
+        title: item.snippet.title,
+        artist: item.snippet.channelTitle,
+        thumbnail: item.snippet.thumbnails?.default?.url,
+        url: `https://www.youtube.com/watch?v=${item.id.videoId}`,
+      }));
+      setYoutubeNextPageToken(data.nextPageToken || null);
+      if (pageToken) {
+        setYoutubeResults((prev) => [...prev, ...results]);
+      } else {
+        setYoutubeResults(results);
+      }
+    } catch (err) {
+      console.error('YouTube search error', err);
+    }
+  }, [YOUTUBE_API_KEY]);
+
+  const loadMoreYouTube = () => {
+    if (youtubeNextPageToken) {
+      searchYouTube(searchQuery, youtubeNextPageToken);
+    }
+  };
+
+  const searchSpotify = useCallback(async (query, offset = 0) => {
+    if (!query) return;
+    try {
+      const url =
+        `http://localhost:3001/spotify/search?q=${encodeURIComponent(query)}&offset=${offset}`;
+      const res = await fetch(url);
+      const data = await res.json();
+      const tracks = data.tracks || [];
+      if (offset) {
+        setSpotifyResults((prev) => [...prev, ...tracks]);
+      } else {
+        setSpotifyResults(tracks);
+      }
+    } catch (err) {
+      console.error('Spotify search error', err);
+    }
+  }, []);
+
+  const loadMoreSpotify = () => {
+    const offset = spotifyResults.length;
+    searchSpotify(searchQuery, offset);
+  };
+
+  const searchSoundCloud = useCallback(async (query, offset = 0) => {
+    if (!query) return;
+    try {
+      const url =
+        `http://localhost:3001/soundcloud/search?q=${encodeURIComponent(query)}` +
+        `&offset=${offset}`;
+      const res = await fetch(url);
+      const data = await res.json();
+      const tracks = data.tracks || [];
+      if (offset) {
+        setSoundcloudResults((prev) => [...prev, ...tracks]);
+      } else {
+        setSoundcloudResults(tracks);
+      }
+    } catch (err) {
+      console.error('SoundCloud search error', err);
+    }
+  }, []);
+
+  const loadMoreSoundCloud = () => {
+    const offset = soundcloudResults.length;
+    searchSoundCloud(searchQuery, offset);
+  };
+
   const executeSearch = useCallback(() => {
     const trimmed = searchQuery.trim();
     if (!trimmed) return;
@@ -75,83 +154,6 @@ export default function TopBar({
     return () => clearTimeout(handler);
   }, [searchQuery, isModalOpen, executeSearch]);
 
-  const searchYouTube = useCallback(async (query, pageToken = '') => {
-    if (!query) return;
-    try {
-      const url =
-        `https://www.googleapis.com/youtube/v3/search?part=snippet&type=video&maxResults=10&q=${encodeURIComponent(query)}&key=${YOUTUBE_API_KEY}` +
-        (pageToken ? `&pageToken=${pageToken}` : '');
-      const res = await fetch(url);
-      const data = await res.json();
-      const results = (data.items || []).map((item) => ({
-        id: item.id.videoId,
-        title: item.snippet.title,
-        artist: item.snippet.channelTitle,
-        thumbnail: item.snippet.thumbnails?.default?.url,
-        url: `https://www.youtube.com/watch?v=${item.id.videoId}`,
-      }));
-      setYoutubeNextPageToken(data.nextPageToken || null);
-      if (pageToken) {
-        setYoutubeResults((prev) => [...prev, ...results]);
-      } else {
-        setYoutubeResults(results);
-      }
-    } catch (err) {
-      console.error('YouTube search error', err);
-    }
-  }, [YOUTUBE_API_KEY]);
-
-  const loadMoreYouTube = () => {
-    if (youtubeNextPageToken) {
-      searchYouTube(searchQuery, youtubeNextPageToken);
-    }
-  };
-  const searchSpotify = useCallback(async (query, offset = 0) => {
-    if (!query) return;
-    try {
-      const url =
-        `http://localhost:3001/spotify/search?q=${encodeURIComponent(query)}&offset=${offset}`;
-      const res = await fetch(url);
-      const data = await res.json();
-      const tracks = data.tracks || [];
-      if (offset) {
-        setSpotifyResults((prev) => [...prev, ...tracks]);
-      } else {
-        setSpotifyResults(tracks);
-      }
-    } catch (err) {
-      console.error('Spotify search error', err);
-    }
-  }, []);
-
-  const loadMoreSpotify = () => {
-    const offset = spotifyResults.length;
-    searchSpotify(searchQuery, offset);
-  };
-
-  const searchSoundCloud = useCallback(async (query, offset = 0) => {
-    if (!query) return;
-    try {
-      const url =
-        `http://localhost:3001/soundcloud/search?q=${encodeURIComponent(query)}` +
-        `&offset=${offset}`;
-      const res = await fetch(url);
-      const data = await res.json();
-      const tracks = data.tracks || [];
-      if (offset) {
-        setSoundcloudResults((prev) => [...prev, ...tracks]);
-      } else {
-        setSoundcloudResults(tracks);
-      }
-    } catch (err) {
-      console.error('SoundCloud search error', err);
-    }
-  }, []);
-
-  const loadMoreSoundCloud = () => {
-    const offset = soundcloudResults.length;
-    searchSoundCloud(searchQuery, offset);
-  };
 
 const handleShowMore = (service) => {
   if (service === 'YouTube') loadMoreYouTube();
