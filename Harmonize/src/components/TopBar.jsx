@@ -19,9 +19,9 @@ export default function TopBar({
   const [youtubeResults, setYoutubeResults] = useState([]);
   const [spotifyResults, setSpotifyResults] = useState([]);
   const [soundcloudResults, setSoundcloudResults] = useState([]);
+  const [soundcloudClientId, setSoundcloudClientId] = useState(null);
   const [youtubeNextPageToken, setYoutubeNextPageToken] = useState(null);
   const YOUTUBE_API_KEY = import.meta.env.VITE_YOUTUBE_API_KEY;
-  const SOUNDCLOUD_CLIENT_ID = import.meta.env.VITE_SOUNDCLOUD_CLIENT_ID;
 
   const executeSearch = useCallback(() => {
     const trimmed = searchQuery.trim();
@@ -30,6 +30,13 @@ export default function TopBar({
     searchSpotify(trimmed);
     searchSoundCloud(trimmed);
   }, [searchQuery]);
+
+  useEffect(() => {
+    fetch('http://localhost:3001/config/soundcloud-client-id')
+      .then((res) => res.json())
+      .then((data) => setSoundcloudClientId(data.clientId))
+      .catch((err) => console.error('Failed to fetch SoundCloud client ID', err));
+  }, []);
 
   const openSearchModal = () => {
     if (searchQuery.trim()) {
@@ -131,10 +138,10 @@ export default function TopBar({
   };
 
   const searchSoundCloud = async (query, offset = 0) => {
-    if (!query) return;
+    if (!query || !soundcloudClientId) return;
     try {
       const url =
-        `https://api-v2.soundcloud.com/search/tracks?q=${encodeURIComponent(query)}&client_id=${SOUNDCLOUD_CLIENT_ID}&limit=10&offset=${offset}`;
+        `https://api-v2.soundcloud.com/search/tracks?q=${encodeURIComponent(query)}&client_id=${soundcloudClientId}&limit=10&offset=${offset}`;
       const res = await fetch(url);
       const data = await res.json();
       const results = (data.collection || []).map((item) => ({

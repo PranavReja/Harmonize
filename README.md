@@ -13,6 +13,7 @@ YOUTUBE_API_KEY=<YouTube API key>
 SPOTIFY_CLIENT_ID=<Spotify client ID>
 SPOTIFY_CLIENT_SECRET=<Spotify client secret>
 SPOTIFY_REDIRECT_URI=<Spotify OAuth redirect URI>
+SOUNDCLOUD_CLIENT_ID=<SoundCloud client ID>
 ```
 
 The `.env` file is excluded from version control via the root `.gitignore`.
@@ -24,7 +25,9 @@ inside the `Harmonize/` directory containing:
 
 ```
 VITE_YOUTUBE_API_KEY=<YouTube API key>
-VITE_SOUNDCLOUD_CLIENT_ID=<SoundCloud client ID>
 ```
 
 You can copy `Harmonize/.env.example` and fill in your keys.
+
+The SoundCloud client ID is stored only on the backend. The React app retrieves it
+by requesting `http://localhost:3001/config/soundcloud-client-id`.
