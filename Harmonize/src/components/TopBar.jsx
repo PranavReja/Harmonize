@@ -28,7 +28,7 @@ export default function TopBar({
     searchYouTube(trimmed);
     searchSpotify(trimmed);
     searchSoundCloud(trimmed);
-  }, [searchQuery]);
+  }, [searchQuery, searchYouTube, searchSpotify, searchSoundCloud]);
 
   const openSearchModal = () => {
     if (searchQuery.trim()) {
@@ -75,7 +75,7 @@ export default function TopBar({
     return () => clearTimeout(handler);
   }, [searchQuery, isModalOpen, executeSearch]);
 
-  const searchYouTube = async (query, pageToken = '') => {
+  const searchYouTube = useCallback(async (query, pageToken = '') => {
     if (!query) return;
     try {
       const url =
@@ -99,14 +99,14 @@ export default function TopBar({
     } catch (err) {
       console.error('YouTube search error', err);
     }
-  };
+  }, [YOUTUBE_API_KEY]);
 
   const loadMoreYouTube = () => {
     if (youtubeNextPageToken) {
       searchYouTube(searchQuery, youtubeNextPageToken);
     }
   };
-  const searchSpotify = async (query, offset = 0) => {
+  const searchSpotify = useCallback(async (query, offset = 0) => {
     if (!query) return;
     try {
       const url =
@@ -122,14 +122,14 @@ export default function TopBar({
     } catch (err) {
       console.error('Spotify search error', err);
     }
-  };
+  }, []);
 
   const loadMoreSpotify = () => {
     const offset = spotifyResults.length;
     searchSpotify(searchQuery, offset);
   };
 
-  const searchSoundCloud = async (query, offset = 0) => {
+  const searchSoundCloud = useCallback(async (query, offset = 0) => {
     if (!query) return;
     try {
       const url =
@@ -146,7 +146,7 @@ export default function TopBar({
     } catch (err) {
       console.error('SoundCloud search error', err);
     }
-  };
+  }, []);
 
   const loadMoreSoundCloud = () => {
     const offset = soundcloudResults.length;

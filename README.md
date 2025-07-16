@@ -14,6 +14,8 @@ SPOTIFY_CLIENT_ID=<Spotify client ID>
 SPOTIFY_CLIENT_SECRET=<Spotify client secret>
 SPOTIFY_REDIRECT_URI=<Spotify OAuth redirect URI>
 SOUNDCLOUD_CLIENT_ID=<SoundCloud client ID>
+SOUNDCLOUD_CLIENT_SECRET=<SoundCloud client secret>
+SOUNDCLOUD_REDIRECT_URI=<SoundCloud OAuth redirect URI>
 ```
 
 The `.env` file is excluded from version control via the root `.gitignore`.

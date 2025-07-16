@@ -4,12 +4,14 @@ const router = express.Router();
 
 router.get('/search', async (req, res) => {
   const query = req.query.q;
-  const offset = parseInt(req.query.offset || '0', 10);
+  const offset = parseInt(req.query.offset, 10) || 0;
   if (!query) return res.status(400).json({ error: 'Missing q parameter' });
   try {
-    const url =
-      `https://api-v2.soundcloud.com/search/tracks?q=${encodeURIComponent(query)}&client_id=${process.env.SOUNDCLOUD_CLIENT_ID}` +
-      `&limit=14&offset=${offset}`;
+    const url = new URL('https://api-v2.soundcloud.com/search/tracks');
+    url.searchParams.set('q', query);
+    url.searchParams.set('client_id', process.env.SOUNDCLOUD_CLIENT_ID || '');
+    url.searchParams.set('limit', '14');
+    url.searchParams.set('offset', offset.toString());
     const resp = await fetch(url);
     const data = await resp.json();
     const tracks = (data.collection || []).map((item) => ({
