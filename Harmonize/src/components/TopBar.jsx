@@ -352,7 +352,7 @@ const activeServices = ['YouTube', 'Spotify', 'SoundCloud']; // 👈 change this
         {service === 'YouTube' &&
           youtubeResults.map((r) => (
             <SearchResultCard
-              key={r.id}
+              key={`YouTube-${r.id}`}
               title={r.title}
               artist={r.artist}
               thumbnail={r.thumbnail}
@@ -364,7 +364,7 @@ const activeServices = ['YouTube', 'Spotify', 'SoundCloud']; // 👈 change this
         {service === 'Spotify' &&
           spotifyResults.map((r) => (
             <SearchResultCard
-              key={r.id}
+              key={`Spotify-${r.id}`}
               title={r.title}
               artist={r.artist}
               thumbnail={r.thumbnail}
@@ -379,7 +379,7 @@ const activeServices = ['YouTube', 'Spotify', 'SoundCloud']; // 👈 change this
           ) : (
             soundcloudResults.map((r) => (
               <SearchResultCard
-                key={r.id}
+                key={`SoundCloud-${r.id}`}
                 title={r.title}
                 artist={r.artist}
                 thumbnail={r.thumbnail}
