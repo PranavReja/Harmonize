@@ -19,6 +19,7 @@ export default function TopBar({
   const [youtubeResults, setYoutubeResults] = useState([]);
   const [spotifyResults, setSpotifyResults] = useState([]);
   const [soundcloudResults, setSoundcloudResults] = useState([]);
+  const [soundcloudClientId, setSoundcloudClientId] = useState(null);
   const [youtubeNextPageToken, setYoutubeNextPageToken] = useState(null);
   const YOUTUBE_API_KEY = import.meta.env.VITE_YOUTUBE_API_KEY;
 
@@ -29,6 +30,13 @@ export default function TopBar({
     searchSpotify(trimmed);
     searchSoundCloud(trimmed);
   }, [searchQuery]);
+
+  useEffect(() => {
+    fetch('http://localhost:3001/config/soundcloud-client-id')
+      .then((res) => res.json())
+      .then((data) => setSoundcloudClientId(data.clientId))
+      .catch((err) => console.error('Failed to fetch SoundCloud client ID', err));
+  }, []);
 
   const openSearchModal = () => {
     if (searchQuery.trim()) {
@@ -129,24 +137,35 @@ export default function TopBar({
     searchSpotify(searchQuery, offset);
   };
 
-  const searchSoundCloud = (query) => {
-    if (!query) return;
-    const results = Array.from({ length: 10 }, (_, i) => ({
-      id: `${query}-sc-${i}`,
-      title: `${query} SoundCloud ${i + 1}`,
-      artist: `SoundCloud Artist ${i + 1}`,
-    }));
-    setSoundcloudResults(results);
+  const searchSoundCloud = async (query, offset = 0) => {
+    if (!query || !soundcloudClientId) return;
+    try {
+      const url =
+        `https://api-v2.soundcloud.com/search/tracks?q=${encodeURIComponent(query)}&client_id=${soundcloudClientId}&limit=10&offset=${offset}`;
+      const res = await fetch(url);
+      const data = await res.json();
+      const results = (data.collection || []).map((item) => ({
+        id: item.id,
+        title: item.title,
+        artist: item.user?.username || 'Unknown',
+        thumbnail: item.artwork_url
+          ? item.artwork_url.replace('-large', '-t500x500')
+          : null,
+        url: item.permalink_url,
+      }));
+      if (offset) {
+        setSoundcloudResults((prev) => [...prev, ...results]);
+      } else {
+        setSoundcloudResults(results);
+      }
+    } catch (err) {
+      console.error('SoundCloud search error', err);
+    }
   };
 
   const loadMoreSoundCloud = () => {
-    const start = soundcloudResults.length;
-    const more = Array.from({ length: 10 }, (_, i) => ({
-      id: `${searchQuery}-sc-${start + i}`,
-      title: `${searchQuery} SoundCloud ${start + i + 1}`,
-      artist: `SoundCloud Artist ${start + i + 1}`,
-    }));
-    setSoundcloudResults((prev) => [...prev, ...more]);
+    const offset = soundcloudResults.length;
+    searchSoundCloud(searchQuery, offset);
   };
 
 const handleShowMore = (service) => {
