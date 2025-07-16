@@ -19,6 +19,7 @@ export default function TopBar({
   const [youtubeResults, setYoutubeResults] = useState([]);
   const [spotifyResults, setSpotifyResults] = useState([]);
   const [soundcloudResults, setSoundcloudResults] = useState([]);
+  const [soundcloudError, setSoundcloudError] = useState('');
   const [youtubeNextPageToken, setYoutubeNextPageToken] = useState(null);
   const YOUTUBE_API_KEY = import.meta.env.VITE_YOUTUBE_API_KEY;
 
@@ -85,14 +86,21 @@ export default function TopBar({
         `&offset=${offset}`;
       const res = await fetch(url);
       const data = await res.json();
+      if (data.error) {
+        setSoundcloudError(data.error);
+        setSoundcloudResults([]);
+        return;
+      }
       const tracks = data.tracks || [];
       if (offset) {
         setSoundcloudResults((prev) => [...prev, ...tracks]);
       } else {
         setSoundcloudResults(tracks);
       }
+      setSoundcloudError('');
     } catch (err) {
       console.error('SoundCloud search error', err);
+      setSoundcloudError('SoundCloud search failed');
     }
   }, []);
 
@@ -366,16 +374,22 @@ const activeServices = ['YouTube', 'Spotify', 'SoundCloud']; // 👈 change this
             />
           ))}
         {service === 'SoundCloud' &&
-          soundcloudResults.map((r) => (
-            <SearchResultCard
-              key={r.id}
-              title={r.title}
-              artist={r.artist}
-              thumbnail={r.thumbnail}
-              url={r.url}
-              onAdd={() => addToQueueBottom(createQueueItem(r, 'SoundCloud'))}
-              onPlayNext={() => addToQueueTop(createQueueItem(r, 'SoundCloud'))}
-            />
+          (soundcloudError ? (
+            <div className="error-text">{soundcloudError}</div>
+          ) : (
+            soundcloudResults.map((r) => (
+              <SearchResultCard
+                key={r.id}
+                title={r.title}
+                artist={r.artist}
+                thumbnail={r.thumbnail}
+                url={r.url}
+                onAdd={() => addToQueueBottom(createQueueItem(r, 'SoundCloud'))}
+                onPlayNext={() =>
+                  addToQueueTop(createQueueItem(r, 'SoundCloud'))
+                }
+              />
+            ))
           ))}
         <button
           className="show-more-button"

@@ -6,10 +6,18 @@ router.get('/search', async (req, res) => {
   const query = req.query.q;
   const offset = parseInt(req.query.offset, 10) || 0;
   if (!query) return res.status(400).json({ error: 'Missing q parameter' });
+
+  const clientId = process.env.SOUNDCLOUD_CLIENT_ID;
+  if (!clientId) {
+    return res
+      .status(500)
+      .json({ error: 'SOUNDCLOUD_CLIENT_ID is not configured' });
+  }
+
   try {
     const url = new URL('https://api-v2.soundcloud.com/search/tracks');
     url.searchParams.set('q', query);
-    url.searchParams.set('client_id', process.env.SOUNDCLOUD_CLIENT_ID || '');
+    url.searchParams.set('client_id', clientId);
     url.searchParams.set('limit', '14');
     url.searchParams.set('offset', offset.toString());
     const resp = await fetch(url);
