@@ -7,6 +7,7 @@ import usersRouter from './routes/users.js';
 import spotifyRouter from './routes/spotify.js';
 import spotifyAuthRouter from './routes/spotifyAuth.js';
 import resolveRouter from './routes/resolve.js';
+import soundcloudRouter from './routes/soundcloud.js';
 
 
 
@@ -21,6 +22,7 @@ app.use(express.json());
 app.use('/rooms', roomsRouter);
 app.use('/users', usersRouter);
 app.use('/spotify', spotifyRouter);
+app.use('/soundcloud', soundcloudRouter);
 app.use('/auth/spotify', spotifyAuthRouter);
 app.use('/resolve', resolveRouter);
 // MongoDB Connection

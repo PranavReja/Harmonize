@@ -129,24 +129,28 @@ export default function TopBar({
     searchSpotify(searchQuery, offset);
   };
 
-  const searchSoundCloud = (query) => {
+  const searchSoundCloud = async (query, offset = 0) => {
     if (!query) return;
-    const results = Array.from({ length: 10 }, (_, i) => ({
-      id: `${query}-sc-${i}`,
-      title: `${query} SoundCloud ${i + 1}`,
-      artist: `SoundCloud Artist ${i + 1}`,
-    }));
-    setSoundcloudResults(results);
+    try {
+      const url =
+        `http://localhost:3001/soundcloud/search?q=${encodeURIComponent(query)}` +
+        `&offset=${offset}`;
+      const res = await fetch(url);
+      const data = await res.json();
+      const tracks = data.tracks || [];
+      if (offset) {
+        setSoundcloudResults((prev) => [...prev, ...tracks]);
+      } else {
+        setSoundcloudResults(tracks);
+      }
+    } catch (err) {
+      console.error('SoundCloud search error', err);
+    }
   };
 
   const loadMoreSoundCloud = () => {
-    const start = soundcloudResults.length;
-    const more = Array.from({ length: 10 }, (_, i) => ({
-      id: `${searchQuery}-sc-${start + i}`,
-      title: `${searchQuery} SoundCloud ${start + i + 1}`,
-      artist: `SoundCloud Artist ${start + i + 1}`,
-    }));
-    setSoundcloudResults((prev) => [...prev, ...more]);
+    const offset = soundcloudResults.length;
+    searchSoundCloud(searchQuery, offset);
   };
 
 const handleShowMore = (service) => {
@@ -365,6 +369,8 @@ const activeServices = ['YouTube', 'Spotify', 'SoundCloud']; // 👈 change this
               key={r.id}
               title={r.title}
               artist={r.artist}
+              thumbnail={r.thumbnail}
+              url={r.url}
               onAdd={() => addToQueueBottom(createQueueItem(r, 'SoundCloud'))}
               onPlayNext={() => addToQueueTop(createQueueItem(r, 'SoundCloud'))}
             />
