@@ -18,3 +18,13 @@ SPOTIFY_REDIRECT_URI=<Spotify OAuth redirect URI>
 The `.env` file is excluded from version control via the root `.gitignore`.
 An example file `backend/.env.example` is provided to illustrate the expected
 variables.
+
+The React frontend also uses environment variables via Vite. Create a `.env` file
+inside the `Harmonize/` directory containing:
+
+```
+VITE_YOUTUBE_API_KEY=<YouTube API key>
+VITE_SOUNDCLOUD_CLIENT_ID=<SoundCloud client ID>
+```
+
+You can copy `Harmonize/.env.example` and fill in your keys.
