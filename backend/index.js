@@ -7,7 +7,6 @@ import usersRouter from './routes/users.js';
 import spotifyRouter from './routes/spotify.js';
 import spotifyAuthRouter from './routes/spotifyAuth.js';
 import resolveRouter from './routes/resolve.js';
-import configRouter from './routes/config.js';
 
 
 
@@ -24,7 +23,6 @@ app.use('/users', usersRouter);
 app.use('/spotify', spotifyRouter);
 app.use('/auth/spotify', spotifyAuthRouter);
 app.use('/resolve', resolveRouter);
-app.use('/config', configRouter);
 // MongoDB Connection
 mongoose.connect(process.env.MONGO_URI, {
   useNewUrlParser: true,
