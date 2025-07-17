@@ -23,7 +23,20 @@ const RoomSchema = new mongoose.Schema({
       addedByName: String,   // display name of the user who queued the song
       position: Number
     }
-]
+  ],
+  // Songs that have been played already. Used for seeking backwards
+  history: [
+    {
+      title: String,
+      artist: String,
+      platform: String,
+      sourceId: String,
+      addedBy: String,
+      addedByName: String
+    }
+  ],
+  // Index of the currently playing song in the history array
+  currentIndex: { type: Number, default: -1 }
 });
 
 

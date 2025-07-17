@@ -7,6 +7,7 @@ import SoundCloudLogo from './assets/soundcloud.svg';
 import RightSidebar from './components/RightSidebar';
 import UserCard from './components/UserCard';
 import RoomSetupModal from './components/RoomSetupModal.jsx';
+import YouTubePlayer from './components/YouTubePlayer.jsx';
 
 function App() {
   const [isLeftSidebarVisible, setIsLeftSidebarVisible] = useState(true);
@@ -90,7 +91,8 @@ function App() {
     }
   }, []);
 
-  const songTitle = 'Song Name 🎵';
+  const [currentSong, setCurrentSong] = useState(null);
+  const songTitle = currentSong ? currentSong.title : 'Song Name 🎵';
   const totalDuration = 200;
 
   const [progress, setProgress] = useState(40);
@@ -211,6 +213,24 @@ function App() {
     }
   };
 
+  const startNextSong = async () => {
+    if (!roomId) return;
+    try {
+      const res = await fetch(`http://localhost:3001/rooms/${roomId}/next`, {
+        method: 'POST'
+      });
+      const data = await res.json();
+      if (res.ok && data.song) {
+        setCurrentSong(data.song);
+      } else {
+        setCurrentSong(null);
+      }
+      fetchRoomQueue(roomId);
+    } catch (err) {
+      console.error('Next song error', err);
+    }
+  };
+
   const addToQueueTop = async (item) => {
     storeAlbumCover(item);
     await sendSong(item, true);
@@ -258,6 +278,16 @@ function App() {
   const handleSkip = (direction) => {
     setActiveButton(direction);
     setTimeout(() => setActiveButton(null), 200);
+    if (direction === 'next' && isAdmin) {
+      startNextSong();
+    }
+    if (direction === 'prev' && isAdmin) {
+      fetch(`http://localhost:3001/rooms/${roomId}/prev`, { method: 'POST' })
+        .then(() => {
+          fetchRoomQueue(roomId);
+        })
+        .catch((err) => console.error('Prev song error', err));
+    }
   };
 
   const handleConfirmLeave = async () => {
@@ -339,6 +369,14 @@ function App() {
   const currentUser = users.find((u) => u.userId === currentUserId);
   const isAdmin = currentUser?.isAdmin;
 
+  useEffect(() => {
+    if (!isAdmin) return;
+    if (currentSong) return;
+    if (queue.length > 0 && queue[0].platform === 'youtube') {
+      startNextSong();
+    }
+  }, [queue, isAdmin, currentSong]);
+
   return (
     <>
       {showRoomModal && (
@@ -416,12 +454,16 @@ function App() {
           <main className="main-content">
             <div className="now-playing-container">
               <div className="now-playing-cover">
-                <div className="cover-placeholder">Album Cover</div>
+                {currentSong && currentSong.platform === 'youtube' && isAdmin ? (
+                  <YouTubePlayer videoId={currentSong.sourceId} onEnded={startNextSong} />
+                ) : (
+                  <div className="cover-placeholder">Album Cover</div>
+                )}
               </div>
 
               <div className="now-playing-text">
                 <div className="now-playing-title">{songTitle}</div>
-                <div className="now-playing-artist">Artist Name</div>
+                <div className="now-playing-artist">{currentSong?.artist || 'Artist Name'}</div>
               </div>
 
               <div className="now-playing-progress">

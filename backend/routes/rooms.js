@@ -329,6 +329,56 @@ router.post('/:id/queue/next', async (req, res) => {
   }
 });
 
+// Move the first song from the queue to history and return it
+router.post('/:id/next', async (req, res) => {
+  try {
+    const room = await Room.findOne({ roomId: req.params.id });
+    if (!room) return res.status(404).json({ error: 'Room not found' });
+
+    if (room.queue.length === 0) {
+      room.currentIndex = room.history?.length ? room.history.length - 1 : -1;
+      await room.save();
+      return res.json({ song: null });
+    }
+
+    const nextSong = room.queue.shift();
+    room.history = room.history || [];
+    room.history.push(nextSong);
+    room.currentIndex = room.history.length - 1;
+
+    room.queue = room.queue.map((s, i) => ({ ...s.toObject(), position: i }));
+
+    await room.save();
+    res.json({ song: nextSong });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
+// Move the most recently played song back to the front of the queue
+router.post('/:id/prev', async (req, res) => {
+  try {
+    const room = await Room.findOne({ roomId: req.params.id });
+    if (!room) return res.status(404).json({ error: 'Room not found' });
+
+    if (!room.history || room.history.length === 0) {
+      return res.status(400).json({ error: 'No previous track' });
+    }
+
+    const prevSong = room.history.pop();
+    room.currentIndex = room.history.length - 1;
+    room.queue.unshift(prevSong);
+    room.queue = room.queue.map((s, i) => ({ ...s.toObject(), position: i }));
+
+    await room.save();
+    res.json({ song: prevSong });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
 
 
   
