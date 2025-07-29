@@ -21,7 +21,8 @@ const RoomSchema = new mongoose.Schema({
       sourceId: String,     // Spotify URI, YouTube video ID, etc.
       addedBy: String,       // username or user ID
       addedByName: String,   // display name of the user who queued the song
-      position: Number
+      position: Number,
+      timeOfSong: Number // Unix timestamp when the song started playing
     }
   ],
   currentIndex: { type: Number, default: -1 }, // Index of the currently playing song

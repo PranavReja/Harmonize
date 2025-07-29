@@ -76,7 +76,8 @@ router.post('/:id/queue', async (req, res) => {
         sourceId,
         addedBy,
         addedByName: user.username,
-        position: room.queue.length
+        position: room.queue.length,
+        timeOfSong: null
       };
   
       room.queue.push(newSong);
@@ -219,6 +220,9 @@ router.patch('/:id/current-playing', async (req, res) => {
     if (!room) return res.status(404).json({ error: 'Room not found' });
     if (typeof index === 'number') {
       room.currentPlaying = index;
+      if (index >= 0 && index < room.queue.length) {
+        room.queue[index].timeOfSong = Math.floor(Date.now() / 1000);
+      }
       await room.save();
       res.json({ message: 'Current playing updated', currentPlaying: room.currentPlaying });
     } else {
@@ -375,7 +379,8 @@ router.post('/:id/queue/next', async (req, res) => {
       sourceId,
       addedBy,
       addedByName: user.username,
-      position: insertIndex
+      position: insertIndex,
+      timeOfSong: null
     });
 
     // Reassign all positions after inserting
