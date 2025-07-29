@@ -21,11 +21,13 @@ variables.
 
 ## Migrating existing data
 
-If upgrading from an earlier version, queue entries may not have a `timeOfSong` field.
-Run the migration script to add this field:
+If upgrading from an earlier version, queue entries may be missing the
+`timeOfSong` or new `durationSec` fields. Run the migration script to add these
+fields:
 
 ```bash
 node backend/scripts/fixTimeOfSong.js
 ```
 
-This sets `timeOfSong` to `null` for any songs missing the field.
+This sets `timeOfSong` and `durationSec` to `null` for any songs missing those
+fields.

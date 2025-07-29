@@ -19,6 +19,10 @@ async function run() {
         item.timeOfSong = null;
         updated = true;
       }
+      if (item.durationSec === undefined) {
+        item.durationSec = null;
+        updated = true;
+      }
     });
     if (updated) {
       await room.save();
