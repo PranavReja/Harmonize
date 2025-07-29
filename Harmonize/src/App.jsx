@@ -7,6 +7,7 @@ import SoundCloudLogo from './assets/soundcloud.svg';
 import RightSidebar from './components/RightSidebar';
 import UserCard from './components/UserCard';
 import RoomSetupModal from './components/RoomSetupModal.jsx';
+import YouTubePlayer from './components/YouTubePlayer.jsx';
 
 function App() {
   const [isLeftSidebarVisible, setIsLeftSidebarVisible] = useState(true);
@@ -90,15 +91,7 @@ function App() {
     }
   }, []);
 
-  const songTitle = 'Song Name 🎵';
-  const totalDuration = 200;
-
-  const [progress, setProgress] = useState(40);
-  const [isSeeking, setIsSeeking] = useState(false);
-  const [isPlaying, setIsPlaying] = useState(true);
   const [activeButton, setActiveButton] = useState(null);
-
-  const progressBarRef = useRef(null);
 
   const [users, setUsers] = useState([]);
   const [currentUserId, setCurrentUserId] = useState(null);
@@ -107,6 +100,7 @@ function App() {
 
   const [queue, setQueue] = useState(initialQueue);
   const [albumCovers, setAlbumCovers] = useState({});
+  const [currentIndex, setCurrentIndex] = useState(-1);
 
   const logoMap = {
     youtube: YouTubeLogo,
@@ -203,6 +197,35 @@ function App() {
     return false;
   };
 
+  const fetchCurrentIndex = async (id) => {
+    try {
+      const res = await fetch(`http://localhost:3001/rooms/${id}/current-index`);
+      const data = await res.json();
+      if (res.ok) {
+        setCurrentIndex(typeof data.currentIndex === 'number' ? data.currentIndex : -1);
+        return true;
+      }
+    } catch (err) {
+      console.error('Fetch current index error', err);
+    }
+    return false;
+  };
+
+  const updateCurrentIndex = async (index) => {
+    if (!roomId) return;
+    setCurrentIndex(index);
+    try {
+      await fetch(`http://localhost:3001/rooms/${roomId}/current-index`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ index }),
+      });
+    } catch (err) {
+      console.error('Update index error', err);
+    }
+    fetchRoomQueue(roomId);
+  };
+
   const storeAlbumCover = (item) => {
     if (!item.sourceId) return;
     const key = `${item.platform}:${item.sourceId}`;
@@ -222,42 +245,24 @@ function App() {
     fetchRoomQueue(roomId);
   };
 
-  const handleSeekStart = (e) => {
-    setIsSeeking(true);
-    updateSeek(e);
-  };
-
-  const handleSeekMove = (e) => {
-    if (isSeeking) updateSeek(e);
-  };
-
-  const handleSeekEnd = () => {
-    setIsSeeking(false);
-  };
-
-  const updateSeek = (e) => {
-    if (!progressBarRef.current) return;
-    const rect = progressBarRef.current.getBoundingClientRect();
-    const offsetX = e.clientX - rect.left;
-    const percentage = Math.max(0, Math.min(100, (offsetX / rect.width) * 100));
-    setProgress(percentage);
-  };
-
-  const formatTime = (seconds) => {
-    const mins = Math.floor(seconds / 60);
-    const secs = Math.floor(seconds % 60);
-    return `${mins}:${secs < 10 ? '0' : ''}${secs}`;
-  };
-
-  const handleTogglePlay = () => {
-    setIsPlaying(!isPlaying);
-    setActiveButton('play');
-    setTimeout(() => setActiveButton(null), 200);
-  };
 
   const handleSkip = (direction) => {
+    if (!queue.length) return;
+    let newIndex = currentIndex;
+    if (direction === 'next') {
+      newIndex = Math.min(currentIndex + 1, queue.length - 1);
+    } else {
+      newIndex = Math.max(currentIndex - 1, 0);
+    }
+    updateCurrentIndex(newIndex);
     setActiveButton(direction);
     setTimeout(() => setActiveButton(null), 200);
+  };
+
+  const handleVideoEnded = () => {
+    if (!queue.length) return;
+    const next = Math.min(currentIndex + 1, queue.length - 1);
+    if (next !== currentIndex) updateCurrentIndex(next);
   };
 
   const handleConfirmLeave = async () => {
@@ -316,12 +321,14 @@ function App() {
     if (uname) localStorage.setItem('userName', uname);
     fetchRoomUsers(id);
     fetchRoomQueue(id);
+    fetchCurrentIndex(id);
   };
 
   useEffect(() => {
     if (roomId) {
       fetchRoomUsers(roomId);
       fetchRoomQueue(roomId);
+      fetchCurrentIndex(roomId);
     }
   }, [roomId]);
 
@@ -332,12 +339,23 @@ function App() {
         if (!ok) setRoomEnded(true);
       });
       fetchRoomQueue(roomId);
+      fetchCurrentIndex(roomId);
     }, 5000);
     return () => clearInterval(id);
   }, [roomId]);
 
   const currentUser = users.find((u) => u.userId === currentUserId);
   const isAdmin = currentUser?.isAdmin;
+  const currentSong = queue.find((q) => q.position === currentIndex);
+
+  useEffect(() => {
+    if (!isAdmin || queue.length === 0) return;
+    if (currentIndex < 0 || currentIndex >= queue.length) {
+      if (queue[0].platform === 'youtube') {
+        updateCurrentIndex(0);
+      }
+    }
+  }, [queue, isAdmin]);
 
   return (
     <>
@@ -416,50 +434,25 @@ function App() {
           <main className="main-content">
             <div className="now-playing-container">
               <div className="now-playing-cover">
-                <div className="cover-placeholder">Album Cover</div>
+                {isAdmin && currentSong?.platform === 'youtube' ? (
+                  <YouTubePlayer videoId={currentSong.sourceId} onEnded={handleVideoEnded} />
+                ) : (
+                  <div className="cover-placeholder">
+                    {currentSong?.platform === 'spotify' ? 'Player unavailable at the moment' : 'Player unavailable at the moment'}
+                  </div>
+                )}
               </div>
 
               <div className="now-playing-text">
-                <div className="now-playing-title">{songTitle}</div>
-                <div className="now-playing-artist">Artist Name</div>
-              </div>
-
-              <div className="now-playing-progress">
-                <div
-                  className="progress-bar"
-                  onMouseDown={handleSeekStart}
-                  onMouseMove={handleSeekMove}
-                  onMouseUp={handleSeekEnd}
-                  onMouseLeave={handleSeekEnd}
-                  ref={progressBarRef}
-                >
-                  <div className="progress-fill" style={{ width: `${progress}%` }}></div>
-                  <div className="progress-thumb" style={{ left: `${progress}%` }}></div>
-                </div>
-
-                <div className="progress-time">
-                  <span className="current-time">
-                    {formatTime((progress / 100) * totalDuration)}
-                  </span>
-                  <span className="total-time">{formatTime(totalDuration)}</span>
-                </div>
+                <div className="now-playing-title">{currentSong?.title || 'No Song'}</div>
+                <div className="now-playing-artist">{currentSong?.artist || ''}</div>
               </div>
 
               <div className="player-controls">
-                <button className={`skip-button ${activeButton === 'prev' ? 'active' : ''}`} onClick={() => handleSkip('prev')}>
+                <button className={`skip-button ${activeButton === 'prev' ? 'active' : ''}`} onClick={() => handleSkip('prev')} disabled={!isAdmin}>
                   &#9198;
                 </button>
-                <button className={`pause-button ${activeButton === 'play' ? 'active' : ''}`} onClick={handleTogglePlay}>
-                  {isPlaying ? (
-                    <div className="pause-icon">
-                      <div className="bar"></div>
-                      <div className="bar"></div>
-                    </div>
-                  ) : (
-                    <div className="play-icon">&#9658;</div>
-                  )}
-                </button>
-                <button className={`skip-button ${activeButton === 'next' ? 'active' : ''}`} onClick={() => handleSkip('next')}>
+                <button className={`skip-button ${activeButton === 'next' ? 'active' : ''}`} onClick={() => handleSkip('next')} disabled={!isAdmin}>
                   &#9197;
                 </button>
               </div>
