@@ -22,7 +22,7 @@ const RoomSchema = new mongoose.Schema({
       addedBy: String,       // username or user ID
       addedByName: String,   // display name of the user who queued the song
       position: Number,
-      timeOfSong: Number // Unix timestamp when the song started playing
+      timeOfSong: { type: Number, default: null } // Unix timestamp when the song started playing
     }
   ],
   currentIndex: { type: Number, default: -1 }, // Index of the currently playing song
