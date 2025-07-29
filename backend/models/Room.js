@@ -24,7 +24,8 @@ const RoomSchema = new mongoose.Schema({
       position: Number
     }
   ],
-  currentIndex: { type: Number, default: -1 } // Index of the currently playing song
+  currentIndex: { type: Number, default: -1 }, // Index of the currently playing song
+  currentPlaying: { type: Number, default: -1 } // Track the song playing for all users
 });
 
 

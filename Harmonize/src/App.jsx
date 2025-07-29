@@ -97,6 +97,7 @@ function App() {
   const [isSeeking, setIsSeeking] = useState(false);
   const [isPlaying, setIsPlaying] = useState(true);
   const [activeButton, setActiveButton] = useState(null);
+  const [currentPlaying, setCurrentPlaying] = useState(-1);
 
   const progressBarRef = useRef(null);
 
@@ -203,6 +204,34 @@ function App() {
     return false;
   };
 
+  const fetchCurrentPlaying = async (id) => {
+    try {
+      const res = await fetch(`http://localhost:3001/rooms/${id}/current-playing`);
+      const data = await res.json();
+      if (res.ok) {
+        setCurrentPlaying(data.currentPlaying);
+        return true;
+      }
+    } catch (err) {
+      console.error('Fetch current playing error', err);
+    }
+    return false;
+  };
+
+  const updateCurrentPlaying = async (index) => {
+    if (!roomId) return;
+    try {
+      await fetch(`http://localhost:3001/rooms/${roomId}/current-playing`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ index }),
+      });
+      setCurrentPlaying(index);
+    } catch (err) {
+      console.error('Update current playing error', err);
+    }
+  };
+
   const storeAlbumCover = (item) => {
     if (!item.sourceId) return;
     const key = `${item.platform}:${item.sourceId}`;
@@ -250,12 +279,22 @@ function App() {
   };
 
   const handleTogglePlay = () => {
+    if (!isPlaying && currentPlaying === -1 && queue.length > 0) {
+      updateCurrentPlaying(0);
+    }
     setIsPlaying(!isPlaying);
     setActiveButton('play');
     setTimeout(() => setActiveButton(null), 200);
   };
 
   const handleSkip = (direction) => {
+    let newIndex = currentPlaying;
+    if (direction === 'next') {
+      newIndex = Math.min(currentPlaying + 1, queue.length - 1);
+    } else if (direction === 'prev') {
+      newIndex = Math.max(currentPlaying - 1, -1);
+    }
+    updateCurrentPlaying(newIndex);
     setActiveButton(direction);
     setTimeout(() => setActiveButton(null), 200);
   };
@@ -316,12 +355,14 @@ function App() {
     if (uname) localStorage.setItem('userName', uname);
     fetchRoomUsers(id);
     fetchRoomQueue(id);
+    fetchCurrentPlaying(id);
   };
 
   useEffect(() => {
     if (roomId) {
       fetchRoomUsers(roomId);
       fetchRoomQueue(roomId);
+      fetchCurrentPlaying(roomId);
     }
   }, [roomId]);
 
@@ -332,12 +373,17 @@ function App() {
         if (!ok) setRoomEnded(true);
       });
       fetchRoomQueue(roomId);
+      fetchCurrentPlaying(roomId);
     }, 5000);
     return () => clearInterval(id);
   }, [roomId]);
 
   const currentUser = users.find((u) => u.userId === currentUserId);
   const isAdmin = currentUser?.isAdmin;
+  const nowPlaying =
+    currentPlaying >= 0 && currentPlaying < queue.length
+      ? queue[currentPlaying]
+      : null;
 
   return (
     <>
@@ -416,12 +462,20 @@ function App() {
           <main className="main-content">
             <div className="now-playing-container">
               <div className="now-playing-cover">
-                <div className="cover-placeholder">Album Cover</div>
+                {nowPlaying ? (
+                  <img src={nowPlaying.albumCover} alt="cover" />
+                ) : (
+                  <div className="cover-placeholder">Album Cover</div>
+                )}
               </div>
 
               <div className="now-playing-text">
-                <div className="now-playing-title">{songTitle}</div>
-                <div className="now-playing-artist">Artist Name</div>
+                <div className="now-playing-title">
+                  {nowPlaying ? nowPlaying.title : 'No Song Playing'}
+                </div>
+                <div className="now-playing-artist">
+                  {nowPlaying ? nowPlaying.artist : ''}
+                </div>
               </div>
 
               <div className="now-playing-progress">
