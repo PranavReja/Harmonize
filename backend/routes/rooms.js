@@ -1,7 +1,64 @@
-import express from 'express';      // Get the Express Router system
+import express from 'express'; // Get the Express Router system
 import Room from '../models/Room.js'; // Import your Room model
-import User from '../models/User.js'; // Top of file
-import crypto from 'crypto';         // Use this to generate random room IDs
+import User from '../models/User.js';
+import crypto from 'crypto'; // Use this to generate random room IDs
+
+let spotifyToken = null;
+let spotifyTokenExpires = 0;
+
+async function getSpotifyAccessToken() {
+  if (!spotifyToken || Date.now() >= spotifyTokenExpires) {
+    const creds = `${process.env.SPOTIFY_CLIENT_ID}:${process.env.SPOTIFY_CLIENT_SECRET}`;
+    const res = await fetch('https://accounts.spotify.com/api/token', {
+      method: 'POST',
+      headers: {
+        Authorization: 'Basic ' + Buffer.from(creds).toString('base64'),
+        'Content-Type': 'application/x-www-form-urlencoded'
+      },
+      body: 'grant_type=client_credentials'
+    });
+    const data = await res.json();
+    spotifyToken = data.access_token;
+    spotifyTokenExpires = Date.now() + (data.expires_in - 60) * 1000;
+  }
+  return spotifyToken;
+}
+
+function parseISODuration(str) {
+  const match = /^PT(?:(\d+)H)?(?:(\d+)M)?(?:(\d+)S)?$/.exec(str);
+  if (!match) return null;
+  const h = parseInt(match[1] || '0', 10);
+  const m = parseInt(match[2] || '0', 10);
+  const s = parseInt(match[3] || '0', 10);
+  return h * 3600 + m * 60 + s;
+}
+
+async function getYouTubeDuration(id) {
+  const key = process.env.YOUTUBE_API_KEY;
+  if (!key) return null;
+  const url = `https://www.googleapis.com/youtube/v3/videos?part=contentDetails&id=${id}&key=${key}`;
+  const resp = await fetch(url);
+  const data = await resp.json();
+  const iso = data.items?.[0]?.contentDetails?.duration;
+  if (!iso) return null;
+  return parseISODuration(iso);
+}
+
+async function getSpotifyDuration(id) {
+  const token = await getSpotifyAccessToken();
+  const resp = await fetch(`https://api.spotify.com/v1/tracks/${id}`, {
+    headers: { Authorization: `Bearer ${token}` }
+  });
+  const data = await resp.json();
+  if (data.error) return null;
+  return Math.round((data.duration_ms || 0) / 1000);
+}
+
+async function fetchDuration(platform, id) {
+  if (platform === 'spotify') return await getSpotifyDuration(id);
+  if (platform === 'youtube') return await getYouTubeDuration(id);
+  return null;
+}
 
 
 const router = express.Router(); // Create a new router for /rooms endpoints
@@ -69,6 +126,7 @@ router.post('/:id/queue', async (req, res) => {
         return res.status(400).json({ error: 'Spotify songs are not allowed in guest mode' });
       }
   
+      const durationSec = await fetchDuration(platform, sourceId);
       const newSong = {
         title,
         artist,
@@ -77,7 +135,8 @@ router.post('/:id/queue', async (req, res) => {
         addedBy,
         addedByName: user.username,
         position: room.queue.length,
-        timeOfSong: null
+        timeOfSong: null,
+        durationSec
       };
   
       room.queue.push(newSong);
@@ -372,6 +431,8 @@ router.post('/:id/queue/next', async (req, res) => {
 
     const insertIndex = room.currentIndex + 1 || 0;
 
+    const durationSec = await fetchDuration(platform, sourceId);
+
     room.queue.splice(insertIndex, 0, {
       title,
       artist,
@@ -380,7 +441,8 @@ router.post('/:id/queue/next', async (req, res) => {
       addedBy,
       addedByName: user.username,
       position: insertIndex,
-      timeOfSong: null
+      timeOfSong: null,
+      durationSec
     });
 
     // Reassign all positions after inserting
