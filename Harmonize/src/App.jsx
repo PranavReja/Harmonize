@@ -536,6 +536,7 @@ function App() {
           setQueue={setQueue}
           roomId={roomId}
           fetchRoomQueue={fetchRoomQueue}
+          currentPlaying={currentPlaying}
         />
       </div>
 

@@ -13,6 +13,7 @@ export default function RightSidebar({
   setQueue,
   roomId,
   fetchRoomQueue,
+  currentPlaying,
 }) {
   const [width, setWidth] = useState(300);
   const [selectMode, setSelectMode] = useState(false);
@@ -20,6 +21,8 @@ export default function RightSidebar({
   const minWidth = 200;
   const maxWidth = 500;
   const isResizing = useRef(false);
+
+  const upcomingQueue = queue.filter((q) => q.position > currentPlaying);
 
   useEffect(() => {
     const handleMouseMove = (e) => {
@@ -133,7 +136,7 @@ export default function RightSidebar({
         </button>
       </div>
 
-      {queue.length === 0 ? (
+      {upcomingQueue.length === 0 ? (
         <div className="empty-queue-message">
           Empty Queue, Search or Add Links to Starting Listening
         </div>
@@ -143,10 +146,10 @@ export default function RightSidebar({
           onDragEnd={handleDragEnd}
         >
           <SortableContext
-            items={queue.map((q) => q.id)}
+            items={upcomingQueue.map((q) => q.id)}
             strategy={verticalListSortingStrategy}
           >
-            {queue.map((item) => (
+            {upcomingQueue.map((item) => (
               <SortableQueueItem
                 key={item.id}
                 id={item.id}
