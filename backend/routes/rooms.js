@@ -76,7 +76,8 @@ router.post('/:id/queue', async (req, res) => {
         sourceId,
         addedBy,
         addedByName: user.username,
-        position: room.queue.length
+        position: room.queue.length,
+        timeOfSong: null
       };
   
       room.queue.push(newSong);
@@ -180,6 +181,18 @@ router.get('/:id/current-index', async (req, res) => {
   }
 });
 
+// GET /rooms/:id/current-playing → fetch the current playing index
+router.get('/:id/current-playing', async (req, res) => {
+  try {
+    const room = await Room.findOne({ roomId: req.params.id });
+    if (!room) return res.status(404).json({ error: 'Room not found' });
+    res.json({ currentPlaying: room.currentPlaying });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
 // PATCH /rooms/:id/current-index → update the currently playing index
 router.patch('/:id/current-index', async (req, res) => {
   const { index } = req.body;
@@ -190,6 +203,28 @@ router.patch('/:id/current-index', async (req, res) => {
       room.currentIndex = index;
       await room.save();
       res.json({ message: 'Current index updated', currentIndex: room.currentIndex });
+    } else {
+      res.status(400).json({ error: 'Invalid index' });
+    }
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
+// PATCH /rooms/:id/current-playing → update the current playing index
+router.patch('/:id/current-playing', async (req, res) => {
+  const { index } = req.body;
+  try {
+    const room = await Room.findOne({ roomId: req.params.id });
+    if (!room) return res.status(404).json({ error: 'Room not found' });
+    if (typeof index === 'number') {
+      room.currentPlaying = index;
+      if (index >= 0 && index < room.queue.length) {
+        room.queue[index].timeOfSong = Math.floor(Date.now() / 1000);
+      }
+      await room.save();
+      res.json({ message: 'Current playing updated', currentPlaying: room.currentPlaying });
     } else {
       res.status(400).json({ error: 'Invalid index' });
     }
@@ -344,7 +379,8 @@ router.post('/:id/queue/next', async (req, res) => {
       sourceId,
       addedBy,
       addedByName: user.username,
-      position: insertIndex
+      position: insertIndex,
+      timeOfSong: null
     });
 
     // Reassign all positions after inserting
