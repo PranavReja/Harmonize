@@ -24,6 +24,8 @@ export default function YouTubePlayer({ videoId, onEnded }) {
       }
       playerRef.current = new window.YT.Player(containerRef.current, {
         videoId,
+        host: 'https://www.youtube.com',
+        playerVars: { origin: window.location.origin, autoplay: 1 },
         events: {
           onStateChange: (e) => {
             if (e.data === window.YT.PlayerState.ENDED) {
