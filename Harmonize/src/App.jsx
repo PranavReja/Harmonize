@@ -7,6 +7,7 @@ import SoundCloudLogo from './assets/soundcloud.svg';
 import RightSidebar from './components/RightSidebar';
 import UserCard from './components/UserCard';
 import RoomSetupModal from './components/RoomSetupModal.jsx';
+import YouTubePlayer from './components/YouTubePlayer.jsx';
 
 function App() {
   const [isLeftSidebarVisible, setIsLeftSidebarVisible] = useState(true);
@@ -90,7 +91,6 @@ function App() {
     }
   }, []);
 
-  const songTitle = 'Song Name 🎵';
   const totalDuration = 200;
 
   const [progress, setProgress] = useState(40);
@@ -100,6 +100,7 @@ function App() {
   const [currentPlaying, setCurrentPlaying] = useState(-1);
 
   const progressBarRef = useRef(null);
+  const youtubePlayerRef = useRef(null);
 
   const [users, setUsers] = useState([]);
   const [currentUserId, setCurrentUserId] = useState(null);
@@ -283,6 +284,13 @@ function App() {
       updateCurrentPlaying(0);
     }
     setIsPlaying(!isPlaying);
+    if (nowPlaying?.platform === 'youtube' && youtubePlayerRef.current) {
+      if (isPlaying) {
+        youtubePlayerRef.current.pauseVideo();
+      } else {
+        youtubePlayerRef.current.playVideo();
+      }
+    }
     setActiveButton('play');
     setTimeout(() => setActiveButton(null), 200);
   };
@@ -378,6 +386,13 @@ function App() {
     return () => clearInterval(id);
   }, [roomId]);
 
+  useEffect(() => {
+    if (queue.length > 0 && currentPlaying === -1) {
+      updateCurrentPlaying(0);
+      setIsPlaying(true);
+    }
+  }, [queue, currentPlaying]);
+
   const currentUser = users.find((u) => u.userId === currentUserId);
   const isAdmin = currentUser?.isAdmin;
   const nowPlaying =
@@ -463,7 +478,16 @@ function App() {
             <div className="now-playing-container">
               <div className="now-playing-cover">
                 {nowPlaying ? (
-                  <img src={nowPlaying.albumCover} alt="cover" />
+                  nowPlaying.platform === 'youtube' ? (
+                    <YouTubePlayer
+                      videoId={nowPlaying.sourceId}
+                      playing={isPlaying}
+                      muted={!isAdmin}
+                      onReady={(p) => (youtubePlayerRef.current = p)}
+                    />
+                  ) : (
+                    <img src={nowPlaying.albumCover} alt="cover" />
+                  )
                 ) : (
                   <div className="cover-placeholder">Album Cover</div>
                 )}
