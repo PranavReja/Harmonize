@@ -91,9 +91,9 @@ function App() {
   }, []);
 
   const songTitle = 'Song Name 🎵';
-  const totalDuration = 200;
+  const [totalDuration, setTotalDuration] = useState(0);
 
-  const [progress, setProgress] = useState(40);
+  const [progress, setProgress] = useState(0);
   const [isSeeking, setIsSeeking] = useState(false);
   const [isPlaying, setIsPlaying] = useState(true);
   const [activeButton, setActiveButton] = useState(null);
@@ -184,6 +184,8 @@ function App() {
               platform: q.platform,
               sourceId: q.sourceId,
               position: q.position,
+              timeOfSong: q.timeOfSong,
+              durationSec: q.durationSec,
             };
           })
         );
@@ -385,6 +387,30 @@ function App() {
       ? queue[currentPlaying]
       : null;
 
+  useEffect(() => {
+    if (!nowPlaying) {
+      setProgress(0);
+      setTotalDuration(0);
+      return;
+    }
+
+    setTotalDuration(nowPlaying.durationSec || 0);
+
+    const updateProgress = () => {
+      if (nowPlaying.timeOfSong != null && nowPlaying.durationSec) {
+        const diff = Math.floor(Date.now() / 1000) - nowPlaying.timeOfSong;
+        const pct = Math.min(100, (diff / nowPlaying.durationSec) * 100);
+        setProgress(pct);
+      } else {
+        setProgress(0);
+      }
+    };
+
+    updateProgress();
+    const id = setInterval(updateProgress, 1000);
+    return () => clearInterval(id);
+  }, [nowPlaying]);
+
   return (
     <>
       {showRoomModal && (
@@ -463,7 +489,17 @@ function App() {
             <div className="now-playing-container">
               <div className="now-playing-cover">
                 {nowPlaying ? (
-                  <img src={nowPlaying.albumCover} alt="cover" />
+                  <a
+                    href={
+                      nowPlaying.platform === 'youtube'
+                        ? `https://www.youtube.com/watch?v=${nowPlaying.sourceId}`
+                        : undefined
+                    }
+                    target="_blank"
+                    rel="noopener noreferrer"
+                  >
+                    <img src={nowPlaying.albumCover} alt="cover" />
+                  </a>
                 ) : (
                   <div className="cover-placeholder">Album Cover</div>
                 )}
