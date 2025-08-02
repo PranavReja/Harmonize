@@ -597,6 +597,16 @@ transform: scale(1.02);
     width: 100%;
     max-width: 250px;
   }
+
+  .youtube-player {
+    width: min(40vw, 320px);
+    height: min(40vw, 320px);
+    max-width: 250px;
+    max-height: 250px;
+    border-radius: 1em;
+    overflow: hidden;
+    box-shadow: 0 0 16px rgba(0,0,0,0.3);
+  }
   
   .now-playing-container {
     display: flex;
@@ -714,6 +724,11 @@ transform: scale(1.02);
 .pause-button.active {
   background-color: #3b82f6; /* 🔵 brief blue */
   color: white !important;
+}
+
+.skip-button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
 }
 
 .skip-button,

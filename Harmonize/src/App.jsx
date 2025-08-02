@@ -7,6 +7,7 @@ import SoundCloudLogo from './assets/soundcloud.svg';
 import RightSidebar from './components/RightSidebar';
 import UserCard from './components/UserCard';
 import RoomSetupModal from './components/RoomSetupModal.jsx';
+import YouTubePlayer from './components/YouTubePlayer.jsx';
 
 function App() {
   const [isLeftSidebarVisible, setIsLeftSidebarVisible] = useState(true);
@@ -90,7 +91,7 @@ function App() {
     }
   }, []);
 
-  const songTitle = 'Song Name 🎵';
+  const SONG_TITLE = 'Song Name 🎵';
   const totalDuration = 200;
 
   const [progress, setProgress] = useState(40);
@@ -292,7 +293,8 @@ function App() {
     if (direction === 'next') {
       newIndex = Math.min(currentPlaying + 1, queue.length - 1);
     } else if (direction === 'prev') {
-      newIndex = Math.max(currentPlaying - 1, -1);
+      if (currentPlaying <= 0) return;
+      newIndex = currentPlaying - 1;
     }
     updateCurrentPlaying(newIndex);
     setActiveButton(direction);
@@ -462,7 +464,12 @@ function App() {
           <main className="main-content">
             <div className="now-playing-container">
               <div className="now-playing-cover">
-                {nowPlaying ? (
+                {isAdmin && nowPlaying && nowPlaying.platform === 'youtube' ? (
+                  <YouTubePlayer
+                    videoId={nowPlaying.sourceId}
+                    playing={isPlaying}
+                  />
+                ) : nowPlaying ? (
                   <img src={nowPlaying.albumCover} alt="cover" />
                 ) : (
                   <div className="cover-placeholder">Album Cover</div>
@@ -500,7 +507,11 @@ function App() {
               </div>
 
               <div className="player-controls">
-                <button className={`skip-button ${activeButton === 'prev' ? 'active' : ''}`} onClick={() => handleSkip('prev')}>
+                <button
+                  className={`skip-button ${activeButton === 'prev' ? 'active' : ''}`}
+                  onClick={() => handleSkip('prev')}
+                  disabled={currentPlaying <= 0}
+                >
                   &#9198;
                 </button>
                 <button className={`pause-button ${activeButton === 'play' ? 'active' : ''}`} onClick={handleTogglePlay}>
