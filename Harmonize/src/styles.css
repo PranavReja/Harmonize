@@ -726,6 +726,11 @@ transform: scale(1.02);
   color: white !important;
 }
 
+.skip-button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
 .skip-button,
 .pause-button {
   border: none;

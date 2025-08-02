@@ -293,7 +293,8 @@ function App() {
     if (direction === 'next') {
       newIndex = Math.min(currentPlaying + 1, queue.length - 1);
     } else if (direction === 'prev') {
-      newIndex = Math.max(currentPlaying - 1, -1);
+      if (currentPlaying <= 0) return;
+      newIndex = currentPlaying - 1;
     }
     updateCurrentPlaying(newIndex);
     setActiveButton(direction);
@@ -506,7 +507,11 @@ function App() {
               </div>
 
               <div className="player-controls">
-                <button className={`skip-button ${activeButton === 'prev' ? 'active' : ''}`} onClick={() => handleSkip('prev')}>
+                <button
+                  className={`skip-button ${activeButton === 'prev' ? 'active' : ''}`}
+                  onClick={() => handleSkip('prev')}
+                  disabled={currentPlaying <= 0}
+                >
                   &#9198;
                 </button>
                 <button className={`pause-button ${activeButton === 'play' ? 'active' : ''}`} onClick={handleTogglePlay}>
