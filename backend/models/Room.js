@@ -26,10 +26,10 @@ const RoomSchema = new mongoose.Schema({
       durationSec: { type: Number, default: null } // Length of the track in seconds
     }
   ],
-  currentIndex: { type: Number, default: -1 }, // Index of the currently playing song
   currentPlaying: { type: Number, default: -1 } // Track the song playing for all users
 });
 
 
 // Export this model so we can use it in our routes
 export default mongoose.model('Room', RoomSchema);
+
