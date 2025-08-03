@@ -136,7 +136,8 @@ router.post('/:id/queue', async (req, res) => {
         addedByName: user.username,
         position: room.queue.length,
         timeOfSong: null,
-        durationSec
+        durationSec,
+        mostRecentChange: null
       };
   
       room.queue.push(newSong);
@@ -255,6 +256,32 @@ router.patch('/:id/current-playing', async (req, res) => {
     } else {
       res.status(400).json({ error: 'Invalid index' });
     }
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
+// PATCH /rooms/:id/queue/:index/most-recent-change → log play/pause events
+router.patch('/:id/queue/:index/most-recent-change', async (req, res) => {
+  const { state, positionSec } = req.body;
+  try {
+    const room = await Room.findOne({ roomId: req.params.id });
+    if (!room) return res.status(404).json({ error: 'Room not found' });
+    const idx = parseInt(req.params.index, 10);
+    if (isNaN(idx) || idx < 0 || idx >= room.queue.length) {
+      return res.status(400).json({ error: 'Invalid index' });
+    }
+    if (!['Played', 'Paused'].includes(state)) {
+      return res.status(400).json({ error: 'Invalid state' });
+    }
+    room.queue[idx].mostRecentChange = {
+      state,
+      timestamp: Math.floor(Date.now() / 1000),
+      positionSec
+    };
+    await room.save();
+    res.json({ message: 'Most recent change updated', mostRecentChange: room.queue[idx].mostRecentChange });
   } catch (err) {
     console.error(err);
     res.status(500).json({ error: 'Internal server error' });
@@ -410,7 +437,8 @@ router.post('/:id/queue/next', async (req, res) => {
       addedByName: user.username,
       position: insertIndex,
       timeOfSong: null,
-      durationSec
+      durationSec,
+      mostRecentChange: null
     });
 
     // Reassign all positions after inserting

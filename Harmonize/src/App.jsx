@@ -279,10 +279,30 @@ function App() {
     return `${mins}:${secs < 10 ? '0' : ''}${secs}`;
   };
 
-  const handleTogglePlay = () => {
+  const handleTogglePlay = async () => {
     if (!isPlaying && currentPlaying === -1 && queue.length > 0) {
-      updateCurrentPlaying(0);
+      await updateCurrentPlaying(0);
+      setIsPlaying(true);
+      setActiveButton('play');
+      setTimeout(() => setActiveButton(null), 200);
+      return;
     }
+
+    const newState = isPlaying ? 'Paused' : 'Played';
+    const positionSec = Math.round((progress / 100) * totalDuration);
+
+    if (roomId && currentPlaying >= 0) {
+      try {
+        await fetch(`http://localhost:3001/rooms/${roomId}/queue/${currentPlaying}/most-recent-change`, {
+          method: 'PATCH',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ state: newState, positionSec })
+        });
+      } catch (err) {
+        console.error('Most recent change update error', err);
+      }
+    }
+
     setIsPlaying(!isPlaying);
     setActiveButton('play');
     setTimeout(() => setActiveButton(null), 200);
