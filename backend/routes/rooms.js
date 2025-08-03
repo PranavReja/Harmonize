@@ -228,43 +228,11 @@ router.delete('/:id/queue/:position', async (req, res) => {
   });
 
 
-// GET /rooms/:id/current-index → fetch the currently playing index
-router.get('/:id/current-index', async (req, res) => {
-  try {
-    const room = await Room.findOne({ roomId: req.params.id });
-    if (!room) return res.status(404).json({ error: 'Room not found' });
-    res.json({ currentIndex: room.currentIndex });
-  } catch (err) {
-    console.error(err);
-    res.status(500).json({ error: 'Internal server error' });
-  }
-});
-
-// GET /rooms/:id/current-playing → fetch the current playing index
 router.get('/:id/current-playing', async (req, res) => {
   try {
     const room = await Room.findOne({ roomId: req.params.id });
     if (!room) return res.status(404).json({ error: 'Room not found' });
     res.json({ currentPlaying: room.currentPlaying });
-  } catch (err) {
-    console.error(err);
-    res.status(500).json({ error: 'Internal server error' });
-  }
-});
-
-// PATCH /rooms/:id/current-index → update the currently playing index
-router.patch('/:id/current-index', async (req, res) => {
-  const { index } = req.body;
-  try {
-    const room = await Room.findOne({ roomId: req.params.id });
-    if (!room) return res.status(404).json({ error: 'Room not found' });
-    if (typeof index === 'number') {
-      room.currentIndex = index;
-      await room.save();
-      res.json({ message: 'Current index updated', currentIndex: room.currentIndex });
-    } else {
-      res.status(400).json({ error: 'Invalid index' });
-    }
   } catch (err) {
     console.error(err);
     res.status(500).json({ error: 'Internal server error' });
@@ -429,7 +397,7 @@ router.post('/:id/queue/next', async (req, res) => {
       return res.status(400).json({ error: 'Spotify songs are not allowed in guest mode' });
     }
 
-    const insertIndex = room.currentIndex + 1 || 0;
+    const insertIndex = room.currentPlaying + 1 || 0;
 
     const durationSec = await fetchDuration(platform, sourceId);
 
@@ -459,7 +427,5 @@ router.post('/:id/queue/next', async (req, res) => {
   }
 });
 
-
-
-  
 export default router;
+
