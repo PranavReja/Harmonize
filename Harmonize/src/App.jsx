@@ -295,7 +295,13 @@ function App() {
       const newTime = (progress / 100) * totalDuration;
       const prevTime = (seekStartRef.current / 100) * totalDuration;
       const state = newTime >= prevTime ? 'Forward' : 'Backward';
+      if (isPlaying) {
+        ytPlayerRef.current.pause();
+      }
       ytPlayerRef.current.seekTo(newTime);
+      if (isPlaying) {
+        ytPlayerRef.current.play();
+      }
       if (roomId && currentPlaying >= 0 && Math.round(newTime) !== Math.round(prevTime)) {
         try {
           await fetch(
