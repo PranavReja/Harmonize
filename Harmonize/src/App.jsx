@@ -186,6 +186,9 @@ function App() {
               platform: q.platform,
               sourceId: q.sourceId,
               position: q.position,
+              timeOfSong: q.timeOfSong,
+              durationSec: q.durationSec,
+              mostRecentChange: q.mostRecentChange,
             };
           })
         );
@@ -229,6 +232,7 @@ function App() {
         body: JSON.stringify({ index }),
       });
       setCurrentPlaying(index);
+      await fetchRoomQueue(roomId);
     } catch (err) {
       console.error('Update current playing error', err);
     }
@@ -400,13 +404,15 @@ function App() {
 
   useEffect(() => {
     if (!roomId) return;
-    const id = setInterval(() => {
+    const fetchAll = () => {
       fetchRoomUsers(roomId, true).then((ok) => {
         if (!ok) setRoomEnded(true);
       });
       fetchRoomQueue(roomId);
       fetchCurrentPlaying(roomId);
-    }, 5000);
+    };
+    fetchAll();
+    const id = setInterval(fetchAll, 2000);
     return () => clearInterval(id);
   }, [roomId]);
 
@@ -435,6 +441,45 @@ function App() {
     }, 1000);
     return () => clearInterval(id);
   }, [isAdmin, nowPlaying, isSeeking]);
+
+  useEffect(() => {
+    if (!nowPlaying) return;
+    if (isAdmin && nowPlaying.platform === 'youtube') return;
+
+    const updateFromDb = () => {
+      const nowSec = Math.floor(Date.now() / 1000);
+      const duration = nowPlaying.durationSec || 0;
+      setTotalDuration(duration);
+
+      let playing = true;
+      let progressSec = 0;
+
+      if (nowPlaying.mostRecentChange) {
+        const { state, timestamp, positionSec } = nowPlaying.mostRecentChange;
+        if (state === 'Paused') {
+          playing = false;
+          progressSec = positionSec;
+        } else if (state === 'Played') {
+          progressSec = positionSec + (nowSec - timestamp);
+        }
+      } else if (nowPlaying.timeOfSong) {
+        progressSec = nowSec - nowPlaying.timeOfSong;
+      }
+
+      if (duration > 0) {
+        progressSec = Math.min(progressSec, duration);
+        setProgress((progressSec / duration) * 100);
+      } else {
+        setProgress(0);
+      }
+
+      setIsPlaying(playing);
+    };
+
+    updateFromDb();
+    const id = setInterval(updateFromDb, 1000);
+    return () => clearInterval(id);
+  }, [nowPlaying, isAdmin]);
 
   return (
     <>
