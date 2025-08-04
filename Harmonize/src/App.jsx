@@ -92,15 +92,16 @@ function App() {
   }, []);
 
   const SONG_TITLE = 'Song Name 🎵';
-  const totalDuration = 200;
+  const [totalDuration, setTotalDuration] = useState(0);
 
-  const [progress, setProgress] = useState(40);
+  const [progress, setProgress] = useState(0);
   const [isSeeking, setIsSeeking] = useState(false);
   const [isPlaying, setIsPlaying] = useState(true);
   const [activeButton, setActiveButton] = useState(null);
   const [currentPlaying, setCurrentPlaying] = useState(-1);
 
   const progressBarRef = useRef(null);
+  const ytPlayerRef = useRef(null);
 
   const [users, setUsers] = useState([]);
   const [currentUserId, setCurrentUserId] = useState(null);
@@ -263,6 +264,15 @@ function App() {
 
   const handleSeekEnd = () => {
     setIsSeeking(false);
+    if (
+      isAdmin &&
+      nowPlaying?.platform === 'youtube' &&
+      ytPlayerRef.current &&
+      totalDuration
+    ) {
+      const newTime = (progress / 100) * totalDuration;
+      ytPlayerRef.current.seekTo(newTime);
+    }
   };
 
   const updateSeek = (e) => {
@@ -279,10 +289,30 @@ function App() {
     return `${mins}:${secs < 10 ? '0' : ''}${secs}`;
   };
 
-  const handleTogglePlay = () => {
+  const handleTogglePlay = async () => {
     if (!isPlaying && currentPlaying === -1 && queue.length > 0) {
-      updateCurrentPlaying(0);
+      await updateCurrentPlaying(0);
+      setIsPlaying(true);
+      setActiveButton('play');
+      setTimeout(() => setActiveButton(null), 200);
+      return;
     }
+
+    const newState = isPlaying ? 'Paused' : 'Played';
+    const positionSec = Math.round((progress / 100) * totalDuration);
+
+    if (roomId && currentPlaying >= 0) {
+      try {
+        await fetch(`http://localhost:3001/rooms/${roomId}/queue/${currentPlaying}/most-recent-change`, {
+          method: 'PATCH',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ state: newState, positionSec })
+        });
+      } catch (err) {
+        console.error('Most recent change update error', err);
+      }
+    }
+
     setIsPlaying(!isPlaying);
     setActiveButton('play');
     setTimeout(() => setActiveButton(null), 200);
@@ -380,12 +410,31 @@ function App() {
     return () => clearInterval(id);
   }, [roomId]);
 
+  useEffect(() => {
+    setProgress(0);
+    setTotalDuration(0);
+  }, [currentPlaying]);
+
   const currentUser = users.find((u) => u.userId === currentUserId);
   const isAdmin = currentUser?.isAdmin;
   const nowPlaying =
     currentPlaying >= 0 && currentPlaying < queue.length
       ? queue[currentPlaying]
       : null;
+
+  useEffect(() => {
+    if (!isAdmin || nowPlaying?.platform !== 'youtube') return;
+    const id = setInterval(() => {
+      if (isSeeking || !ytPlayerRef.current) return;
+      const duration = ytPlayerRef.current.getDuration();
+      const current = ytPlayerRef.current.getCurrentTime();
+      if (duration > 0) {
+        setTotalDuration(duration);
+        setProgress((current / duration) * 100);
+      }
+    }, 1000);
+    return () => clearInterval(id);
+  }, [isAdmin, nowPlaying, isSeeking]);
 
   return (
     <>
@@ -466,6 +515,7 @@ function App() {
               <div className="now-playing-cover">
                 {isAdmin && nowPlaying && nowPlaying.platform === 'youtube' ? (
                   <YouTubePlayer
+                    ref={ytPlayerRef}
                     videoId={nowPlaying.sourceId}
                     playing={isPlaying}
                   />

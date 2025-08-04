@@ -1,6 +1,12 @@
 import mongoose from 'mongoose'; // Get access to Mongoose
 
 // Define what a "Room" should look like in the database
+const MostRecentChangeSchema = new mongoose.Schema({
+  state: { type: String, enum: ['Played', 'Paused'], required: true },
+  timestamp: { type: Number, required: true },
+  positionSec: { type: Number, required: true }
+}, { _id: false });
+
 const RoomSchema = new mongoose.Schema({
   roomId: { type: String, required: true, unique: true }, // Short ID (e.g., abc123)
   name: { type: String, required: true }, // Human friendly room name
@@ -23,7 +29,8 @@ const RoomSchema = new mongoose.Schema({
       addedByName: String,   // display name of the user who queued the song
       position: Number,
       timeOfSong: { type: Number, default: null }, // Unix timestamp when the song started playing
-      durationSec: { type: Number, default: null } // Length of the track in seconds
+      durationSec: { type: Number, default: null }, // Length of the track in seconds
+      mostRecentChange: { type: MostRecentChangeSchema, default: null }
     }
   ],
   currentPlaying: { type: Number, default: -1 } // Track the song playing for all users

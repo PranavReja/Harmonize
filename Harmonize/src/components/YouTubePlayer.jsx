@@ -1,6 +1,6 @@
-import React, { useEffect, useRef } from 'react';
+import React, { useEffect, useRef, forwardRef, useImperativeHandle } from 'react';
 
-export default function YouTubePlayer({ videoId, playing }) {
+function YouTubePlayer({ videoId, playing }, ref) {
   const containerRef = useRef(null);
   const playerRef = useRef(null);
   // Separate DOM node for the YouTube API so destroying the player doesn't
@@ -77,6 +77,13 @@ export default function YouTubePlayer({ videoId, playing }) {
       }
     }
   }, [playing]);
+  useImperativeHandle(ref, () => ({
+    getCurrentTime: () => playerRef.current?.getCurrentTime() || 0,
+    getDuration: () => playerRef.current?.getDuration() || 0,
+    seekTo: (s) => playerRef.current?.seekTo(s, true),
+  }));
 
   return <div className="youtube-player" ref={containerRef} />;
 }
+
+export default forwardRef(YouTubePlayer);
