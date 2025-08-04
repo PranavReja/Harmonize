@@ -102,6 +102,7 @@ function App() {
 
   const progressBarRef = useRef(null);
   const ytPlayerRef = useRef(null);
+  const seekStartRef = useRef(0);
 
   const [users, setUsers] = useState([]);
   const [currentUserId, setCurrentUserId] = useState(null);
@@ -254,6 +255,7 @@ function App() {
   };
 
   const handleSeekStart = (e) => {
+    seekStartRef.current = progress;
     setIsSeeking(true);
     updateSeek(e);
   };
@@ -262,7 +264,7 @@ function App() {
     if (isSeeking) updateSeek(e);
   };
 
-  const handleSeekEnd = () => {
+  const handleSeekEnd = async () => {
     setIsSeeking(false);
     if (
       isAdmin &&
@@ -271,7 +273,23 @@ function App() {
       totalDuration
     ) {
       const newTime = (progress / 100) * totalDuration;
+      const prevTime = (seekStartRef.current / 100) * totalDuration;
+      const state = newTime >= prevTime ? 'Forward' : 'Backward';
       ytPlayerRef.current.seekTo(newTime);
+      if (roomId && currentPlaying >= 0 && Math.round(newTime) !== Math.round(prevTime)) {
+        try {
+          await fetch(
+            `http://localhost:3001/rooms/${roomId}/queue/${currentPlaying}/most-recent-change`,
+            {
+              method: 'PATCH',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ state, positionSec: Math.round(newTime) })
+            }
+          );
+        } catch (err) {
+          console.error('Most recent change update error', err);
+        }
+      }
     }
   };
 
