@@ -1,6 +1,6 @@
 import TopBar from './components/TopBar';
 import './styles.css';
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState, useRef, useEffect, useCallback, useMemo } from 'react';
 import YouTubeLogo from './assets/youtube.png';
 import SpotifyLogo from './assets/spotify.svg';
 import SoundCloudLogo from './assets/soundcloud.svg';
@@ -49,7 +49,7 @@ function App() {
     };
   }, []);
 
-  const clearSession = () => {
+  const clearSession = useCallback(() => {
     setRoomId(null);
     setRoomName('');
     setCurrentUserId(null);
@@ -59,7 +59,7 @@ function App() {
     localStorage.removeItem('roomName');
     localStorage.removeItem('userId');
     localStorage.removeItem('userName');
-  };
+  }, []);
 
   const handleCopyInviteLink = async () => {
     if (!roomId) return;
@@ -89,7 +89,7 @@ function App() {
       };
       verify();
     }
-  }, []);
+  }, [pathRoomId, fetchRoomUsers]);
 
   const SONG_TITLE = 'Song Name 🎵';
   const [totalDuration, setTotalDuration] = useState(0);
@@ -111,13 +111,13 @@ function App() {
   const [queue, setQueue] = useState(initialQueue);
   const [albumCovers, setAlbumCovers] = useState({});
 
-  const logoMap = {
+  const logoMap = useMemo(() => ({
     youtube: YouTubeLogo,
     spotify: SpotifyLogo,
     soundcloud: SoundCloudLogo,
-  };
+  }), []);
 
-  const getAlbumCover = async (platform, sourceId) => {
+  const getAlbumCover = useCallback(async (platform, sourceId) => {
     const key = `${platform}:${sourceId}`;
     if (albumCovers[key]) return albumCovers[key];
     let url = '';
@@ -136,7 +136,7 @@ function App() {
       setAlbumCovers((prev) => ({ ...prev, [key]: url }));
     }
     return url;
-  };
+  }, [albumCovers]);
 
   const [showConfirmLeave, setShowConfirmLeave] = useState(false);
   const [roomEnded, setRoomEnded] = useState(false);
@@ -163,7 +163,7 @@ function App() {
     }
   };
 
-  const fetchRoomQueue = async (id) => {
+  const fetchRoomQueue = useCallback(async (id) => {
     try {
       const res = await fetch(`http://localhost:3001/rooms/${id}/queue`);
       const data = await res.json();
@@ -207,9 +207,9 @@ function App() {
       console.error('Fetch queue error', err);
     }
     return false;
-  };
+  }, [getAlbumCover, users, logoMap]);
 
-  const fetchCurrentPlaying = async (id) => {
+  const fetchCurrentPlaying = useCallback(async (id) => {
     try {
       const res = await fetch(`http://localhost:3001/rooms/${id}/current-playing`);
       const data = await res.json();
@@ -221,7 +221,7 @@ function App() {
       console.error('Fetch current playing error', err);
     }
     return false;
-  };
+  }, []);
 
   const updateCurrentPlaying = async (index) => {
     if (!roomId) return;
@@ -359,7 +359,7 @@ function App() {
     setShowConfirmLeave(false);
   };
 
-  const fetchRoomUsers = async (id, handleMissing = false) => {
+  const fetchRoomUsers = useCallback(async (id, handleMissing = false) => {
     try {
       const res = await fetch(`http://localhost:3001/rooms/${id}/users`);
       if (res.status === 404) {
@@ -378,7 +378,7 @@ function App() {
       console.error('Fetch users error', err);
     }
     return false;
-  };
+  }, [clearSession]);
 
   const handleRoomJoined = (id, name, uid, uname) => {
     setRoomId(id);
@@ -400,7 +400,7 @@ function App() {
       fetchRoomQueue(roomId);
       fetchCurrentPlaying(roomId);
     }
-  }, [roomId]);
+  }, [roomId, fetchRoomUsers, fetchRoomQueue, fetchCurrentPlaying]);
 
   useEffect(() => {
     if (!roomId) return;
@@ -414,7 +414,7 @@ function App() {
     fetchAll();
     const id = setInterval(fetchAll, 2000);
     return () => clearInterval(id);
-  }, [roomId]);
+  }, [roomId, fetchRoomUsers, fetchRoomQueue, fetchCurrentPlaying]);
 
   useEffect(() => {
     setProgress(0);

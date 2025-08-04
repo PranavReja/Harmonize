@@ -248,9 +248,13 @@ router.patch('/:id/current-playing', async (req, res) => {
     if (!room) return res.status(404).json({ error: 'Room not found' });
     if (typeof index === 'number') {
       room.currentPlaying = index;
-      if (index >= 0 && index < room.queue.length) {
-        room.queue[index].timeOfSong = Math.floor(Date.now() / 1000);
-      }
+      const now = Math.floor(Date.now() / 1000);
+      room.queue.forEach((song, i) => {
+        if (i === index && index >= 0 && index < room.queue.length) {
+          song.timeOfSong = now;
+        }
+        song.mostRecentChange = null;
+      });
       await room.save();
       res.json({ message: 'Current playing updated', currentPlaying: room.currentPlaying });
     } else {
