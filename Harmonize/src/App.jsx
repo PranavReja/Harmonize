@@ -50,6 +50,9 @@ function App() {
   }, []);
 
   const clearSession = () => {
+    if (queueAbortRef.current) queueAbortRef.current.abort();
+    if (currentPlayingAbortRef.current) currentPlayingAbortRef.current.abort();
+    if (usersAbortRef.current) usersAbortRef.current.abort();
     setRoomId(null);
     setRoomName('');
     setCurrentUserId(null);
@@ -103,6 +106,9 @@ function App() {
   const progressBarRef = useRef(null);
   const ytPlayerRef = useRef(null);
   const seekStartRef = useRef(0);
+  const queueAbortRef = useRef(null);
+  const currentPlayingAbortRef = useRef(null);
+  const usersAbortRef = useRef(null);
 
   const [users, setUsers] = useState([]);
   const [currentUserId, setCurrentUserId] = useState(null);
@@ -166,7 +172,12 @@ function App() {
 
   const fetchRoomQueue = async (id) => {
     try {
-      const res = await fetch(`http://localhost:3001/rooms/${id}/queue`);
+      if (queueAbortRef.current) queueAbortRef.current.abort();
+      const controller = new AbortController();
+      queueAbortRef.current = controller;
+      const res = await fetch(`http://localhost:3001/rooms/${id}/queue`, {
+        signal: controller.signal,
+      });
       const data = await res.json();
       if (res.ok) {
         const keepKeys = new Set();
@@ -202,21 +213,30 @@ function App() {
         return true;
       }
     } catch (err) {
-      console.error('Fetch queue error', err);
+      if (err.name !== 'AbortError') {
+        console.error('Fetch queue error', err);
+      }
     }
     return false;
   };
 
   const fetchCurrentPlaying = async (id) => {
     try {
-      const res = await fetch(`http://localhost:3001/rooms/${id}/current-playing`);
+      if (currentPlayingAbortRef.current) currentPlayingAbortRef.current.abort();
+      const controller = new AbortController();
+      currentPlayingAbortRef.current = controller;
+      const res = await fetch(`http://localhost:3001/rooms/${id}/current-playing`, {
+        signal: controller.signal,
+      });
       const data = await res.json();
       if (res.ok) {
         setCurrentPlaying(data.currentPlaying);
         return true;
       }
     } catch (err) {
-      console.error('Fetch current playing error', err);
+      if (err.name !== 'AbortError') {
+        console.error('Fetch current playing error', err);
+      }
     }
     return false;
   };
@@ -375,7 +395,12 @@ function App() {
 
   const fetchRoomUsers = async (id, handleMissing = false) => {
     try {
-      const res = await fetch(`http://localhost:3001/rooms/${id}/users`);
+      if (usersAbortRef.current) usersAbortRef.current.abort();
+      const controller = new AbortController();
+      usersAbortRef.current = controller;
+      const res = await fetch(`http://localhost:3001/rooms/${id}/users`, {
+        signal: controller.signal,
+      });
       if (res.status === 404) {
         if (handleMissing) {
           clearSession();
@@ -389,7 +414,9 @@ function App() {
         return true;
       }
     } catch (err) {
-      console.error('Fetch users error', err);
+      if (err.name !== 'AbortError') {
+        console.error('Fetch users error', err);
+      }
     }
     return false;
   };
