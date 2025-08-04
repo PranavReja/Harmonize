@@ -415,6 +415,13 @@ function App() {
     setTotalDuration(0);
   }, [currentPlaying]);
 
+  const currentUser = users.find((u) => u.userId === currentUserId);
+  const isAdmin = currentUser?.isAdmin;
+  const nowPlaying =
+    currentPlaying >= 0 && currentPlaying < queue.length
+      ? queue[currentPlaying]
+      : null;
+
   useEffect(() => {
     if (!isAdmin || nowPlaying?.platform !== 'youtube') return;
     const id = setInterval(() => {
@@ -428,13 +435,6 @@ function App() {
     }, 1000);
     return () => clearInterval(id);
   }, [isAdmin, nowPlaying, isSeeking]);
-
-  const currentUser = users.find((u) => u.userId === currentUserId);
-  const isAdmin = currentUser?.isAdmin;
-  const nowPlaying =
-    currentPlaying >= 0 && currentPlaying < queue.length
-      ? queue[currentPlaying]
-      : null;
 
   return (
     <>
