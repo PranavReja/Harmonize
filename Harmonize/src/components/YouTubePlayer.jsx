@@ -1,8 +1,9 @@
-import React, { useEffect, useRef, forwardRef, useImperativeHandle } from 'react';
+import React, { useEffect, useRef, forwardRef, useImperativeHandle, useState } from 'react';
 
 function YouTubePlayer({ videoId, playing }, ref) {
   const containerRef = useRef(null);
   const playerRef = useRef(null);
+  const [isPlayerReady, setIsPlayerReady] = useState(false);
   // Separate DOM node for the YouTube API so destroying the player doesn't
   // remove the React-managed container element. This avoids a DOM mismatch
   // error when React later tries to unmount the component.
@@ -38,6 +39,10 @@ function YouTubePlayer({ videoId, playing }, ref) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
+  const onPlayerReady = () => {
+    setIsPlayerReady(true);
+  };
+
   const createPlayer = () => {
     if (playerRef.current || !containerRef.current) return;
     // Lazily create a child node for the YouTube player if it doesn't exist
@@ -54,29 +59,33 @@ function YouTubePlayer({ videoId, playing }, ref) {
         autoplay: 0,
         controls: 1,
       },
+      events: {
+        onReady: onPlayerReady,
+      },
     });
   };
 
   // Load a new video whenever videoId changes
   useEffect(() => {
-    if (playerRef.current && videoId) {
+    if (isPlayerReady && playerRef.current && videoId) {
       playerRef.current.loadVideoById(videoId);
       if (!playing) {
         playerRef.current.pauseVideo();
       }
     }
-  }, [videoId]);
+  }, [videoId, isPlayerReady, playing]);
 
   // Play or pause when the playing prop changes
   useEffect(() => {
-    if (playerRef.current) {
+    if (isPlayerReady && playerRef.current) {
       if (playing) {
         playerRef.current.playVideo();
       } else {
         playerRef.current.pauseVideo();
       }
     }
-  }, [playing]);
+  }, [playing, isPlayerReady]);
+
   useImperativeHandle(ref, () => ({
     getCurrentTime: () => playerRef.current?.getCurrentTime() || 0,
     getDuration: () => playerRef.current?.getDuration() || 0,
