@@ -22,6 +22,7 @@ function App() {
   const pathRoomId = (() => {
     const p = window.location.pathname.slice(1);
     return /^[A-Za-z0-9]{6}$/.test(p) ? p : null;
+    
   })();
 
   const isResizingLeft = useRef(false);
@@ -186,6 +187,7 @@ function App() {
               platform: q.platform,
               sourceId: q.sourceId,
               position: q.position,
+              durationSec: q.durationSec,
             };
           })
         );
@@ -409,18 +411,26 @@ function App() {
     }, 5000);
     return () => clearInterval(id);
   }, [roomId]);
-
-  useEffect(() => {
-    setProgress(0);
-    setTotalDuration(0);
-  }, [currentPlaying]);
-
   const currentUser = users.find((u) => u.userId === currentUserId);
   const isAdmin = currentUser?.isAdmin;
   const nowPlaying =
     currentPlaying >= 0 && currentPlaying < queue.length
       ? queue[currentPlaying]
       : null;
+  useEffect(() => {
+    setProgress(0);
+    if (nowPlaying) {
+      if (isAdmin) {
+        setTotalDuration(0);
+      } else {
+        setTotalDuration(nowPlaying.durationSec || 0);
+      }
+    } else {
+      setTotalDuration(0);
+    }
+  }, [currentPlaying, nowPlaying, isAdmin]);
+
+
 
   useEffect(() => {
     if (!isAdmin || nowPlaying?.platform !== 'youtube') return;
