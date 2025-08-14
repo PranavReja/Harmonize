@@ -266,7 +266,7 @@ function App() {
     if (isSeeking) updateSeek(e);
   };
 
-  const handleSeekEnd = () => {
+  const handleSeekEnd = async () => {
     setIsSeeking(false);
     if (
       isAdmin &&
@@ -276,6 +276,18 @@ function App() {
     ) {
       const newTime = (progress / 100) * totalDuration;
       ytPlayerRef.current.seekTo(newTime);
+
+      if (roomId && currentPlaying >= 0) {
+        try {
+          await fetch(`http://localhost:3001/rooms/${roomId}/queue/${currentPlaying}/most-recent-change`, {
+            method: 'PATCH',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ state: 'Played', positionSec: newTime })
+          });
+        } catch (err) {
+          console.error('Most recent change update error', err);
+        }
+      }
     }
   };
 
