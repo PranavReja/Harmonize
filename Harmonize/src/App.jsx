@@ -189,6 +189,7 @@ function App() {
               position: q.position,
               timeOfSong: q.timeOfSong,
               durationSec: q.durationSec,
+              mostRecentChange: q.mostRecentChange,
             };
           })
         );
@@ -447,28 +448,52 @@ function App() {
   }, [isAdmin, nowPlaying, isSeeking]);
 
   useEffect(() => {
-    if (isAdmin || !nowPlaying || !nowPlaying.timeOfSong) {
+    if (isAdmin || !nowPlaying) {
       return;
     }
 
-    const updateProgress = () => {
-      const timeNow = Math.floor(Date.now() / 1000);
-      const timeSincePlayed = timeNow - nowPlaying.timeOfSong;
-      const duration = nowPlaying.durationSec;
+    const { timeOfSong, mostRecentChange, durationSec: duration } = nowPlaying;
 
-      if (duration > 0) {
-        const progressPercentage = (timeSincePlayed / duration) * 100;
-        if (progressPercentage >= 0 && progressPercentage <= 100) {
-          setProgress(progressPercentage);
+    if (!timeOfSong) {
+      return;
+    }
+
+    let intervalId;
+
+    const updateProgress = () => {
+      if (mostRecentChange && mostRecentChange.state === 'Paused') {
+        setIsPlaying(false);
+        if (duration > 0) {
+          setProgress((mostRecentChange.positionSec / duration) * 100);
+        }
+      } else {
+        setIsPlaying(true);
+        const startTime = mostRecentChange ? mostRecentChange.timestamp : timeOfSong;
+        const startPosition = mostRecentChange ? mostRecentChange.positionSec : 0;
+        const timeNow = Math.floor(Date.now() / 1000);
+        const timeSincePlayed = timeNow - startTime;
+        const currentPosition = startPosition + timeSincePlayed;
+
+        if (duration > 0) {
+          const progressPercentage = (currentPosition / duration) * 100;
+          if (progressPercentage >= 0 && progressPercentage <= 100) {
+            setProgress(progressPercentage);
+          }
         }
       }
     };
 
-    updateProgress(); // Initial sync
+    updateProgress();
 
-    const intervalId = setInterval(updateProgress, 1000);
+    if (!mostRecentChange || mostRecentChange.state !== 'Paused') {
+      intervalId = setInterval(updateProgress, 1000);
+    }
 
-    return () => clearInterval(intervalId);
+    return () => {
+      if (intervalId) {
+        clearInterval(intervalId);
+      }
+    };
   }, [nowPlaying, isAdmin]);
 
   return (
