@@ -69,11 +69,8 @@ function YouTubePlayer({ videoId, playing }, ref) {
   useEffect(() => {
     if (isPlayerReady && playerRef.current && videoId) {
       playerRef.current.loadVideoById(videoId);
-      if (!playing) {
-        playerRef.current.pauseVideo();
-      }
     }
-  }, [videoId, isPlayerReady, playing]);
+  }, [videoId, isPlayerReady]);
 
   // Play or pause when the playing prop changes
   useEffect(() => {
