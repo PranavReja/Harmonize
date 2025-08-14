@@ -279,10 +279,11 @@ function App() {
 
       if (roomId && currentPlaying >= 0) {
         try {
+          const newState = isPlaying ? 'Played' : 'Paused';
           await fetch(`http://localhost:3001/rooms/${roomId}/queue/${currentPlaying}/most-recent-change`, {
             method: 'PATCH',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ state: 'Played', positionSec: newTime })
+            body: JSON.stringify({ state: newState, positionSec: newTime })
           });
         } catch (err) {
           console.error('Most recent change update error', err);
