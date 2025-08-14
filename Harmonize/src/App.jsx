@@ -187,6 +187,7 @@ function App() {
               platform: q.platform,
               sourceId: q.sourceId,
               position: q.position,
+              timeOfSong: q.timeOfSong,
               durationSec: q.durationSec,
             };
           })
@@ -444,6 +445,31 @@ function App() {
     }, 1000);
     return () => clearInterval(id);
   }, [isAdmin, nowPlaying, isSeeking]);
+
+  useEffect(() => {
+    if (isAdmin || !nowPlaying || !nowPlaying.timeOfSong) {
+      return;
+    }
+
+    const updateProgress = () => {
+      const timeNow = Math.floor(Date.now() / 1000);
+      const timeSincePlayed = timeNow - nowPlaying.timeOfSong;
+      const duration = nowPlaying.durationSec;
+
+      if (duration > 0) {
+        const progressPercentage = (timeSincePlayed / duration) * 100;
+        if (progressPercentage >= 0 && progressPercentage <= 100) {
+          setProgress(progressPercentage);
+        }
+      }
+    };
+
+    updateProgress(); // Initial sync
+
+    const intervalId = setInterval(updateProgress, 1000);
+
+    return () => clearInterval(intervalId);
+  }, [nowPlaying, isAdmin]);
 
   return (
     <>
