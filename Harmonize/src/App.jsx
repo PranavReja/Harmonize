@@ -418,9 +418,8 @@ function App() {
       ? queue[currentPlaying]
       : null;
   useEffect(() => {
-    setProgress(0);
     if (nowPlaying) {
-      if (isAdmin) {
+      if (isAdmin && nowPlaying.platform !== 'youtube') {
         setTotalDuration(0);
       } else {
         setTotalDuration(nowPlaying.durationSec || 0);
