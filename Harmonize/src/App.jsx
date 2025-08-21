@@ -307,32 +307,46 @@ function App() {
   };
 
   const handleTogglePlay = async () => {
-    if (!isPlaying && currentPlaying === -1 && queue.length > 0) {
-      await updateCurrentPlaying(0);
-      setIsPlaying(true);
+    if (isAdmin) {
+      if (!isPlaying && currentPlaying === -1 && queue.length > 0) {
+        await updateCurrentPlaying(0);
+        setIsPlaying(true);
+        setActiveButton('play');
+        setTimeout(() => setActiveButton(null), 200);
+        return;
+      }
+
+      const newState = isPlaying ? 'Paused' : 'Played';
+      const positionSec = Math.round((progress / 100) * totalDuration);
+
+      if (roomId && currentPlaying >= 0) {
+        try {
+          await fetch(`http://localhost:3001/rooms/${roomId}/queue/${currentPlaying}/most-recent-change`, {
+            method: 'PATCH',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ state: newState, positionSec })
+          });
+        } catch (err) {
+          console.error('Most recent change update error', err);
+        }
+      }
+
+      setIsPlaying(!isPlaying);
       setActiveButton('play');
       setTimeout(() => setActiveButton(null), 200);
-      return;
-    }
-
-    const newState = isPlaying ? 'Paused' : 'Played';
-    const positionSec = Math.round((progress / 100) * totalDuration);
-
-    if (roomId && currentPlaying >= 0) {
+    } else {
+      // Non-admin logic
+      const positionSec = Math.round((progress / 100) * totalDuration);
       try {
         await fetch(`http://localhost:3001/rooms/${roomId}/queue/${currentPlaying}/most-recent-change`, {
           method: 'PATCH',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ state: newState, positionSec })
+          body: JSON.stringify({ state: 'ToggleRequest', positionSec })
         });
       } catch (err) {
-        console.error('Most recent change update error', err);
+        console.error('Playback request error', err);
       }
     }
-
-    setIsPlaying(!isPlaying);
-    setActiveButton('play');
-    setTimeout(() => setActiveButton(null), 200);
   };
 
   const handleSkip = (direction) => {
@@ -346,6 +360,12 @@ function App() {
     updateCurrentPlaying(newIndex);
     setActiveButton(direction);
     setTimeout(() => setActiveButton(null), 200);
+
+    // When the admin skips, optimistically set the UI to "playing"
+    // because the new track will autoplay.
+    if (isAdmin) {
+      setIsPlaying(true);
+    }
   };
 
   const handleConfirmLeave = async () => {
@@ -403,7 +423,7 @@ function App() {
     localStorage.setItem('userId', uid);
     if (uname) localStorage.setItem('userName', uname);
     fetchRoomUsers(id);
-    fetchRoomQueue(id);
+    fetchFullRoomQueue(id);
     fetchCurrentPlaying(id);
   };
 
@@ -432,6 +452,12 @@ function App() {
     currentPlaying >= 0 && currentPlaying < queue.length
       ? queue[currentPlaying]
       : null;
+
+  useEffect(() => {
+    if (isAdmin && nowPlaying?.mostRecentChange?.state === 'ToggleRequest') {
+      handleTogglePlay();
+    }
+  }, [nowPlaying, isAdmin]);
   useEffect(() => {
     if (nowPlaying) {
       if (isAdmin && nowPlaying.platform !== 'youtube') {
@@ -474,18 +500,21 @@ function App() {
     let intervalId;
 
     const updateProgress = () => {
-      if (mostRecentChange && mostRecentChange.state === 'Paused') {
+      const officialState = mostRecentChange?.state;
+
+      if (officialState === 'Paused' || officialState === 'ToggleRequest') {
+        if (intervalId) clearInterval(intervalId);
         setIsPlaying(false);
         if (duration > 0) {
           setProgress((mostRecentChange.positionSec / duration) * 100);
         }
-      } else {
+      } else if (officialState === 'Played') {
         setIsPlaying(true);
-        const startTime = mostRecentChange ? mostRecentChange.timestamp : timeOfSong;
-        const startPosition = mostRecentChange ? mostRecentChange.positionSec : 0;
+        const startTime = mostRecentChange.timestamp;
+        const startPosition = mostRecentChange.positionSec;
         const timeNow = Math.floor(Date.now() / 1000);
-        const timeSincePlayed = timeNow - startTime;
-        const currentPosition = startPosition + timeSincePlayed;
+        const elapsed = timeNow - startTime;
+        const currentPosition = startPosition + elapsed;
 
         if (duration > 0) {
           const progressPercentage = (currentPosition / duration) * 100;
@@ -498,7 +527,7 @@ function App() {
 
     updateProgress();
 
-    if (!mostRecentChange || mostRecentChange.state !== 'Paused') {
+    if (mostRecentChange?.state === 'Played') {
       intervalId = setInterval(updateProgress, 1000);
     }
 

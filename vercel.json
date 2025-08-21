@@ -1,0 +1,26 @@
+{
+  "version": 2,
+  "projects": [
+    {
+      "name": "harmonize-frontend",
+      "root": "Harmonize",
+      "buildCommand": "npm run build",
+      "outputDirectory": "dist"
+    },
+    {
+      "name": "harmonize-backend",
+      "root": "backend",
+      "buildCommand": "npm install",
+      "startCommand": "npm start"
+    }
+  ],
+  "routes": [
+    { "src": "/rooms/(.*)", "dest": "harmonize-backend/rooms/$1" },
+    { "src": "/users/(.*)", "dest": "harmonize-backend/users/$1" },
+    { "src": "/spotify/(.*)", "dest": "harmonize-backend/spotify/$1" },
+    { "src": "/auth/spotify/(.*)", "dest": "harmonize-backend/auth/spotify/$1" },
+    { "src": "/resolve/(.*)", "dest": "harmonize-backend/resolve/$1" },
+    { "src": "/test-db", "dest": "harmonize-backend/test-db" },
+    { "src": "/(.*)", "dest": "harmonize-frontend/$1" }
+  ]
+}
