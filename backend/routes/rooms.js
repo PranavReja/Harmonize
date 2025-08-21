@@ -255,9 +255,14 @@ router.patch('/:id/current-playing', async (req, res) => {
         }
       });
 
-      // Set the timeOfSong for the new current song
+      // Initialize the new current song
       if (newIndex >= 0) {
         room.queue[newIndex].timeOfSong = Math.floor(Date.now() / 1000);
+        room.queue[newIndex].mostRecentChange = {
+          state: 'Played',
+          positionSec: 0,
+          timestamp: Math.floor(Date.now() / 1000)
+        };
       }
 
       // Update the current playing index
