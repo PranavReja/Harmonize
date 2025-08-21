@@ -20,7 +20,7 @@ export default function TopBar({
   const [spotifyResults, setSpotifyResults] = useState([]);
   const [soundcloudResults, setSoundcloudResults] = useState([]);
   const [youtubeNextPageToken, setYoutubeNextPageToken] = useState(null);
-  const YOUTUBE_API_KEY = import.meta.env.VITE_YOUTUBE_API_KEY;
+  
 
   const executeSearch = useCallback(() => {
     const trimmed = searchQuery.trim();
@@ -79,16 +79,16 @@ export default function TopBar({
     if (!query) return;
     try {
       const url =
-        `https://www.googleapis.com/youtube/v3/search?part=snippet&type=video&maxResults=10&q=${encodeURIComponent(query)}&key=${YOUTUBE_API_KEY}` +
+        `http://localhost:3001/youtube/search?q=${encodeURIComponent(query)}` +
         (pageToken ? `&pageToken=${pageToken}` : '');
       const res = await fetch(url);
       const data = await res.json();
-      const results = (data.items || []).map((item) => ({
-        id: item.id.videoId,
-        title: item.snippet.title,
-        artist: item.snippet.channelTitle,
-        thumbnail: item.snippet.thumbnails?.default?.url,
-        url: `https://www.youtube.com/watch?v=${item.id.videoId}`,
+      const results = (data.videos || []).map((item) => ({
+        id: item.id,
+        title: item.title,
+        artist: item.channelTitle,
+        thumbnail: item.thumbnail,
+        url: `https://www.youtube.com/watch?v=${item.id}`,
       }));
       setYoutubeNextPageToken(data.nextPageToken || null);
       if (pageToken) {
