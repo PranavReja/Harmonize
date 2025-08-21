@@ -2,7 +2,7 @@ import mongoose from 'mongoose'; // Get access to Mongoose
 
 // Define what a "Room" should look like in the database
 const MostRecentChangeSchema = new mongoose.Schema({
-  state: { type: String, enum: ['Played', 'Paused'], required: true },
+  state: { type: String, enum: ['Played', 'Paused', 'ToggleRequest'], required: true },
   timestamp: { type: Number, required: true },
   positionSec: { type: Number, required: true }
 }, { _id: false });
