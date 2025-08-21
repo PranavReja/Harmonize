@@ -47,11 +47,7 @@ export default function SortableQueueItem({
         <div className={`checkbox ${selected ? 'checked' : ''}`} />
       ) : (
         <div className="service-info">
-          <img
-            src={item.serviceLogo}
-            alt="service"
-            style={{ width: 20, height: 20, marginBottom: 4 }}
-          />
+          {item.serviceLogo && <item.serviceLogo style={{ width: 20, height: 20, marginBottom: 4 }} />}
           <div className="queued-by">{item.queuedBy}</div>
         </div>
       )}

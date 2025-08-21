@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import YouTubeLogo from '../assets/youtube.png';
-import SoundCloudLogo from '../assets/soundcloud.svg';
-import SpotifyLogo from '../assets/spotify.svg';
+import { ReactComponent as SoundCloudLogo } from '../assets/soundcloud.svg';
+import { ReactComponent as SpotifyLogo } from '../assets/spotify.svg';
 
 const logoMap = {
   YouTube: YouTubeLogo,
@@ -52,14 +52,12 @@ export default function UserCard({ user, isCurrent }) {
             {user.isAdmin && ' (Admin)'}
           </div>
           <div className="contact-services">
-            {user.services.map((s) => (
-              <img
-                key={s}
-                src={logoMap[s]}
-                alt={s}
-                className="service-logo"
-              />
-            ))}
+            {user.services.map((s) => {
+              const LogoComponent = logoMap[s];
+              return LogoComponent ? (
+                <LogoComponent key={s} className="service-logo" />
+              ) : null;
+            })}
           </div>
         </div>
       )}
