@@ -272,7 +272,7 @@ router.patch('/:id/queue/:index/most-recent-change', async (req, res) => {
     if (isNaN(idx) || idx < 0 || idx >= room.queue.length) {
       return res.status(400).json({ error: 'Invalid index' });
     }
-    if (!['Played', 'Paused'].includes(state)) {
+    if (!['Played', 'Paused', 'ToggleRequest'].includes(state)) {
       return res.status(400).json({ error: 'Invalid state' });
     }
     room.queue[idx].mostRecentChange = {
