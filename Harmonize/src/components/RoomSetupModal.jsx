@@ -156,8 +156,8 @@ export default function RoomSetupModal({ onClose, onRoomJoined, joinRoomId }) {
         </button>
         {mode === 'name' && (
           <div className="intro-card">
-            <img
-              src="/src/assets/logo.png"
+                        <img
+              src={HarmonizeLogo}
               alt="Harmonize Logo"
               className="intro-logo"
             />
@@ -187,8 +187,8 @@ export default function RoomSetupModal({ onClose, onRoomJoined, joinRoomId }) {
         )}
         {mode === 'choose' && (
           <div className="intro-card">
-            <img
-              src="/src/assets/logo.png"
+                        <img
+              src={HarmonizeLogo}
               alt="Harmonize Logo"
               className="intro-logo"
             />

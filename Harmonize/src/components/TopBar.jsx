@@ -232,7 +232,7 @@ const activeServices = ['YouTube', 'Spotify', 'SoundCloud']; // 👈 change this
     <>
       <header className="top-bar">
         <div className="logo">
-          <img src="/src/assets/logo.png" alt="Harmonize Logo" className="logo-image" />
+          <img src={HarmonizeLogo} alt="Harmonize Logo" className="logo-image" />
           <span className="logo-text">Harmonize</span>
         </div>
 
