@@ -360,6 +360,12 @@ function App() {
     updateCurrentPlaying(newIndex);
     setActiveButton(direction);
     setTimeout(() => setActiveButton(null), 200);
+
+    // When the admin skips, optimistically set the UI to "playing"
+    // because the new track will autoplay.
+    if (isAdmin) {
+      setIsPlaying(true);
+    }
   };
 
   const handleConfirmLeave = async () => {
