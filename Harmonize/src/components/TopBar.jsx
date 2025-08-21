@@ -1,8 +1,8 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import SearchResultCard from './SearchResultCard.jsx';
 import YouTubeLogo from '../assets/youtube.png';
-import SoundCloudLogo from '../assets/soundcloud.svg';
-import SpotifyLogo from '../assets/spotify.svg';
+import SoundCloudLogo from '../assets/soundcloud.svg?react';
+import SpotifyLogo from '../assets/spotify.svg?react';
 
 export default function TopBar({
   addToQueueTop,
@@ -280,8 +280,7 @@ const activeServices = ['YouTube', 'Spotify', 'SoundCloud']; // 👈 change this
         <div className="account-popup">
           {!hasSpotify && (
             <button className="dropdown-item" onClick={handleLinkSpotify}>
-              <img
-                src={SpotifyLogo}
+              <SpotifyLogo
                 alt="Spotify"
                 style={{ width: 20, height: 20 }}
               />

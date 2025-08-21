@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import YouTubeLogo from '../assets/youtube.png';
-import { ReactComponent as SoundCloudLogo } from '../assets/soundcloud.svg';
-import { ReactComponent as SpotifyLogo } from '../assets/spotify.svg';
+import SoundCloudLogo from '../assets/soundcloud.svg?react';
+import SpotifyLogo from '../assets/spotify.svg?react';
 
 const logoMap = {
   YouTube: YouTubeLogo,
