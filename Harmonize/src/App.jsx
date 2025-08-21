@@ -75,22 +75,38 @@ function App() {
   };
 
   useEffect(() => {
-    if (pathRoomId) return;
-    const savedRoomId = localStorage.getItem('roomId');
-    const savedUserId = localStorage.getItem('userId');
-    if (savedRoomId && savedUserId) {
-      const verify = async () => {
-        const ok = await fetchRoomUsers(savedRoomId, true);
+    const initializeRoom = async () => {
+      if (pathRoomId) {
+        // Attempt to join room from URL path
+        const ok = await fetchRoomUsers(pathRoomId, true);
         if (ok) {
-          setRoomId(savedRoomId);
-          setRoomName(localStorage.getItem('roomName') || '');
-          setCurrentUserId(savedUserId);
-          setShowRoomModal(false);
+          setRoomId(pathRoomId);
+          // Room name and user ID will be set by RoomSetupModal or subsequent fetches
+          setShowRoomModal(false); // Hide modal if room joined successfully
+        } else {
+          // If pathRoomId is invalid, clear it and proceed to check localStorage
+          // This will allow the RoomSetupModal to show with an empty joinRoomId
+          // or load from localStorage if a valid one exists there.
+          // No need to explicitly set pathRoomId to null here, as it's a const.
+          // The modal will handle the invalid ID.
         }
-      };
-      verify();
-    }
-  }, []);
+      } else {
+        // No pathRoomId, check localStorage for saved room
+        const savedRoomId = localStorage.getItem('roomId');
+        const savedUserId = localStorage.getItem('userId');
+        if (savedRoomId && savedUserId) {
+          const ok = await fetchRoomUsers(savedRoomId, true);
+          if (ok) {
+            setRoomId(savedRoomId);
+            setRoomName(localStorage.getItem('roomName') || '');
+            setCurrentUserId(savedUserId);
+            setShowRoomModal(false);
+          }
+        }
+      }
+    };
+    initializeRoom();
+  }, [pathRoomId]);
 
   const SONG_TITLE = 'Song Name 🎵';
   const [totalDuration, setTotalDuration] = useState(0);
