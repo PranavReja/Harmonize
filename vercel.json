@@ -2,9 +2,9 @@
     "version": 2,
     "builds": [
       {
-        "src": "client/package.json",
+        "src": "Harmonize/package.json",
         "use": "@vercel/static-build",
-        "config": { "distDir": "client/build" }
+        "config": { "distDir": "Harmonize/dist" }
       },
       {
         "src": "api/index.js",
