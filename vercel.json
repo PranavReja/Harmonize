@@ -1,12 +1,1 @@
-{
-  "version": 2,
-  "routes": [
-    { "src": "/rooms/(.*)", "dest": "/backend/rooms/$1" },
-    { "src": "/users/(.*)", "dest": "/backend/users/$1" },
-    { "src": "/spotify/(.*)", "dest": "/backend/spotify/$1" },
-    { "src": "/auth/spotify/(.*)", "dest": "/backend/auth/spotify/$1" },
-    { "src": "/resolve/(.*)", "dest": "/backend/resolve/$1" },
-    { "src": "/test-db", "dest": "/backend/test-db" },
-    { "src": "/(.*)", "dest": "/Harmonize/$1" }
-  ]
-}
+{ "version": 2, "builds": [ { "src": "client/package.json", "use": "@vercel/static-build", "config": { "distDir": "client/build" } }, { "src": "api/index.js", "use": "@vercel/node" } ], "routes": [ { "src": "/api/(.*)", "dest": "/api/index.js" }, { "src": "/(.*)", "dest": "/client/$1" } ] }
