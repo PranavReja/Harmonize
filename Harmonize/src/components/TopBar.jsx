@@ -3,6 +3,7 @@ import SearchResultCard from './SearchResultCard.jsx';
 import YouTubeLogo from '../assets/youtube.png';
 import SoundCloudLogo from '../assets/soundcloud.svg?react';
 import SpotifyLogo from '../assets/spotify.svg?react';
+import HarmonizeLogo from '../assets/logo.png';
 
 export default function TopBar({
   addToQueueTop,

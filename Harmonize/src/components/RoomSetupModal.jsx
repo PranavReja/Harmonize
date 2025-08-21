@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
+import HarmonizeLogo from '../assets/logo.png';
 
 export default function RoomSetupModal({ onClose, onRoomJoined, joinRoomId }) {
   const [mode, setMode] = useState('name'); // 'name', 'choose', 'create', 'join'
