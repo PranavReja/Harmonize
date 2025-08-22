@@ -84,7 +84,7 @@ router.post('/create', async (req, res) => {
   
 
   // POST /rooms/:id/join (deprecated)
-router.post('/:id/join', async (req, res) => {
+router.get('/:id', async (req, res) => {
     const roomId = req.params.id; // Get the room ID from the URL
     const room = await Room.findOne({ roomId }); // Look it up in the database
 

@@ -410,7 +410,7 @@ function App() {
 
   const fetchRoomUsers = async (id, handleMissing = false) => {
     try {
-      const res = await fetch(`/api/rooms/${id}/users`);
+      const res = await fetch(`/api/rooms/${id}`);
       if (res.status === 404) {
         if (handleMissing) {
           clearSession();
