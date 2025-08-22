@@ -61,7 +61,7 @@ export default function RightSidebar({
 
     if (roomId != null) {
       try {
-        await fetch(`http://localhost:3001/rooms/${roomId}/queue/reorder`, {
+        await fetch(`/api/rooms/${roomId}/queue/reorder`, {
           method: 'PATCH',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ sourceIndex: oldIndex, destinationIndex: newIndex }),
@@ -98,7 +98,7 @@ export default function RightSidebar({
     for (const item of itemsToDelete) {
       try {
         await fetch(
-          `http://localhost:3001/rooms/${roomId}/queue/${item.position}`,
+          `/api/rooms/${roomId}/queue/${item.position}`,
           { method: 'DELETE' }
         );
       } catch (err) {
