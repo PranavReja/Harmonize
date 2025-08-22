@@ -2,12 +2,12 @@ import express from 'express';
 import cors from 'cors';
 import mongoose from 'mongoose';
 import dotenv from 'dotenv';
-import roomsRouter from './routes/rooms.js';
-import usersRouter from './routes/users.js';
-import spotifyRouter from './routes/spotify.js';
-import spotifyAuthRouter from './routes/spotifyAuth.js';
-import resolveRouter from './routes/resolve.js';
-import youtubeRouter from './routes/youtube.js';
+import roomsRouter from './api/routes/rooms.js';
+import usersRouter from './api/routes/users.js';
+import spotifyRouter from './api/routes/spotify.js';
+import spotifyAuthRouter from './api/routes/spotifyAuth.js';
+import resolveRouter from './api/routes/resolve.js';
+import youtubeRouter from './api/routes/youtube.js';
 
 
 
