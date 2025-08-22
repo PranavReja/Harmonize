@@ -7,15 +7,22 @@
         "config": { "distDir": "Harmonize/dist" }
       },
       {
-        "src": "index.js",
-        "use": "@vercel/node",
-        "config": { "project": "api", "distDir": "api" }
+        "src": "api/index.js",
+        "use": "@vercel/node"
+      },
+      {
+        "src": "api/test.js",
+        "use": "@vercel/node"
       }
     ],
     "routes": [
       {
+        "src": "/api/test",
+        "dest": "/api/test.js"
+      },
+      {
         "src": "/api/(.*)",
-        "dest": "/index.js"
+        "dest": "/api/index.js"
       },
       {
         "src": "/(.*)",
