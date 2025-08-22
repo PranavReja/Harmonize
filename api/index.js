@@ -19,12 +19,12 @@ const PORT = process.env.PORT || 3001;
 app.use(cors());
 app.use(express.json());
 
-app.use('/api/rooms', roomsRouter);
-app.use('/api/users', usersRouter);
-app.use('/api/spotify', spotifyRouter);
-app.use('/api/auth/spotify', spotifyAuthRouter);
-app.use('/api/resolve', resolveRouter);
-app.use('/api/youtube', youtubeRouter);
+app.use('/rooms', roomsRouter);
+app.use('/users', usersRouter);
+app.use('/spotify', spotifyRouter);
+app.use('/auth/spotify', spotifyAuthRouter);
+app.use('/resolve', resolveRouter);
+app.use('/youtube', youtubeRouter);
 // MongoDB Connection
 mongoose.connect(process.env.MONGO_URI, {
   useNewUrlParser: true,
@@ -48,8 +48,6 @@ app.get('/test-db', async (req, res) => {
   
 
 
-app.listen(PORT, () => {
-  console.log(`🚀 Backend listening at http://localhost:${PORT}`);
-});
+export default app;
 
 
