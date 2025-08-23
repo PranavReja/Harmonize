@@ -310,13 +310,19 @@ router.delete('/:id', async (req, res) => {
     const roomId = req.params.id;
   
     try {
-      const deletedRoom = await Room.findOneAndDelete({ roomId });
-  
-      if (!deletedRoom) {
+      const room = await Room.findOne({ roomId });
+      if (!room) {
         return res.status(404).json({ error: 'Room not found' });
       }
+
+      const userIds = room.users.map(u => u.userId);
+      if (userIds.length > 0) {
+        await User.deleteMany({ userId: { $in: userIds } });
+      }
+
+      await Room.deleteOne({ roomId });
   
-      res.json({ message: `Room ${roomId} deleted successfully.` });
+      res.json({ message: `Room ${roomId} and its users deleted successfully.` });
     } catch (err) {
       console.error(err);
       res.status(500).json({ error: 'Internal server error' });
