@@ -3,6 +3,7 @@ import SearchResultCard from './SearchResultCard.jsx';
 import YouTubeLogo from '../assets/youtube.png';
 import SoundCloudLogo from '../assets/soundcloud.svg';
 import SpotifyLogo from '../assets/spotify.svg';
+import HarmonizeLogo from '../assets/logo.png';
 
 export default function TopBar({
   addToQueueTop,
@@ -232,7 +233,7 @@ const activeServices = ['YouTube', 'Spotify', 'SoundCloud']; // 👈 change this
     <>
       <header className="top-bar">
         <div className="logo">
-          <img src="/src/assets/logo.png" alt="Harmonize Logo" className="logo-image" />
+          <img src={HarmonizeLogo} alt="Harmonize Logo" className="logo-image" />
           <span className="logo-text">Harmonize</span>
         </div>
 
