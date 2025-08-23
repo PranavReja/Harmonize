@@ -20,7 +20,7 @@
     },
     {
       "src": "/(.*)",
-      "dest": "Harmonize/dist/index.html"
+      "dest": "/Harmonize/dist/index.html"
     }
   ]
 }
