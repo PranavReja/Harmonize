@@ -2,17 +2,25 @@
   "version": 2,
   "builds": [
     {
+      "src": "api/index.js",
+      "use": "@vercel/node"
+    },
+    {
       "src": "Harmonize/package.json",
       "use": "@vercel/static-build",
-      "config": { "distDir": "Harmonize/dist" }
-    },
-    { "src": "api/index.js", "use": "@vercel/node" }
+      "config": {
+        "distDir": "dist"
+      }
+    }
   ],
   "routes": [
-    { "src": "/api/(.*)", "dest": "api/index.js" },
     {
-      "handle": "filesystem"
+      "src": "/api/(.*)",
+      "dest": "api/index.js"
     },
-    { "src": "/(.*)", "dest": "/index.html" }
+    {
+      "src": "/(.*)",
+      "dest": "Harmonize/dist/index.html"
+    }
   ]
 }
