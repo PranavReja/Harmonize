@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
+import HarmonizeLogo from '../assets/logo.png';
 
 export default function RoomSetupModal({ onClose, onRoomJoined, joinRoomId }) {
   const [mode, setMode] = useState('name'); // 'name', 'choose', 'create', 'join'
@@ -157,7 +158,7 @@ export default function RoomSetupModal({ onClose, onRoomJoined, joinRoomId }) {
         {mode === 'name' && (
           <div className="intro-card">
             <img
-              src="/src/assets/logo.png"
+              src={HarmonizeLogo}
               alt="Harmonize Logo"
               className="intro-logo"
             />
@@ -188,7 +189,7 @@ export default function RoomSetupModal({ onClose, onRoomJoined, joinRoomId }) {
         {mode === 'choose' && (
           <div className="intro-card">
             <img
-              src="/src/assets/logo.png"
+              src={HarmonizeLogo}
               alt="Harmonize Logo"
               className="intro-logo"
             />
