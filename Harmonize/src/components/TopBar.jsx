@@ -80,7 +80,7 @@ export default function TopBar({
     if (!query) return;
     try {
       const url =
-        `http://localhost:3001/youtube/search?q=${encodeURIComponent(query)}` +
+        `import.meta.env.VITE_API_BASE_URL/youtube/search?q=${encodeURIComponent(query)}` +
         (pageToken ? `&pageToken=${pageToken}` : '');
       const res = await fetch(url);
       const data = await res.json();
@@ -111,7 +111,7 @@ export default function TopBar({
     if (!query) return;
     try {
       const url =
-        `http://localhost:3001/spotify/search?q=${encodeURIComponent(query)}&offset=${offset}`;
+        `import.meta.env.VITE_API_BASE_URL/spotify/search?q=${encodeURIComponent(query)}&offset=${offset}`;
       const res = await fetch(url);
       const data = await res.json();
       const tracks = data.tracks || [];
@@ -187,7 +187,7 @@ const activeServices = ['YouTube', 'Spotify', 'SoundCloud']; // 👈 change this
   const handleLinkSpotify = () => {
     if (!currentUserId) return;
     const authWindow = window.open(
-      `http://localhost:3001/auth/spotify/login?userId=${currentUserId}`,
+      `import.meta.env.VITE_API_BASE_URL/auth/spotify/login?userId=${currentUserId}`,
       '_blank',
       'width=500,height=600'
     );
@@ -204,7 +204,7 @@ const activeServices = ['YouTube', 'Spotify', 'SoundCloud']; // 👈 change this
     if (!link) return;
     try {
       const res = await fetch(
-        `http://localhost:3001/resolve?link=${encodeURIComponent(link)}`
+        `import.meta.env.VITE_API_BASE_URL/resolve?link=${encodeURIComponent(link)}`
       );
       const data = await res.json();
       if (!data.error) {

@@ -51,7 +51,7 @@ export default function RoomSetupModal({ onClose, onRoomJoined, joinRoomId }) {
     let id = userId;
     try {
       if (!id) {
-        const res = await fetch('http://localhost:3001/users', {
+        const res = await fetch('import.meta.env.VITE_API_BASE_URL/users', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ username: userName })
@@ -61,7 +61,7 @@ export default function RoomSetupModal({ onClose, onRoomJoined, joinRoomId }) {
         id = data.userId;
         setUserId(id);
       } else if (userName !== localStorage.getItem('userName')) {
-        await fetch(`http://localhost:3001/users/${id}`, {
+        await fetch(`import.meta.env.VITE_API_BASE_URL/users/${id}`, {
           method: 'PATCH',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ username: userName })
@@ -72,7 +72,7 @@ export default function RoomSetupModal({ onClose, onRoomJoined, joinRoomId }) {
       localStorage.setItem('userName', userName);
 
       if (joinRoomId) {
-        const resJoin = await fetch(`http://localhost:3001/rooms/${joinRoomId}/join`, { method: 'POST' });
+        const resJoin = await fetch(`import.meta.env.VITE_API_BASE_URL/rooms/${joinRoomId}/join`, { method: 'POST' });
         const dataJoin = await resJoin.json();
         if (!resJoin.ok) throw new Error(dataJoin.error || 'Room not found');
         await joinUserToRoom(joinRoomId, id);
@@ -90,7 +90,7 @@ export default function RoomSetupModal({ onClose, onRoomJoined, joinRoomId }) {
   const joinUserToRoom = async (id, uid = userId) => {
     if (!uid) return;
     try {
-      await fetch(`http://localhost:3001/rooms/${id}/join-user`, {
+      await fetch(`import.meta.env.VITE_API_BASE_URL/rooms/${id}/join-user`, {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ userId: uid, username: userName })
@@ -110,7 +110,7 @@ export default function RoomSetupModal({ onClose, onRoomJoined, joinRoomId }) {
     setError('');
     const mode = services.Spotify ? 'spotify' : 'guest';
     try {
-      const res = await fetch('http://localhost:3001/rooms/create', {
+      const res = await fetch('import.meta.env.VITE_API_BASE_URL/rooms/create', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ mode, name: roomName })
@@ -132,7 +132,7 @@ export default function RoomSetupModal({ onClose, onRoomJoined, joinRoomId }) {
   const handleJoinRoom = async () => {
     setError('');
     try {
-      const res = await fetch(`http://localhost:3001/rooms/${roomCode}/join`, {
+      const res = await fetch(`import.meta.env.VITE_API_BASE_URL/rooms/${roomCode}/join`, {
         method: 'POST'
       });
       const data = await res.json();

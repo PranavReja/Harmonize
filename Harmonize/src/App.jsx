@@ -126,7 +126,7 @@ function App() {
       if (platform === 'youtube') {
         url = `https://img.youtube.com/vi/${sourceId}/default.jpg`;
       } else if (platform === 'spotify') {
-        const res = await fetch(`http://localhost:3001/spotify/track/${sourceId}`);
+        const res = await fetch(`import.meta.env.VITE_API_BASE_URL/spotify/track/${sourceId}`);
         const data = await res.json();
         if (res.ok) url = data.thumbnail || '';
       }
@@ -145,8 +145,8 @@ function App() {
   const sendSong = async (song, playNext = false) => {
     if (!roomId || !currentUserId) return;
     const endpoint = playNext
-      ? `http://localhost:3001/rooms/${roomId}/queue/next`
-      : `http://localhost:3001/rooms/${roomId}/queue`;
+      ? `import.meta.env.VITE_API_BASE_URL/rooms/${roomId}/queue/next`
+      : `import.meta.env.VITE_API_BASE_URL/rooms/${roomId}/queue`;
     try {
       await fetch(endpoint, {
         method: 'POST',
@@ -166,7 +166,7 @@ function App() {
 
   const fetchRoomQueue = async (id) => {
     try {
-      const res = await fetch(`http://localhost:3001/rooms/${id}/queue`);
+      const res = await fetch(`import.meta.env.VITE_API_BASE_URL/rooms/${id}/queue`);
       const data = await res.json();
       if (res.ok) {
         const keepKeys = new Set();
@@ -212,7 +212,7 @@ function App() {
 
   const fetchCurrentPlaying = async (id) => {
     try {
-      const res = await fetch(`http://localhost:3001/rooms/${id}/current-playing`);
+      const res = await fetch(`import.meta.env.VITE_API_BASE_URL/rooms/${id}/current-playing`);
       const data = await res.json();
       if (res.ok) {
         setCurrentPlaying(data.currentPlaying);
@@ -227,7 +227,7 @@ function App() {
   const updateCurrentPlaying = async (index) => {
     if (!roomId) return;
     try {
-      await fetch(`http://localhost:3001/rooms/${roomId}/current-playing`, {
+      await fetch(`import.meta.env.VITE_API_BASE_URL/rooms/${roomId}/current-playing`, {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ index }),
@@ -280,7 +280,7 @@ function App() {
       if (roomId && currentPlaying >= 0) {
         try {
           const newState = isPlaying ? 'Played' : 'Paused';
-          await fetch(`http://localhost:3001/rooms/${roomId}/queue/${currentPlaying}/most-recent-change`, {
+          await fetch(`import.meta.env.VITE_API_BASE_URL/rooms/${roomId}/queue/${currentPlaying}/most-recent-change`, {
             method: 'PATCH',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ state: newState, positionSec: newTime })
@@ -321,7 +321,7 @@ function App() {
 
       if (roomId && currentPlaying >= 0) {
         try {
-          await fetch(`http://localhost:3001/rooms/${roomId}/queue/${currentPlaying}/most-recent-change`, {
+          await fetch(`import.meta.env.VITE_API_BASE_URL/rooms/${roomId}/queue/${currentPlaying}/most-recent-change`, {
             method: 'PATCH',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ state: newState, positionSec })
@@ -338,7 +338,7 @@ function App() {
       // Non-admin logic
       const positionSec = Math.round((progress / 100) * totalDuration);
       try {
-        await fetch(`http://localhost:3001/rooms/${roomId}/queue/${currentPlaying}/most-recent-change`, {
+        await fetch(`import.meta.env.VITE_API_BASE_URL/rooms/${roomId}/queue/${currentPlaying}/most-recent-change`, {
           method: 'PATCH',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ state: 'ToggleRequest', positionSec })
@@ -372,14 +372,14 @@ function App() {
     if (!roomId || !currentUserId) return;
     if (isAdmin) {
       try {
-        await fetch(`http://localhost:3001/rooms/${roomId}`, { method: 'DELETE' });
+        await fetch(`import.meta.env.VITE_API_BASE_URL/rooms/${roomId}`, { method: 'DELETE' });
       } catch (err) {
         console.error('Delete room error', err);
       }
       setRoomEnded(true);
     } else {
       try {
-        await fetch(`http://localhost:3001/rooms/${roomId}/remove-user`, {
+        await fetch(`import.meta.env.VITE_API_BASE_URL/rooms/${roomId}/remove-user`, {
           method: 'PATCH',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ userId: currentUserId }),
@@ -394,7 +394,7 @@ function App() {
 
   const fetchRoomUsers = async (id, handleMissing = false) => {
     try {
-      const res = await fetch(`http://localhost:3001/rooms/${id}/users`);
+      const res = await fetch(`import.meta.env.VITE_API_BASE_URL/rooms/${id}/users`);
       if (res.status === 404) {
         if (handleMissing) {
           clearSession();
