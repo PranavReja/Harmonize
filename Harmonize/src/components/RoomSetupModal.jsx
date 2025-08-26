@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import HarmonizeLogo from '../assets/logo.png';
 
-const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3001';
+const API_URL = import.meta.env.PROD ? '/api' : 'http://localhost:3001';
 
 export default function RoomSetupModal({ onClose, onRoomJoined, joinRoomId }) {
   const [mode, setMode] = useState('name'); // 'name', 'choose', 'create', 'join'
