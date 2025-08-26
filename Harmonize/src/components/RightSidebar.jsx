@@ -7,7 +7,7 @@ import {
 } from '@dnd-kit/sortable';
 import SortableQueueItem from './SortableQueueItem.jsx';
 
-const API_URL = import.meta.env.PROD ? '/api' : 'http://localhost:3001';
+const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3001';
 
 export default function RightSidebar({
   isVisible,

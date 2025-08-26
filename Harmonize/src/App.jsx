@@ -9,7 +9,7 @@ import UserCard from './components/UserCard';
 import RoomSetupModal from './components/RoomSetupModal.jsx';
 import YouTubePlayer from './components/YouTubePlayer.jsx';
 
-const API_URL = import.meta.env.PROD ? '/api' : 'http://localhost:3001';
+const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3001';
 
 function App() {
   const [isLeftSidebarVisible, setIsLeftSidebarVisible] = useState(true);

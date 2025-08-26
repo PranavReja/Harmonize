@@ -5,7 +5,7 @@ import SoundCloudLogo from '../assets/soundcloud.svg';
 import SpotifyLogo from '../assets/spotify.svg';
 import HarmonizeLogo from '../assets/logo.png';
 
-const API_URL = import.meta.env.PROD ? '/api' : 'http://localhost:3001';
+const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3001';
 
 export default function TopBar({
   addToQueueTop,
