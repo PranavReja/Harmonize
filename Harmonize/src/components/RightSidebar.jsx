@@ -7,6 +7,8 @@ import {
 } from '@dnd-kit/sortable';
 import SortableQueueItem from './SortableQueueItem.jsx';
 
+const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3001';
+
 export default function RightSidebar({
   isVisible,
   queue,
@@ -61,7 +63,7 @@ export default function RightSidebar({
 
     if (roomId != null) {
       try {
-        await fetch(`http://localhost:3001/rooms/${roomId}/queue/reorder`, {
+        await fetch(`${API_URL}/rooms/${roomId}/queue/reorder`, {
           method: 'PATCH',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ sourceIndex: oldIndex, destinationIndex: newIndex }),
@@ -98,7 +100,7 @@ export default function RightSidebar({
     for (const item of itemsToDelete) {
       try {
         await fetch(
-          `http://localhost:3001/rooms/${roomId}/queue/${item.position}`,
+          `${API_URL}/rooms/${roomId}/queue/${item.position}`,
           { method: 'DELETE' }
         );
       } catch (err) {
