@@ -18,7 +18,7 @@ const PORT = process.env.PORT || 3001;
 
 const allowedOrigins = [
   'http://localhost:3000',
-  'https://harmonize-frontend-84e5.onrender.com'
+  'https://harmonize-k4s6.onrender.com'
 ];
 
 app.use(cors({
