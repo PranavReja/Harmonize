@@ -370,6 +370,12 @@ function App() {
     }
   };
 
+  const handleVideoEnd = () => {
+    if (isAdmin) {
+      handleSkip('next');
+    }
+  };
+
   const handleConfirmLeave = async () => {
     if (!roomId || !currentUserId) return;
     if (isAdmin) {
@@ -622,6 +628,7 @@ function App() {
                     ref={ytPlayerRef}
                     videoId={nowPlaying.sourceId}
                     playing={isPlaying}
+                    onVideoEnd={handleVideoEnd}
                   />
                 ) : nowPlaying ? (
                   <img src={nowPlaying.albumCover} alt="cover" />
