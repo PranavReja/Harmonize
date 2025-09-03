@@ -21,49 +21,9 @@ router.get('/login', (req, res) => {
 });
 
 // Callback after Spotify authorization
-router.get('/callback', async (req, res) => {
-  console.log('Spotify callback received');
-  const { code, state } = req.query;
-  if (!code || !state) {
-    console.log('Missing code or state');
-    return res.status(400).send('Missing code or state');
-  }
-
-  try {
-    const body = new URLSearchParams({
-      grant_type: 'authorization_code',
-      code,
-      redirect_uri: process.env.SPOTIFY_REDIRECT_URI || '',
-      client_id: process.env.SPOTIFY_CLIENT_ID || '',
-      client_secret: process.env.SPOTIFY_CLIENT_SECRET || ''
-    });
-    const resp = await fetch('https://accounts.spotify.com/api/token', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-      body: body.toString()
-    });
-    const data = await resp.json();
-    console.log('Spotify token response:', data);
-    if (!resp.ok) {
-      console.error('Spotify token error', data);
-      return res.status(400).send('Failed to obtain tokens');
-    }
-    const expiresAt = new Date(Date.now() + (data.expires_in || 0) * 1000);
-    await User.findOneAndUpdate(
-      { userId: state },
-      {
-        'services.spotify.accessToken': data.access_token,
-        'services.spotify.refreshToken': data.refresh_token,
-        'services.spotify.expiresAt': expiresAt,
-        'services.spotify.connected': true
-      }
-    );
-    console.log('Spotify account linked successfully');
-    res.send('Spotify account linked. You can close this window.');
-  } catch (err) {
-    console.error('Spotify callback error', err);
-    res.status(500).send('Server error');
-  }
+router.get('/callback', (req, res) => {
+  console.log('Spotify callback received (simplified)');
+  res.send('Callback was successful!');
 });
 
 router.get('/token/:userId', async (req, res) => {
