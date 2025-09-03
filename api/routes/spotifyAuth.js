@@ -22,8 +22,12 @@ router.get('/login', (req, res) => {
 
 // Callback after Spotify authorization
 router.get('/callback', async (req, res) => {
+  console.log('Spotify callback received');
   const { code, state } = req.query;
-  if (!code || !state) return res.status(400).send('Missing code or state');
+  if (!code || !state) {
+    console.log('Missing code or state');
+    return res.status(400).send('Missing code or state');
+  }
 
   try {
     const body = new URLSearchParams({
@@ -39,6 +43,7 @@ router.get('/callback', async (req, res) => {
       body: body.toString()
     });
     const data = await resp.json();
+    console.log('Spotify token response:', data);
     if (!resp.ok) {
       console.error('Spotify token error', data);
       return res.status(400).send('Failed to obtain tokens');
@@ -53,6 +58,7 @@ router.get('/callback', async (req, res) => {
         'services.spotify.connected': true
       }
     );
+    console.log('Spotify account linked successfully');
     res.send('Spotify account linked. You can close this window.');
   } catch (err) {
     console.error('Spotify callback error', err);
