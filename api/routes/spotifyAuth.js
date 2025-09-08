@@ -19,10 +19,13 @@ const FRONTEND_URI = process.env.FRONTEND_URI || 'https://harmonize-k4s6.onrende
 
 // Step 1: Redirect user to Spotify's authorization page
 router.get('/login', (req, res) => {
+  console.log('Received request for /auth/spotify/login');
   const { userId } = req.query;
   if (!userId) {
+    console.error('User ID is required for /login');
     return res.status(400).send('User ID is required');
   }
+  console.log(`Generating Spotify auth URL for userId: ${userId}`);
 
   const authUrl = new URL('https://accounts.spotify.com/authorize');
   authUrl.search = new URLSearchParams({
@@ -33,24 +36,29 @@ router.get('/login', (req, res) => {
     state: userId, // Using state to pass the userId
   }).toString();
 
+  console.log(`Redirecting user to: ${authUrl.toString()}`);
   res.redirect(authUrl.toString());
 });
 
 // Step 2: Spotify redirects back to this callback
 router.get('/callback', async (req, res) => {
+  console.log('Reached /auth/spotify/callback');
   const { code, state: userId, error } = req.query;
 
   if (error) {
-    console.error('Spotify callback error:', error);
+    console.error('Spotify callback returned an error:', error);
     return res.redirect(`${FRONTEND_URI}?error=spotify_auth_failed`);
   }
 
   if (!code || !userId) {
+    console.error('Callback missing code or state (userId)');
     return res.redirect(`${FRONTEND_URI}?error=invalid_callback`);
   }
+  
+  console.log(`Callback successful for userId: ${userId}. Code received.`);
 
   try {
-    // Step 3: Exchange authorization code for access token
+    console.log('Step 3: Exchanging authorization code for access token...');
     const tokenResponse = await fetch('https://accounts.spotify.com/api/token', {
       method: 'POST',
       headers: {
@@ -67,15 +75,16 @@ router.get('/callback', async (req, res) => {
     const tokenData = await tokenResponse.json();
 
     if (!tokenResponse.ok) {
-      console.error('Spotify Token Error:', tokenData);
+      console.error('Spotify API token exchange error:', tokenData);
       throw new Error(tokenData.error_description || 'Failed to fetch Spotify tokens.');
     }
 
+    console.log('Successfully exchanged code for tokens.');
     const { access_token, refresh_token, expires_in } = tokenData;
     const expiresAt = new Date(Date.now() + expires_in * 1000);
 
-    // Step 4: Save tokens to the user's record in the database
-    await User.findOneAndUpdate(
+    console.log(`Step 4: Saving tokens to database for userId: ${userId}`);
+    const updatedUser = await User.findOneAndUpdate(
       { userId: userId },
       {
         'services.spotify.accessToken': access_token,
@@ -83,14 +92,21 @@ router.get('/callback', async (req, res) => {
         'services.spotify.expiresAt': expiresAt,
         'services.spotify.connected': true,
       },
-      { new: true, upsert: false } // upsert: false to not create a user if not found
+      { new: true, upsert: false }
     );
 
-    // Step 5: Redirect back to the frontend application
+    if (!updatedUser) {
+      console.error(`User not found in database for userId: ${userId}. Tokens not saved.`);
+      return res.redirect(`${FRONTEND_URI}?error=user_not_found`);
+    }
+
+    console.log(`Successfully saved tokens for userId: ${userId}`);
+
+    console.log('Step 5: Redirecting back to frontend application.');
     res.redirect(FRONTEND_URI);
 
   } catch (err) {
-    console.error('Error during Spotify callback:', err);
+    console.error('A critical error occurred during the Spotify callback process:', err);
     res.redirect(`${FRONTEND_URI}?error=internal_server_error`);
   }
 });
