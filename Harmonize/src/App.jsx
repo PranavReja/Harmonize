@@ -94,6 +94,20 @@ function App() {
     }
   }, []);
 
+  const [spotifyAuthMessage, setSpotifyAuthMessage] = useState(null);
+
+  useEffect(() => {
+    const urlParams = new URLSearchParams(window.location.search);
+    const userIdFromUrl = urlParams.get('userId');
+    if (userIdFromUrl) {
+      localStorage.setItem('userId', userIdFromUrl);
+      setSpotifyAuthMessage(`Spotify connected for user: ${userIdFromUrl}`);
+      // Clean the URL
+      window.history.replaceState({}, document.title, window.location.pathname);
+      setTimeout(() => setSpotifyAuthMessage(null), 5000); // Message disappears after 5 seconds
+    }
+  }, []);
+
   const SONG_TITLE = 'Song Name 🎵';
   const [totalDuration, setTotalDuration] = useState(0);
 
@@ -548,6 +562,22 @@ function App() {
 
   return (
     <>
+      {spotifyAuthMessage && (
+        <div style={{
+          position: 'fixed',
+          top: '20px',
+          left: '50%',
+          transform: 'translateX(-50%)',
+          backgroundColor: '#4CAF50',
+          color: 'white',
+          padding: '10px 20px',
+          borderRadius: '5px',
+          zIndex: 1000,
+          fontSize: '1.2em'
+        }}>
+          {spotifyAuthMessage}
+        </div>
+      )}
       {showRoomModal && (
         <RoomSetupModal
           onClose={() => setShowRoomModal(false)}

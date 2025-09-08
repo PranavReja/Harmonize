@@ -103,7 +103,7 @@ router.get('/callback', async (req, res) => {
     console.log(`Successfully saved tokens for userId: ${userId}`);
 
     console.log('Step 5: Redirecting back to frontend application.');
-    res.redirect(FRONTEND_URI);
+    res.redirect(`${FRONTEND_URI}?userId=${userId}`);
 
   } catch (err) {
     console.error('A critical error occurred during the Spotify callback process:', err);
