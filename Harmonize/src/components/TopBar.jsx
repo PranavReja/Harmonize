@@ -186,6 +186,15 @@ const activeServices = ['YouTube', 'Spotify', 'SoundCloud']; // 👈 change this
     sourceId: result.id || null,
   });
 
+  const handleLinkSpotify = () => {
+    if (!currentUserId) {
+      console.error("No user ID available for Spotify link.");
+      return;
+    }
+    // Redirect to the backend login route
+    window.location.href = `${API_URL}/auth/spotify/login?userId=${currentUserId}`;
+  };
+
   
 
   const handleLinkSubmit = async () => {
@@ -269,7 +278,7 @@ const activeServices = ['YouTube', 'Spotify', 'SoundCloud']; // 👈 change this
       {isAccountMenuOpen && (
         <div className="account-popup">
           {!hasSpotify && (
-            <button className="dropdown-item">
+            <button className="dropdown-item" onClick={handleLinkSpotify}>
               <img
                 src={SpotifyLogo}
                 alt="Spotify"
