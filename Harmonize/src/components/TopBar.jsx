@@ -186,20 +186,7 @@ const activeServices = ['YouTube', 'Spotify', 'SoundCloud']; // 👈 change this
     sourceId: result.id || null,
   });
 
-  const handleLinkSpotify = () => {
-    if (!currentUserId) return;
-    const authWindow = window.open(
-      `${API_URL}/auth/spotify/login?userId=${currentUserId}`,
-      '_blank',
-      'width=500,height=600'
-    );
-    const timer = setInterval(() => {
-      if (authWindow.closed) {
-        clearInterval(timer);
-        refreshUsers && refreshUsers();
-      }
-    }, 1000);
-  };
+  
 
   const handleLinkSubmit = async () => {
     const link = linkInput.trim();
@@ -282,7 +269,7 @@ const activeServices = ['YouTube', 'Spotify', 'SoundCloud']; // 👈 change this
       {isAccountMenuOpen && (
         <div className="account-popup">
           {!hasSpotify && (
-            <button className="dropdown-item" onClick={handleLinkSpotify}>
+            <button className="dropdown-item">
               <img
                 src={SpotifyLogo}
                 alt="Spotify"

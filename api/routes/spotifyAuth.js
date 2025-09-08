@@ -1,113 +1,71 @@
 import express from 'express';
-import User from '../models/User.js';
+import fetch from 'node-fetch';
+import dotenv from 'dotenv';
+
+dotenv.config();
 
 const router = express.Router();
 
-// Redirect user to Spotify authorization
-router.get('/login', (req, res) => {
-  const { userId } = req.query;
-  if (!userId) return res.status(400).send('Missing userId');
-  const scope = 'user-read-private user-read-email streaming';
-  const params = new URLSearchParams({
-    response_type: 'code',
-    client_id: process.env.SPOTIFY_CLIENT_ID || '',
-    redirect_uri: process.env.SPOTIFY_REDIRECT_URI || '',
-    scope,
-    state: userId
-  });
-  const url = `https://accounts.spotify.com/authorize?${params.toString()}`;
-  console.log('Redirecting to:', url);
-  res.redirect(url);
-});
-
-// Callback after Spotify authorization
 router.get('/callback', async (req, res) => {
-  console.log('Spotify callback received');
-  const { code, state } = req.query;
-  if (!code || !state) {
-    console.log('Missing code or state');
-    return res.status(400).send('Missing code or state');
+  const { code } = req.query;
+
+  if (!code) {
+    return res.status(400).send('Error: Code not found in query parameters.');
   }
 
+  const client_id = process.env.SPOTIFY_CLIENT_ID;
+  const client_secret = process.env.SPOTIFY_CLIENT_SECRET;
+  const redirect_uri = process.env.SPOTIFY_REDIRECT_URI;
+
+  const params = new URLSearchParams();
+  params.append('grant_type', 'authorization_code');
+  params.append('code', code);
+  params.append('redirect_uri', redirect_uri);
+
   try {
-    const body = new URLSearchParams({
-      grant_type: 'authorization_code',
-      code,
-      redirect_uri: process.env.SPOTIFY_REDIRECT_URI || '',
-      client_id: process.env.SPOTIFY_CLIENT_ID || '',
-      client_secret: process.env.SPOTIFY_CLIENT_SECRET || ''
-    });
-    const resp = await fetch('https://accounts.spotify.com/api/token', {
+    const response = await fetch('https://accounts.spotify.com/api/token', {
       method: 'POST',
-      headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-      body: body.toString()
+      headers: {
+        'Content-Type': 'application/x-www-form-urlencoded',
+        'Authorization': 'Basic ' + Buffer.from(`${client_id}:${client_secret}`).toString('base64')
+      },
+      body: params
     });
-    const data = await resp.json();
-    console.log('Spotify token response:', data);
-    if (!resp.ok) {
-      console.error('Spotify token error', data);
-      return res.status(400).send('Failed to obtain tokens');
-    }
-    const expiresAt = new Date(Date.now() + (data.expires_in || 0) * 1000);
-    await User.findOneAndUpdate(
-      { userId: state },
-      {
-        'services.spotify.accessToken': data.access_token,
-        'services.spotify.refreshToken': data.refresh_token,
-        'services.spotify.expiresAt': expiresAt,
-        'services.spotify.connected': true
-      }
-    );
-    console.log('Spotify account linked successfully');
-    res.send('Spotify account linked. You can close this window.');
-  } catch (err) {
-    console.error('Spotify callback error', err);
-    res.status(500).send('Server error');
-  }
-});
 
-router.get('/token/:userId', async (req, res) => {
-  const { userId } = req.params;
-  if (!userId) return res.status(400).json({ error: 'Missing userId' });
+    const data = await response.json();
 
-  try {
-    const user = await User.findOne({ userId });
-    if (!user || !user.services?.spotify?.connected) {
-      return res.status(404).json({ error: 'Spotify not connected for user' });
+    if (!response.ok) {
+      console.error('Spotify Token Error:', data);
+      throw new Error(data.error_description || 'Failed to fetch Spotify tokens.');
     }
 
-    let { accessToken, refreshToken, expiresAt } = user.services.spotify;
+    const { access_token, refresh_token } = data;
 
-    if (new Date() >= expiresAt) {
-      const body = new URLSearchParams({
-        grant_type: 'refresh_token',
-        refresh_token: refreshToken,
-        client_id: process.env.SPOTIFY_CLIENT_ID || '',
-        client_secret: process.env.SPOTIFY_CLIENT_SECRET || ''
-      });
-      const resp = await fetch('https://accounts.spotify.com/api/token', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-        body: body.toString()
-      });
-      const data = await resp.json();
-      if (!resp.ok) {
-        console.error('Spotify refresh token error', data);
-        return res.status(400).json({ error: 'Failed to refresh token' });
-      }
-      const newExpiresAt = new Date(Date.now() + data.expires_in * 1000);
-      user.services.spotify.accessToken = data.access_token;
-      user.services.spotify.expiresAt = newExpiresAt;
-      if (data.refresh_token) {
-        user.services.spotify.refreshToken = data.refresh_token;
-      }
-      await user.save();
-      accessToken = data.access_token;
-    }
-    res.json({ accessToken });
-  } catch (err) {
-    console.error('Spotify token fetch error', err);
-    res.status(500).json({ error: 'Server error' });
+    // Send a script to the popup window to send tokens to the parent window and close itself.
+    res.send(`
+      <!DOCTYPE html>
+      <html>
+        <head>
+          <title>Authentication Successful</title>
+        </head>
+        <body>
+          <script>
+            window.opener.postMessage({
+              type: 'spotify-auth',
+              accessToken: '${access_token}',
+              refreshToken: '${refresh_token}'
+            }, '*'); // Use a specific target origin in production for security
+            window.close();
+          </script>
+          <p>Authentication successful! You can close this window.</p>
+        </body>
+      </html>
+    `);
+
+  } catch (error)
+  {
+    console.error('Error during Spotify callback:', error);
+    res.status(500).send(`<html><body><h1>Error</h1><p>${error.message}</p></body></html>`);
   }
 });
 
