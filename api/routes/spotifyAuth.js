@@ -42,6 +42,9 @@ router.get('/login', (req, res) => {
 
 // Step 2: Spotify redirects back to this callback
 router.get('/callback', async (req, res) => {
+  console.log('!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!');
+  console.log('SPOTIFY CALLBACK ROUTE WAS HIT');
+  console.log('!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!');
   console.log('Reached /auth/spotify/callback');
   const { code, state: userId, error } = req.query;
 
