@@ -42,10 +42,6 @@ router.get('/login', (req, res) => {
 
 // Step 2: Spotify redirects back to this callback
 router.get('/callback', async (req, res) => {
-  console.log('CALLBACK ROUTE WAS HIT SUCCESSFULLY.');
-  res.status(200).send('Callback was reached. Check your server logs.');
-
-  /*
   console.log('Reached /auth/spotify/callback');
   const { code, state: userId, error } = req.query;
 
@@ -113,7 +109,6 @@ router.get('/callback', async (req, res) => {
     console.error('A critical error occurred during the Spotify callback process:', err);
     res.redirect(`${FRONTEND_URI}?error=internal_server_error`);
   }
-  */
 });
 
 export default router;
