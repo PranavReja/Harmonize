@@ -19,11 +19,13 @@ const FRONTEND_URI = process.env.FRONTEND_URI || 'https://harmonize-k4s6.onrende
 
 // Step 1: Redirect user to Spotify's authorization page
 router.get('/login', (req, res) => {
+  console.log('Received request for /auth/spotify/login');
   const { userId } = req.query;
   if (!userId) {
     console.error('User ID is required for /login');
     return res.status(400).send('User ID is required');
   }
+  console.log(`Generating Spotify auth URL for userId: ${userId}`);
 
   const authUrl = new URL('https://accounts.spotify.com/authorize');
   authUrl.search = new URLSearchParams({
@@ -34,11 +36,16 @@ router.get('/login', (req, res) => {
     state: userId, // Using state to pass the userId
   }).toString();
 
+  console.log(`Redirecting user to: ${authUrl.toString()}`);
   res.redirect(authUrl.toString());
 });
 
 // Step 2: Spotify redirects back to this callback
 router.get('/callback', async (req, res) => {
+  console.log('!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!');
+  console.log('SPOTIFY CALLBACK ROUTE WAS HIT');
+  console.log('!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!');
+  console.log('Reached /auth/spotify/callback');
   const { code, state: userId, error } = req.query;
 
   if (error) {
@@ -50,8 +57,11 @@ router.get('/callback', async (req, res) => {
     console.error('Callback missing code or state (userId)');
     return res.redirect(`${FRONTEND_URI}?error=invalid_callback`);
   }
+  
+  console.log(`Callback successful for userId: ${userId}. Code received.`);
 
   try {
+    console.log('Step 3: Exchanging authorization code for access token...');
     const tokenResponse = await fetch('https://accounts.spotify.com/api/token', {
       method: 'POST',
       headers: {
@@ -72,9 +82,11 @@ router.get('/callback', async (req, res) => {
       throw new Error(tokenData.error_description || 'Failed to fetch Spotify tokens.');
     }
 
+    console.log('Successfully exchanged code for tokens.');
     const { access_token, refresh_token, expires_in } = tokenData;
     const expiresAt = new Date(Date.now() + expires_in * 1000);
 
+    console.log(`Step 4: Saving tokens to database for userId: ${userId}`);
     const updatedUser = await User.findOneAndUpdate(
       { userId: userId },
       {
@@ -91,66 +103,14 @@ router.get('/callback', async (req, res) => {
       return res.redirect(`${FRONTEND_URI}?error=user_not_found`);
     }
 
+    console.log(`Successfully saved tokens for userId: ${userId}`);
+
+    console.log('Step 5: Redirecting back to frontend application.');
     res.redirect(`${FRONTEND_URI}?userId=${userId}`);
 
   } catch (err) {
     console.error('A critical error occurred during the Spotify callback process:', err);
     res.redirect(`${FRONTEND_URI}?error=internal_server_error`);
-  }
-});
-
-router.get('/refresh_token', async (req, res) => {
-  const { userId } = req.query;
-  if (!userId) {
-    return res.status(400).json({ error: 'User ID is required' });
-  }
-
-  try {
-    const user = await User.findOne({ userId: userId });
-    if (!user || !user.services.spotify.refreshToken) {
-      return res.status(404).json({ error: 'User not found or no refresh token available' });
-    }
-
-    const refreshToken = user.services.spotify.refreshToken;
-    const tokenResponse = await fetch('https://accounts.spotify.com/api/token', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/x-www-form-urlencoded',
-        'Authorization': 'Basic ' + Buffer.from(`${process.env.SPOTIFY_CLIENT_ID}:${process.env.SPOTIFY_CLIENT_SECRET}`).toString('base64'),
-      },
-      body: new URLSearchParams({
-        grant_type: 'refresh_token',
-        refresh_token: refreshToken,
-      }),
-    });
-
-    const tokenData = await tokenResponse.json();
-
-    if (!tokenResponse.ok) {
-      console.error('Spotify API refresh token error:', tokenData);
-      return res.status(tokenResponse.status).json({ error: tokenData.error_description || 'Failed to refresh Spotify token.' });
-    }
-
-    const { access_token, expires_in } = tokenData;
-    const expiresAt = new Date(Date.now() + expires_in * 1000);
-
-    await User.findOneAndUpdate(
-      { userId: userId },
-      {
-        'services.spotify.accessToken': access_token,
-        'services.spotify.expiresAt': expiresAt,
-      },
-      { new: true }
-    );
-
-    res.json({
-      accessToken: access_token,
-      expiresIn: expires_in,
-    });
-
-  } catch (err) {
-    console.error('Error refreshing Spotify token:', err);
-    res.status(500).json({ error: 'Internal server error' });
   }
 });
 

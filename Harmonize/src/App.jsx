@@ -8,7 +8,6 @@ import RightSidebar from './components/RightSidebar';
 import UserCard from './components/UserCard';
 import RoomSetupModal from './components/RoomSetupModal.jsx';
 import YouTubePlayer from './components/YouTubePlayer.jsx';
-import SpotifyPlayer from './components/SpotifyPlayer.jsx';
 
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3001';
 
@@ -22,7 +21,6 @@ function App() {
   const [roomId, setRoomId] = useState(null);
   const [roomName, setRoomName] = useState('');
   const [copySuccess, setCopySuccess] = useState(false);
-  const [spotifyAccessToken, setSpotifyAccessToken] = useState(null);
   const pathRoomId = (() => {
     const p = window.location.pathname.slice(1);
     return /^[A-Za-z0-9]{6}$/.test(p) ? p : null;
@@ -96,24 +94,6 @@ function App() {
     }
   }, []);
 
-  useEffect(() => {
-    const fetchToken = async () => {
-      if (currentUserId) {
-        try {
-          const res = await fetch(`${API_URL}/users/${currentUserId}`);
-          const data = await res.json();
-          if (res.ok && data.services?.spotify?.accessToken) {
-            setSpotifyAccessToken(data.services.spotify.accessToken);
-          }
-        } catch (err) {
-          console.error('Fetch user data error', err);
-        }
-      }
-    };
-    fetchToken();
-  }, [currentUserId]);
-
-
   const [spotifyAuthMessage, setSpotifyAuthMessage] = useState(null);
 
   useEffect(() => {
@@ -139,7 +119,6 @@ function App() {
 
   const progressBarRef = useRef(null);
   const ytPlayerRef = useRef(null);
-  const spotifyPlayerRef = useRef(null);
 
   const [users, setUsers] = useState([]);
   const [currentUserId, setCurrentUserId] = useState(null);
@@ -353,31 +332,22 @@ function App() {
         return;
       }
 
-      if (nowPlaying.platform === 'spotify' && spotifyPlayerRef.current) {
-        if (isPlaying) {
-          spotifyPlayerRef.current.pause();
-        } else {
-          spotifyPlayerRef.current.play(`spotify:track:${nowPlaying.sourceId}`);
+      const newState = isPlaying ? 'Paused' : 'Played';
+      const positionSec = Math.round((progress / 100) * totalDuration);
+
+      if (roomId && currentPlaying >= 0) {
+        try {
+          await fetch(`${API_URL}/rooms/${roomId}/queue/${currentPlaying}/most-recent-change`, {
+            method: 'PATCH',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ state: newState, positionSec })
+          });
+        } catch (err) {
+          console.error('Most recent change update error', err);
         }
-        setIsPlaying(!isPlaying);
-      } else {
-        const newState = isPlaying ? 'Paused' : 'Played';
-        const positionSec = Math.round((progress / 100) * totalDuration);
-  
-        if (roomId && currentPlaying >= 0) {
-          try {
-            await fetch(`${API_URL}/rooms/${roomId}/queue/${currentPlaying}/most-recent-change`, {
-              method: 'PATCH',
-              headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify({ state: newState, positionSec })
-            });
-          } catch (err) {
-            console.error('Most recent change update error', err);
-          }
-        }
-  
-        setIsPlaying(!isPlaying);
       }
+
+      setIsPlaying(!isPlaying);
       setActiveButton('play');
       setTimeout(() => setActiveButton(null), 200);
     } else {
@@ -403,14 +373,6 @@ function App() {
       if (currentPlaying <= 0) return;
       newIndex = currentPlaying - 1;
     }
-
-    if (isAdmin) {
-      const newTrack = queue[newIndex];
-      if (newTrack && newTrack.platform === 'spotify' && spotifyPlayerRef.current) {
-        spotifyPlayerRef.current.play(`spotify:track:${newTrack.sourceId}`);
-      }
-    }
-
     updateCurrentPlaying(newIndex);
     setActiveButton(direction);
     setTimeout(() => setActiveButton(null), 200);
@@ -421,12 +383,6 @@ function App() {
       setIsPlaying(true);
     }
   };
-
-  const handleTokenRefreshed = (newAccessToken, newExpiresIn) => {
-    setSpotifyAccessToken(newAccessToken);
-    // You might want to schedule the next refresh based on newExpiresIn
-  };
-
 
   const handleVideoEnd = () => {
     if (isAdmin) {
@@ -489,7 +445,7 @@ function App() {
     localStorage.setItem('userId', uid);
     if (uname) localStorage.setItem('userName', uname);
     fetchRoomUsers(id);
-    fetchRoomQueue(id);
+    fetchFullRoomQueue(id);
     fetchCurrentPlaying(id);
   };
 
@@ -703,18 +659,6 @@ function App() {
                     videoId={nowPlaying.sourceId}
                     playing={isPlaying}
                     onVideoEnd={handleVideoEnd}
-                  />
-                ) : isAdmin && nowPlaying && nowPlaying.platform === 'spotify' && spotifyAccessToken ? (
-                  <SpotifyPlayer
-                    ref={spotifyPlayerRef}
-                    accessToken={spotifyAccessToken}
-                    onPlayerStateChanged={(state) => {
-                      if (state) {
-                        setIsPlaying(!state.paused);
-                      }
-                    }}
-                    userId={currentUserId}
-                    onTokenRefreshed={handleTokenRefreshed}
                   />
                 ) : nowPlaying ? (
                   <img src={nowPlaying.albumCover} alt="cover" />
