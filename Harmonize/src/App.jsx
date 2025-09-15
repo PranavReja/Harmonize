@@ -78,6 +78,9 @@ function App() {
     }
   };
 
+  const [users, setUsers] = useState([]);
+  const [currentUserId, setCurrentUserId] = useState(null);
+
   useEffect(() => {
     if (pathRoomId) return;
     const savedRoomId = localStorage.getItem('roomId');
@@ -140,9 +143,6 @@ function App() {
   const progressBarRef = useRef(null);
   const ytPlayerRef = useRef(null);
   const spotifyPlayerRef = useRef(null);
-
-  const [users, setUsers] = useState([]);
-  const [currentUserId, setCurrentUserId] = useState(null);
 
   const initialQueue = [];
 
