@@ -9,6 +9,7 @@ import UserCard from './components/UserCard';
 import RoomSetupModal from './components/RoomSetupModal.jsx';
 import YouTubePlayer from './components/YouTubePlayer.jsx';
 import SpotifyPlayer from './components/SpotifyPlayer.jsx';
+import { useParams } from 'react-router-dom';
 
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3001';
 
@@ -23,11 +24,7 @@ function App() {
   const [roomName, setRoomName] = useState('');
   const [copySuccess, setCopySuccess] = useState(false);
   const [spotifyAccessToken, setSpotifyAccessToken] = useState(null);
-  const pathRoomId = (() => {
-    const p = window.location.pathname.slice(1);
-    return /^[A-Za-z0-9]{6}$/.test(p) ? p : null;
-    
-  })();
+  const { roomId: pathRoomId } = useParams();
 
   const isResizingLeft = useRef(false);
 
@@ -97,7 +94,7 @@ function App() {
       };
       verify();
     }
-  }, []);
+  }, [pathRoomId]);
 
   useEffect(() => {
     const fetchToken = async () => {
