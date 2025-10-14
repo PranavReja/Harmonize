@@ -130,6 +130,7 @@ function App() {
 
   const SONG_TITLE = 'Song Name 🎵';
   const [totalDuration, setTotalDuration] = useState(0);
+  const [isYtPlayerReady, setIsYtPlayerReady] = useState(false);
 
   const [progress, setProgress] = useState(0);
   const [isSeeking, setIsSeeking] = useState(false);
@@ -700,6 +701,7 @@ function App() {
                     videoId={nowPlaying.sourceId}
                     playing={isPlaying}
                     onVideoEnd={handleVideoEnd}
+                    onReady={() => setIsYtPlayerReady(true)}
                   />
                 ) : isAdmin && nowPlaying && nowPlaying.platform === 'spotify' && spotifyAccessToken ? (
                   <SpotifyPlayer

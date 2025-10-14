@@ -60,6 +60,30 @@ async function fetchDuration(platform, id) {
   return null;
 }
 
+async function deleteOrphanedUsers() {
+    try {
+        const allUsers = await User.find({});
+        const rooms = await Room.find({});
+        const usersInRooms = new Set();
+
+        rooms.forEach(room => {
+            room.users.forEach(user => {
+                usersInRooms.add(user.userId);
+            });
+        });
+
+        const usersToDelete = allUsers.filter(user => !usersInRooms.has(user.userId));
+
+        if (usersToDelete.length > 0) {
+            const userIdsToDelete = usersToDelete.map(user => user.userId);
+            await User.deleteMany({ userId: { $in: userIdsToDelete } });
+            console.log(`Deleted ${userIdsToDelete.length} orphaned users.`);
+        }
+    } catch (error) {
+        console.error('Error deleting orphaned users:', error);
+    }
+}
+
 
 const router = express.Router(); // Create a new router for /rooms endpoints
 
@@ -312,12 +336,13 @@ router.delete('/:id', async (req, res) => {
     try {
       const deletedRoom = await Room.findOneAndDelete({ roomId });
   
-      if (!deletedRoom) {
-        return res.status(404).json({ error: 'Room not found' });
-      }
-  
-      res.json({ message: `Room ${roomId} deleted successfully.` });
-    } catch (err) {
+            if (!deletedRoom) {
+              return res.status(404).json({ error: 'Room not found' });
+            }
+      
+            await deleteOrphanedUsers();
+      
+            res.json({ message: `Room ${roomId} deleted successfully.` });    } catch (err) {
       console.error(err);
       res.status(500).json({ error: 'Internal server error' });
     }
@@ -349,6 +374,7 @@ router.patch('/:id/join-user', async (req, res) => {
     if (oldRoom) {
       oldRoom.users = oldRoom.users.filter(u => u.userId !== userId);
       await oldRoom.save();
+      await deleteOrphanedUsers();
     }
   }
 
@@ -420,6 +446,8 @@ router.patch('/:id/remove-user', async (req, res) => {
     user.currentRoom = null;
     await user.save();
   }
+
+  await deleteOrphanedUsers();
 
   res.json({ message: 'User removed from room', users: room.users });
 });

@@ -1,6 +1,6 @@
 import React, { useEffect, useRef, forwardRef, useImperativeHandle, useState } from 'react';
 
-function YouTubePlayer({ videoId, playing, onVideoEnd }, ref) {
+function YouTubePlayer({ videoId, playing, onVideoEnd, onReady }, ref) {
   const containerRef = useRef(null);
   const playerRef = useRef(null);
   const [isPlayerReady, setIsPlayerReady] = useState(false);
@@ -41,6 +41,9 @@ function YouTubePlayer({ videoId, playing, onVideoEnd }, ref) {
 
   const onPlayerReady = () => {
     setIsPlayerReady(true);
+    if (onReady) {
+      onReady();
+    }
   };
 
   const createPlayer = () => {
