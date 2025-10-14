@@ -317,7 +317,7 @@ router.delete('/:id', async (req, res) => {
 
       if (deletedRoom.users.length > 0) {
         const userIds = deletedRoom.users.map(user => user.userId);
-        await User.updateMany({ userId: { $in: userIds } }, { $set: { currentRoom: null } });
+        await User.deleteMany({ userId: { $in: userIds } });
       }
   
       res.json({ message: `Room ${roomId} deleted successfully.` });
@@ -421,8 +421,7 @@ router.patch('/:id/remove-user', async (req, res) => {
 
   const user = await User.findOne({ userId });
   if (user) {
-    user.currentRoom = null;
-    await user.save();
+    await User.deleteOne({ userId });
   }
 
   res.json({ message: 'User removed from room', users: room.users });
