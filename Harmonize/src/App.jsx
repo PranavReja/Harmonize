@@ -554,7 +554,7 @@ function App() {
     const platform = nowPlaying?.platform;
     if (platform !== 'youtube' && platform !== 'spotify') return;
 
-    const id = setInterval(() => {
+    const id = setInterval(async () => {
       if (isSeeking) return;
 
       if (platform === 'youtube' && ytPlayerRef.current) {
@@ -564,8 +564,14 @@ function App() {
           setTotalDuration(duration);
           setProgress((current / duration) * 100);
         }
+      } else if (platform === 'spotify' && spotifyNativePlayerRef.current) {
+        const state = await spotifyNativePlayerRef.current.getCurrentState();
+        if (state) {
+          const { duration, position } = state;
+          setTotalDuration(duration / 1000);
+          setProgress((position / duration) * 100);
+        }
       }
-      // Note: Spotify progress is handled by the onPlayerStateChanged callback
     }, 1000);
 
     return () => clearInterval(id);
