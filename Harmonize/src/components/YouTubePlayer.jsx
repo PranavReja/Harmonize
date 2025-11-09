@@ -59,7 +59,7 @@ function YouTubePlayer({ videoId, playing, onVideoEnd, onReady }, ref) {
       height: '100%',
       width: '100%',
       playerVars: {
-        autoplay: 0,
+        autoplay: 1,
         controls: 1,
       },
       events: {

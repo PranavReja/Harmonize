@@ -7,21 +7,32 @@ let spotifyToken = null;
 let spotifyTokenExpires = 0;
 
 async function getSpotifyAccessToken() {
-  if (!spotifyToken || Date.now() >= spotifyTokenExpires) {
-    const creds = `${process.env.SPOTIFY_CLIENT_ID}:${process.env.SPOTIFY_CLIENT_SECRET}`;
-    const res = await fetch('https://accounts.spotify.com/api/token', {
-      method: 'POST',
-      headers: {
-        Authorization: 'Basic ' + Buffer.from(creds).toString('base64'),
-        'Content-Type': 'application/x-www-form-urlencoded'
-      },
-      body: 'grant_type=client_credentials'
-    });
-    const data = await res.json();
-    spotifyToken = data.access_token;
-    spotifyTokenExpires = Date.now() + (data.expires_in - 60) * 1000;
+  try {
+    if (!spotifyToken || Date.now() >= spotifyTokenExpires) {
+      const creds = `${process.env.SPOTIFY_CLIENT_ID}:${process.env.SPOTIFY_CLIENT_SECRET}`;
+      if (!process.env.SPOTIFY_CLIENT_ID || !process.env.SPOTIFY_CLIENT_SECRET) {
+        throw new Error('Spotify client ID or secret not set');
+      }
+      const res = await fetch('https://accounts.spotify.com/api/token', {
+        method: 'POST',
+        headers: {
+          Authorization: 'Basic ' + Buffer.from(creds).toString('base64'),
+          'Content-Type': 'application/x-www-form-urlencoded'
+        },
+        body: 'grant_type=client_credentials'
+      });
+      if (!res.ok) {
+        throw new Error(`Failed to get Spotify access token: ${res.statusText}`);
+      }
+      const data = await res.json();
+      spotifyToken = data.access_token;
+      spotifyTokenExpires = Date.now() + (data.expires_in - 60) * 1000;
+    }
+    return spotifyToken;
+  } catch (err) {
+    console.error('Error getting Spotify access token:', err);
+    throw err; // re-throw the error to be caught by the route handler
   }
-  return spotifyToken;
 }
 
 function parseISODuration(str) {

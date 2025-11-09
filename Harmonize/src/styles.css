@@ -583,6 +583,8 @@ transform: scale(1.02);
   .cover-placeholder {
     width: min(40vw, 320px);
     height: min(40vw, 320px);
+    max-width: 320px;
+    max-height: 320px;
     background-color: #333;
     border-radius: 1em;
     display: flex;
@@ -591,18 +593,22 @@ transform: scale(1.02);
     font-size: 1.2em;
     color: #aaa;
     box-shadow: 0 0 16px rgba(0,0,0,0.3);
-    margin-top: -110px;
-    max-height: 250px;
-    margin-bottom:-15px;
-    width: 100%;
-    max-width: 250px;
+  }
+
+  .now-playing-cover img {
+    width: min(40vw, 320px);
+    height: min(40vw, 320px);
+    max-width: 320px;
+    max-height: 320px;
+    border-radius: 1em;
+    box-shadow: 0 0 16px rgba(0,0,0,0.3);
   }
 
   .youtube-player {
     width: min(40vw, 320px);
     height: min(40vw, 320px);
-    max-width: 250px;
-    max-height: 250px;
+    max-width: 320px;
+    max-height: 320px;
     border-radius: 1em;
     overflow: hidden;
     box-shadow: 0 0 16px rgba(0,0,0,0.3);
