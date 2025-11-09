@@ -642,7 +642,7 @@ function App() {
       setTotalDuration(duration / 1000);
       setProgress((position / duration) * 100);
 
-      if (nowPlaying.sourceId !== current_track.id) {
+      if (nowPlaying && nowPlaying.sourceId !== current_track.id) {
         // The player has changed to a different track, probably from another device
         // We can try to find this track in the queue and update the currentPlaying index
       }
