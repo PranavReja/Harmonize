@@ -351,6 +351,9 @@ function App() {
         return;
       }
 
+      const newState = isPlaying ? 'Paused' : 'Played';
+      const positionSec = Math.round((progress / 100) * totalDuration);
+
       if (nowPlaying.platform === 'spotify' && spotifyNativePlayerRef.current) {
         if (isPlaying) {
           spotifyNativePlayerRef.current.pause();
@@ -358,27 +361,24 @@ function App() {
           const positionMs = (progress / 100) * totalDuration * 1000;
           spotifyNativePlayerRef.current.play(`spotify:track:${nowPlaying.sourceId}`, positionMs);
         }
-        setIsPlaying(!isPlaying);
-      } else {
-        const newState = isPlaying ? 'Paused' : 'Played';
-        const positionSec = Math.round((progress / 100) * totalDuration);
-  
-        if (roomId && currentPlaying >= 0) {
-          try {
-            await fetch(`${API_URL}/rooms/${roomId}/queue/${currentPlaying}/most-recent-change`, {
-              method: 'PATCH',
-              headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify({ state: newState, positionSec })
-            });
-          } catch (err) {
-            console.error('Most recent change update error', err);
-          }
-        }
-  
-        setIsPlaying(!isPlaying);
       }
+      
+      if (roomId && currentPlaying >= 0) {
+        try {
+          await fetch(`${API_URL}/rooms/${roomId}/queue/${currentPlaying}/most-recent-change`, {
+            method: 'PATCH',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ state: newState, positionSec })
+          });
+        } catch (err) {
+          console.error('Most recent change update error', err);
+        }
+      }
+
+      setIsPlaying(!isPlaying);
       setActiveButton('play');
       setTimeout(() => setActiveButton(null), 200);
+
     } else {
       // Non-admin logic
       const positionSec = Math.round((progress / 100) * totalDuration);

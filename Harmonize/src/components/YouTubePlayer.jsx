@@ -91,7 +91,7 @@ function YouTubePlayer({ videoId, playing, onVideoEnd, onReady }, ref) {
         playerRef.current.pauseVideo();
       }
     }
-  }, [playing, isPlayerReady]);
+  }, [playing, isPlayerReady, videoId]);
 
   useImperativeHandle(ref, () => ({
     getCurrentTime: () => playerRef.current?.getCurrentTime() || 0,
