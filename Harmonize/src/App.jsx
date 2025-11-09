@@ -407,13 +407,6 @@ function App() {
       newIndex = currentPlaying - 1;
     }
 
-    if (isAdmin) {
-      const newTrack = queue[newIndex];
-      if (newTrack && newTrack.platform === 'spotify' && spotifyNativePlayerRef.current) {
-        spotifyNativePlayerRef.current.play(`spotify:track:${newTrack.sourceId}`);
-      }
-    }
-
     updateCurrentPlaying(newIndex);
     setActiveButton(direction);
     setTimeout(() => setActiveButton(null), 200);
