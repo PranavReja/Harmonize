@@ -130,7 +130,6 @@ function App() {
 
   const SONG_TITLE = 'Song Name 🎵';
   const [totalDuration, setTotalDuration] = useState(0);
-  const [spotifyDeviceId, setSpotifyDeviceId] = useState(null);
   const [isYtPlayerReady, setIsYtPlayerReady] = useState(false);
 
   const [progress, setProgress] = useState(0);
@@ -410,7 +409,7 @@ function App() {
 
     if (isAdmin) {
       const newTrack = queue[newIndex];
-      if (newTrack && newTrack.platform === 'spotify' && spotifyNativePlayerRef.current && spotifyDeviceId) {
+      if (newTrack && newTrack.platform === 'spotify' && spotifyNativePlayerRef.current) {
         spotifyNativePlayerRef.current.play(`spotify:track:${newTrack.sourceId}`);
       }
     }
@@ -532,7 +531,7 @@ function App() {
   const prevSourceId = useRef();
 
   useEffect(() => {
-    if (isAdmin && nowPlaying && nowPlaying.platform === 'spotify' && spotifyNativePlayerRef.current && spotifyDeviceId) {
+    if (isAdmin && nowPlaying && nowPlaying.platform === 'spotify' && spotifyNativePlayerRef.current) {
       if (nowPlaying.sourceId !== prevSourceId.current) {
         const positionMs = nowPlaying.mostRecentChange?.positionSec ? nowPlaying.mostRecentChange.positionSec * 1000 : 0;
         spotifyNativePlayerRef.current.play(`spotify:track:${nowPlaying.sourceId}`, positionMs);
@@ -540,7 +539,7 @@ function App() {
         prevSourceId.current = nowPlaying.sourceId;
       }
     }
-  }, [nowPlaying, isAdmin, spotifyDeviceId]);
+  }, [nowPlaying, isAdmin]);
 
   useEffect(() => {
     if (nowPlaying) {
@@ -652,6 +651,15 @@ function App() {
 
   return (
     <>
+      {isAdmin && spotifyAccessToken && (
+        <SpotifyNativePlayer
+          ref={spotifyNativePlayerRef}
+          accessToken={spotifyAccessToken}
+          onPlayerStateChanged={onPlayerStateChanged}
+          userId={currentUserId}
+          onTokenRefreshed={handleTokenRefreshed}
+        />
+      )}
       {spotifyAuthMessage && (
         <div style={{
           position: 'fixed',
@@ -750,15 +758,6 @@ function App() {
                     playing={isPlaying}
                     onVideoEnd={handleVideoEnd}
                     onReady={() => setIsYtPlayerReady(true)}
-                  />
-                ) : isAdmin && nowPlaying && nowPlaying.platform === 'spotify' && spotifyAccessToken ? (
-                  <SpotifyNativePlayer
-                    ref={spotifyNativePlayerRef}
-                    accessToken={spotifyAccessToken}
-                    onPlayerStateChanged={onPlayerStateChanged}
-                    userId={currentUserId}
-                    onTokenRefreshed={handleTokenRefreshed}
-                    onReady={setSpotifyDeviceId}
                   />
                 ) : nowPlaying ? (
                   <img src={nowPlaying.albumCover} alt="cover" />
@@ -868,6 +867,3 @@ function App() {
       </div>
     </>
   );
-}
-
-export default App;
