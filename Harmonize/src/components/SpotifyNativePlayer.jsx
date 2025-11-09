@@ -7,6 +7,17 @@ function SpotifyNativePlayer({ accessToken, onPlayerStateChanged, userId, onToke
   const tokenRef = useRef(accessToken);
   const deviceIdRef = useRef(null);
 
+  const onPlayerStateChangedRef = useRef(onPlayerStateChanged);
+  const onTokenRefreshedRef = useRef(onTokenRefreshed);
+
+  useEffect(() => {
+    onPlayerStateChangedRef.current = onPlayerStateChanged;
+  }, [onPlayerStateChanged]);
+
+  useEffect(() => {
+    onTokenRefreshedRef.current = onTokenRefreshed;
+  }, [onTokenRefreshed]);
+
   useEffect(() => {
     tokenRef.current = accessToken;
   }, [accessToken]);
@@ -19,8 +30,8 @@ function SpotifyNativePlayer({ accessToken, onPlayerStateChanged, userId, onToke
       }
       const data = await response.json();
       tokenRef.current = data.accessToken;
-      if (onTokenRefreshed) {
-        onTokenRefreshed(data.accessToken, data.expiresIn);
+      if (onTokenRefreshedRef.current) {
+        onTokenRefreshedRef.current(data.accessToken, data.expiresIn);
       }
       return data.accessToken;
     } catch (error) {
@@ -54,8 +65,8 @@ function SpotifyNativePlayer({ accessToken, onPlayerStateChanged, userId, onToke
       });
 
       player.addListener('player_state_changed', (state) => {
-        if (onPlayerStateChanged) {
-          onPlayerStateChanged(state);
+        if (onPlayerStateChangedRef.current) {
+          onPlayerStateChangedRef.current(state);
         }
       });
 
@@ -79,7 +90,7 @@ function SpotifyNativePlayer({ accessToken, onPlayerStateChanged, userId, onToke
       }
       window.onSpotifyWebPlaybackSDKReady = null;
     };
-  }, [userId, onPlayerStateChanged, onTokenRefreshed]);
+  }, [userId]);
 
   const play = async (trackUri) => {
     const player = playerRef.current;
