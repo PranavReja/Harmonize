@@ -355,7 +355,8 @@ function App() {
         if (isPlaying) {
           spotifyNativePlayerRef.current.pause();
         } else {
-          spotifyNativePlayerRef.current.play(`spotify:track:${nowPlaying.sourceId}`);
+          const positionMs = (progress / 100) * totalDuration * 1000;
+          spotifyNativePlayerRef.current.play(`spotify:track:${nowPlaying.sourceId}`, positionMs);
         }
         setIsPlaying(!isPlaying);
       } else {
@@ -522,6 +523,15 @@ function App() {
       handleTogglePlay();
     }
   }, [nowPlaying, isAdmin]);
+
+  useEffect(() => {
+    if (isAdmin && nowPlaying && nowPlaying.platform === 'spotify' && spotifyNativePlayerRef.current) {
+      const positionMs = nowPlaying.mostRecentChange?.positionSec ? nowPlaying.mostRecentChange.positionSec * 1000 : 0;
+      spotifyNativePlayerRef.current.play(`spotify:track:${nowPlaying.sourceId}`, positionMs);
+      setIsPlaying(true);
+    }
+  }, [nowPlaying, isAdmin]);
+
   useEffect(() => {
     if (nowPlaying) {
       if (nowPlaying.platform === 'spotify') {

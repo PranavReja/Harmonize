@@ -92,14 +92,18 @@ function SpotifyNativePlayer({ accessToken, onPlayerStateChanged, userId, onToke
     };
   }, [userId]);
 
-  const play = async (trackUri) => {
+  const play = async (trackUri, position_ms = 0) => {
     const player = playerRef.current;
     if (!player || !deviceIdRef.current) return;
 
     const playRequest = async (token) => {
+      const body = {
+        uris: [trackUri],
+        position_ms: position_ms,
+      };
       const response = await fetch(`https://api.spotify.com/v1/me/player/play?device_id=${deviceIdRef.current}`, {
         method: 'PUT',
-        body: JSON.stringify({ uris: [trackUri] }),
+        body: JSON.stringify(body),
         headers: {
           'Content-Type': 'application/json',
           Authorization: `Bearer ${token}`,
