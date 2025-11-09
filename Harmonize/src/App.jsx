@@ -8,7 +8,7 @@ import RightSidebar from './components/RightSidebar';
 import UserCard from './components/UserCard';
 import RoomSetupModal from './components/RoomSetupModal.jsx';
 import YouTubePlayer from './components/YouTubePlayer.jsx';
-import SpotifyPlayer from './components/SpotifyPlayer.jsx';
+import SpotifyNativePlayer from './components/SpotifyNativePlayer.jsx';
 import { useParams } from 'react-router-dom';
 
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3001';
@@ -140,7 +140,7 @@ function App() {
 
   const progressBarRef = useRef(null);
   const ytPlayerRef = useRef(null);
-  const spotifyPlayerRef = useRef(null);
+  const spotifyNativePlayerRef = useRef(null);
 
   const initialQueue = [];
 
@@ -303,26 +303,26 @@ function App() {
 
   const handleSeekEnd = async () => {
     setIsSeeking(false);
-    if (
-      isAdmin &&
-      nowPlaying?.platform === 'youtube' &&
-      ytPlayerRef.current &&
-      totalDuration
-    ) {
-      const newTime = (progress / 100) * totalDuration;
-      ytPlayerRef.current.seekTo(newTime);
+    if (!isAdmin || !nowPlaying) return;
 
-      if (roomId && currentPlaying >= 0) {
-        try {
-          const newState = isPlaying ? 'Played' : 'Paused';
-          await fetch(`${API_URL}/rooms/${roomId}/queue/${currentPlaying}/most-recent-change`, {
-            method: 'PATCH',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ state: newState, positionSec: newTime })
-          });
-        } catch (err) {
-          console.error('Most recent change update error', err);
-        }
+    const newTime = (progress / 100) * totalDuration;
+
+    if (nowPlaying.platform === 'youtube' && ytPlayerRef.current) {
+      ytPlayerRef.current.seekTo(newTime);
+    } else if (nowPlaying.platform === 'spotify' && spotifyNativePlayerRef.current) {
+      spotifyNativePlayerRef.current.seek(newTime * 1000);
+    }
+
+    if (roomId && currentPlaying >= 0) {
+      try {
+        const newState = isPlaying ? 'Played' : 'Paused';
+        await fetch(`${API_URL}/rooms/${roomId}/queue/${currentPlaying}/most-recent-change`, {
+          method: 'PATCH',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ state: newState, positionSec: newTime }),
+        });
+      } catch (err) {
+        console.error('Most recent change update error', err);
       }
     }
   };
@@ -351,11 +351,11 @@ function App() {
         return;
       }
 
-      if (nowPlaying.platform === 'spotify' && spotifyPlayerRef.current) {
+      if (nowPlaying.platform === 'spotify' && spotifyNativePlayerRef.current) {
         if (isPlaying) {
-          spotifyPlayerRef.current.pause();
+          spotifyNativePlayerRef.current.pause();
         } else {
-          spotifyPlayerRef.current.play(`spotify:track:${nowPlaying.sourceId}`);
+          spotifyNativePlayerRef.current.play(`spotify:track:${nowPlaying.sourceId}`);
         }
         setIsPlaying(!isPlaying);
       } else {
@@ -404,8 +404,8 @@ function App() {
 
     if (isAdmin) {
       const newTrack = queue[newIndex];
-      if (newTrack && newTrack.platform === 'spotify' && spotifyPlayerRef.current) {
-        spotifyPlayerRef.current.play(`spotify:track:${newTrack.sourceId}`);
+      if (newTrack && newTrack.platform === 'spotify' && spotifyNativePlayerRef.current) {
+        spotifyNativePlayerRef.current.play(`spotify:track:${newTrack.sourceId}`);
       }
     }
 
@@ -524,29 +524,38 @@ function App() {
   }, [nowPlaying, isAdmin]);
   useEffect(() => {
     if (nowPlaying) {
-      if (isAdmin && nowPlaying.platform !== 'youtube') {
-        setTotalDuration(0);
+      if (nowPlaying.platform === 'spotify') {
+        // Duration for Spotify is set in the onPlayerStateChanged callback
       } else {
         setTotalDuration(nowPlaying.durationSec || 0);
       }
     } else {
       setTotalDuration(0);
     }
-  }, [currentPlaying, nowPlaying, isAdmin]);
+  }, [currentPlaying, nowPlaying]);
 
 
 
   useEffect(() => {
-    if (!isAdmin || nowPlaying?.platform !== 'youtube') return;
+    if (!isAdmin) return;
+
+    const platform = nowPlaying?.platform;
+    if (platform !== 'youtube' && platform !== 'spotify') return;
+
     const id = setInterval(() => {
-      if (isSeeking || !ytPlayerRef.current) return;
-      const duration = ytPlayerRef.current.getDuration();
-      const current = ytPlayerRef.current.getCurrentTime();
-      if (duration > 0) {
-        setTotalDuration(duration);
-        setProgress((current / duration) * 100);
+      if (isSeeking) return;
+
+      if (platform === 'youtube' && ytPlayerRef.current) {
+        const duration = ytPlayerRef.current.getDuration();
+        const current = ytPlayerRef.current.getCurrentTime();
+        if (duration > 0) {
+          setTotalDuration(duration);
+          setProgress((current / duration) * 100);
+        }
       }
+      // Note: Spotify progress is handled by the onPlayerStateChanged callback
     }, 1000);
+
     return () => clearInterval(id);
   }, [isAdmin, nowPlaying, isSeeking]);
 
@@ -555,7 +564,7 @@ function App() {
       return;
     }
 
-    const { timeOfSong, mostRecentChange, durationSec: duration } = nowPlaying;
+    const { timeOfSong, mostRecentChange, durationSec: duration, platform } = nowPlaying;
 
     if (!timeOfSong) {
       return;
@@ -704,12 +713,25 @@ function App() {
                     onReady={() => setIsYtPlayerReady(true)}
                   />
                 ) : isAdmin && nowPlaying && nowPlaying.platform === 'spotify' && spotifyAccessToken ? (
-                  <SpotifyPlayer
-                    ref={spotifyPlayerRef}
+                  <SpotifyNativePlayer
+                    ref={spotifyNativePlayerRef}
                     accessToken={spotifyAccessToken}
                     onPlayerStateChanged={(state) => {
                       if (state) {
-                        setIsPlaying(!state.paused);
+                        const {
+                          duration,
+                          position,
+                          paused,
+                          track_window: { current_track },
+                        } = state;
+                        setIsPlaying(!paused);
+                        setTotalDuration(duration / 1000);
+                        setProgress((position / duration) * 100);
+
+                        if (nowPlaying.sourceId !== current_track.id) {
+                          // The player has changed to a different track, probably from another device
+                          // We can try to find this track in the queue and update the currentPlaying index
+                        }
                       }
                     }}
                     userId={currentUserId}
