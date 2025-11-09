@@ -1,6 +1,6 @@
 import TopBar from './components/TopBar';
 import './styles.css';
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState, useRef, useEffect, useCallback } from 'react';
 import YouTubeLogo from './assets/youtube.png';
 import SpotifyLogo from './assets/spotify.svg';
 import SoundCloudLogo from './assets/soundcloud.svg';
@@ -611,6 +611,25 @@ function App() {
     };
   }, [nowPlaying, isAdmin]);
 
+  const onPlayerStateChanged = useCallback((state) => {
+    if (state) {
+      const {
+        duration,
+        position,
+        paused,
+        track_window: { current_track },
+      } = state;
+      setIsPlaying(!paused);
+      setTotalDuration(duration / 1000);
+      setProgress((position / duration) * 100);
+
+      if (nowPlaying.sourceId !== current_track.id) {
+        // The player has changed to a different track, probably from another device
+        // We can try to find this track in the queue and update the currentPlaying index
+      }
+    }
+  }, [nowPlaying]);
+
   return (
     <>
       {spotifyAuthMessage && (
@@ -716,24 +735,7 @@ function App() {
                   <SpotifyNativePlayer
                     ref={spotifyNativePlayerRef}
                     accessToken={spotifyAccessToken}
-                    onPlayerStateChanged={(state) => {
-                      if (state) {
-                        const {
-                          duration,
-                          position,
-                          paused,
-                          track_window: { current_track },
-                        } = state;
-                        setIsPlaying(!paused);
-                        setTotalDuration(duration / 1000);
-                        setProgress((position / duration) * 100);
-
-                        if (nowPlaying.sourceId !== current_track.id) {
-                          // The player has changed to a different track, probably from another device
-                          // We can try to find this track in the queue and update the currentPlaying index
-                        }
-                      }
-                    }}
+                    onPlayerStateChanged={onPlayerStateChanged}
                     userId={currentUserId}
                     onTokenRefreshed={handleTokenRefreshed}
                   />
