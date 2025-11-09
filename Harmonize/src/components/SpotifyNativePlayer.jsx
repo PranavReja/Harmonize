@@ -2,13 +2,14 @@ import React, { useEffect, useRef, forwardRef, useImperativeHandle } from 'react
 
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3001';
 
-function SpotifyNativePlayer({ accessToken, onPlayerStateChanged, userId, onTokenRefreshed }, ref) {
+function SpotifyNativePlayer({ accessToken, onPlayerStateChanged, userId, onTokenRefreshed, onReady }, ref) {
   const playerRef = useRef(null);
   const tokenRef = useRef(accessToken);
   const deviceIdRef = useRef(null);
 
   const onPlayerStateChangedRef = useRef(onPlayerStateChanged);
   const onTokenRefreshedRef = useRef(onTokenRefreshed);
+  const onReadyRef = useRef(onReady);
 
   useEffect(() => {
     onPlayerStateChangedRef.current = onPlayerStateChanged;
@@ -17,6 +18,10 @@ function SpotifyNativePlayer({ accessToken, onPlayerStateChanged, userId, onToke
   useEffect(() => {
     onTokenRefreshedRef.current = onTokenRefreshed;
   }, [onTokenRefreshed]);
+
+  useEffect(() => {
+    onReadyRef.current = onReady;
+  }, [onReady]);
 
   useEffect(() => {
     tokenRef.current = accessToken;
@@ -58,6 +63,9 @@ function SpotifyNativePlayer({ accessToken, onPlayerStateChanged, userId, onToke
       player.addListener('ready', ({ device_id }) => {
         console.log('Ready with Device ID', device_id);
         deviceIdRef.current = device_id;
+        if (onReadyRef.current) {
+          onReadyRef.current(device_id);
+        }
       });
 
       player.addListener('not_ready', ({ device_id }) => {

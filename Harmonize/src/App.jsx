@@ -130,6 +130,7 @@ function App() {
 
   const SONG_TITLE = 'Song Name 🎵';
   const [totalDuration, setTotalDuration] = useState(0);
+  const [spotifyDeviceId, setSpotifyDeviceId] = useState(null);
   const [isYtPlayerReady, setIsYtPlayerReady] = useState(false);
 
   const [progress, setProgress] = useState(0);
@@ -395,6 +396,10 @@ function App() {
   };
 
   const handleSkip = (direction) => {
+    if (nowPlaying && nowPlaying.platform === 'spotify' && spotifyNativePlayerRef.current) {
+      spotifyNativePlayerRef.current.pause();
+    }
+
     let newIndex = currentPlaying;
     if (direction === 'next') {
       newIndex = Math.min(currentPlaying + 1, queue.length - 1);
@@ -405,7 +410,7 @@ function App() {
 
     if (isAdmin) {
       const newTrack = queue[newIndex];
-      if (newTrack && newTrack.platform === 'spotify' && spotifyNativePlayerRef.current) {
+      if (newTrack && newTrack.platform === 'spotify' && spotifyNativePlayerRef.current && spotifyDeviceId) {
         spotifyNativePlayerRef.current.play(`spotify:track:${newTrack.sourceId}`);
       }
     }
@@ -527,7 +532,7 @@ function App() {
   const prevSourceId = useRef();
 
   useEffect(() => {
-    if (isAdmin && nowPlaying && nowPlaying.platform === 'spotify' && spotifyNativePlayerRef.current) {
+    if (isAdmin && nowPlaying && nowPlaying.platform === 'spotify' && spotifyNativePlayerRef.current && spotifyDeviceId) {
       if (nowPlaying.sourceId !== prevSourceId.current) {
         const positionMs = nowPlaying.mostRecentChange?.positionSec ? nowPlaying.mostRecentChange.positionSec * 1000 : 0;
         spotifyNativePlayerRef.current.play(`spotify:track:${nowPlaying.sourceId}`, positionMs);
@@ -535,7 +540,7 @@ function App() {
         prevSourceId.current = nowPlaying.sourceId;
       }
     }
-  }, [nowPlaying, isAdmin]);
+  }, [nowPlaying, isAdmin, spotifyDeviceId]);
 
   useEffect(() => {
     if (nowPlaying) {
@@ -753,6 +758,7 @@ function App() {
                     onPlayerStateChanged={onPlayerStateChanged}
                     userId={currentUserId}
                     onTokenRefreshed={handleTokenRefreshed}
+                    onReady={setSpotifyDeviceId}
                   />
                 ) : nowPlaying ? (
                   <img src={nowPlaying.albumCover} alt="cover" />
