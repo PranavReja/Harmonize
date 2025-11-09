@@ -524,11 +524,16 @@ function App() {
     }
   }, [nowPlaying, isAdmin]);
 
+  const prevSourceId = useRef();
+
   useEffect(() => {
     if (isAdmin && nowPlaying && nowPlaying.platform === 'spotify' && spotifyNativePlayerRef.current) {
-      const positionMs = nowPlaying.mostRecentChange?.positionSec ? nowPlaying.mostRecentChange.positionSec * 1000 : 0;
-      spotifyNativePlayerRef.current.play(`spotify:track:${nowPlaying.sourceId}`, positionMs);
-      setIsPlaying(true);
+      if (nowPlaying.sourceId !== prevSourceId.current) {
+        const positionMs = nowPlaying.mostRecentChange?.positionSec ? nowPlaying.mostRecentChange.positionSec * 1000 : 0;
+        spotifyNativePlayerRef.current.play(`spotify:track:${nowPlaying.sourceId}`, positionMs);
+        setIsPlaying(true);
+        prevSourceId.current = nowPlaying.sourceId;
+      }
     }
   }, [nowPlaying, isAdmin]);
 
