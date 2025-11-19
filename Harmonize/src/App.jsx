@@ -141,6 +141,7 @@ function App() {
   const progressBarRef = useRef(null);
   const ytPlayerRef = useRef(null);
   const spotifyNativePlayerRef = useRef(null);
+  const spotifyPrevPlayerState = useRef(null);
 
   const initialQueue = [];
 
@@ -407,15 +408,17 @@ function App() {
       newIndex = currentPlaying - 1;
     }
 
+    // If the next track is a YouTube video, we need to handle the autoplay carefully
+    const nextTrack = queue[newIndex];
+    if (isAdmin && nextTrack?.platform === 'youtube') {
+      setIsPlaying(false);
+    } else if (isAdmin) {
+      setIsPlaying(true);
+    }
+
     updateCurrentPlaying(newIndex);
     setActiveButton(direction);
     setTimeout(() => setActiveButton(null), 200);
-
-    // When the admin skips, optimistically set the UI to "playing"
-    // because the new track will autoplay.
-    if (isAdmin) {
-      setIsPlaying(true);
-    }
   };
 
   const handleTokenRefreshed = (newAccessToken, newExpiresIn) => {
@@ -637,6 +640,21 @@ function App() {
         paused,
         track_window: { current_track },
       } = state;
+
+      // Track end detection
+      if (
+        isAdmin &&
+        spotifyPrevPlayerState.current?.position > 0 &&
+        position === 0 &&
+        paused &&
+        spotifyPrevPlayerState.current?.position / spotifyPrevPlayerState.current?.duration > 0.99
+      ) {
+        handleSkip('next');
+      }
+
+      spotifyPrevPlayerState.current = state;
+
+
       setIsPlaying(!paused);
       setTotalDuration(duration / 1000);
       setProgress((position / duration) * 100);
@@ -646,7 +664,7 @@ function App() {
         // We can try to find this track in the queue and update the currentPlaying index
       }
     }
-  }, [nowPlaying]);
+  }, [nowPlaying, isAdmin]);
 
   return (
     <>
@@ -756,7 +774,12 @@ function App() {
                     videoId={nowPlaying.sourceId}
                     playing={isPlaying}
                     onVideoEnd={handleVideoEnd}
-                    onReady={() => setIsYtPlayerReady(true)}
+                    onReady={() => {
+                      setIsYtPlayerReady(true);
+                      if (isAdmin) {
+                        setIsPlaying(true);
+                      }
+                    }}
                   />
                 ) : nowPlaying ? (
                   <img src={nowPlaying.albumCover} alt="cover" />
