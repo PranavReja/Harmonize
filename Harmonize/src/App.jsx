@@ -646,10 +646,10 @@ function App() {
         isAdmin &&
         spotifyPrevPlayerState.current?.position > 0 &&
         position === 0 &&
-        paused &&
-        spotifyPrevPlayerState.current?.position / spotifyPrevPlayerState.current?.duration > 0.99
+        paused
       ) {
         handleSkip('next');
+        return; // Skip the rest of the handler to avoid race conditions
       }
 
       spotifyPrevPlayerState.current = state;
@@ -664,7 +664,7 @@ function App() {
         // We can try to find this track in the queue and update the currentPlaying index
       }
     }
-  }, [nowPlaying, isAdmin]);
+  }, [nowPlaying, isAdmin, handleSkip]);
 
   return (
     <>
