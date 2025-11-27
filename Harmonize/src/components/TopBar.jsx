@@ -13,6 +13,7 @@ export default function TopBar({
   users,
   currentUserId,
   refreshUsers,
+  showBanner,
 }) {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isLinkModalOpen, setIsLinkModalOpen] = useState(false);
@@ -206,17 +207,17 @@ const activeServices = ['YouTube', 'Spotify', 'SoundCloud']; // 👈 change this
       );
       const data = await res.json();
       if (!data.error) {
-        addToQueueBottom(
-          createQueueItem(
-            {
-              id: data.id,
-              title: data.title,
-              artist: data.artist,
-              thumbnail: data.thumbnail,
-            },
-            data.service
-          )
+        const item = createQueueItem(
+          {
+            id: data.id,
+            title: data.title,
+            artist: data.artist,
+            thumbnail: data.thumbnail,
+          },
+          data.service
         );
+        addToQueueBottom(item);
+        showBanner(`Added to queue: ${item.title}`);
         setIsLinkModalOpen(false);
         setLinkInput('');
       } else {
@@ -294,40 +295,51 @@ const activeServices = ['YouTube', 'Spotify', 'SoundCloud']; // 👈 change this
       {isModalOpen && (
         <div className="modal-overlay" onClick={() => setIsModalOpen(false)}>
           <div className="modal-content" onClick={(e) => e.stopPropagation()}>
-          <button
-  className="modal-close-button"
-  onClick={() => setIsModalOpen(false)}
-  aria-label="Close Modal"
->
-  ×
-</button>
-
-
-
-          <div className="modal-title">
-            <div className="unified-search-wrapper">
-              <input
-                type="text"
-                placeholder="Search music..."
-                className="unified-search-input"
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                autoFocus
-                onKeyDown={(e) => {
-                  if (e.key === 'Enter') {
+          <div className="modal-header">
+            <button
+              className="modal-close-button"
+              onClick={() => setIsModalOpen(false)}
+              aria-label="Close Modal"
+            >
+              ×
+            </button>
+            <div className="search-bar-container">
+              <div className="unified-search-wrapper">
+                <input
+                  type="text"
+                  placeholder="Search music..."
+                  className="unified-search-input"
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  autoFocus
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter') {
+                      executeSearch();
+                    }
+                  }}
+                />
+                <span
+                  className="search-icon"
+                  onClick={() => {
                     executeSearch();
-                  }
-                }}
-              />
-              <span
-                className="search-icon"
-                onClick={() => {
-                  executeSearch();
-                }}
-                style={{ cursor: 'pointer' }}
-              >
-                🔍
-              </span>
+                  }}
+                  style={{ cursor: 'pointer' }}
+                >
+                  🔍
+                </span>
+              </div>
+            </div>
+            <div className="modal-label">
+              <div className="icon-label-button1">
+              <button className="add-to-queue-button" onClick={() => console.log('Add to Queue Clicked')}>+</button>
+                <span className="action-label">Add to Queue</span>
+              </div>
+              <div className="icon-label-button2">
+                <button className="play-next-button" onClick={() => console.log('Add to Queue Clicked')}>
+                →
+                </button>
+                <span className="action-label">Play Next</span>
+              </div>
             </div>
           </div>
   <div className="multi-column-results">

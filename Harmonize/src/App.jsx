@@ -10,6 +10,8 @@ import RoomSetupModal from './components/RoomSetupModal.jsx';
 import YouTubePlayer from './components/YouTubePlayer.jsx';
 import SpotifyNativePlayer from './components/SpotifyNativePlayer.jsx';
 import { useParams } from 'react-router-dom';
+import Banner from './components/Banner';
+import './components/Banner.css';
 
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3001';
 
@@ -25,8 +27,20 @@ function App() {
   const [copySuccess, setCopySuccess] = useState(false);
   const [spotifyAccessToken, setSpotifyAccessToken] = useState(null);
   const { roomId: pathRoomId } = useParams();
+  const [bannerMessage, setBannerMessage] = useState('');
+  const bannerTimeoutRef = useRef(null);
 
   const isResizingLeft = useRef(false);
+
+  const showBanner = (message) => {
+    if (bannerTimeoutRef.current) {
+      clearTimeout(bannerTimeoutRef.current);
+    }
+    setBannerMessage(message);
+    bannerTimeoutRef.current = setTimeout(() => {
+      setBannerMessage('');
+    }, 3000);
+  };
 
   useEffect(() => {
     const handleMouseMove = (e) => {
@@ -48,6 +62,9 @@ function App() {
     return () => {
       window.removeEventListener('mousemove', handleMouseMove);
       window.removeEventListener('mouseup', stopResizing);
+      if (bannerTimeoutRef.current) {
+        clearTimeout(bannerTimeoutRef.current);
+      }
     };
   }, []);
 
@@ -286,11 +303,13 @@ function App() {
     storeAlbumCover(item);
     await sendSong(item, true);
     fetchRoomQueue(roomId);
+    showBanner(`Playing Next: ${item.title}`);
   };
   const addToQueueBottom = async (item) => {
     storeAlbumCover(item);
     await sendSong(item, false);
     fetchRoomQueue(roomId);
+    showBanner(`Added to queue: ${item.title}`);
   };
 
   const handleSeekStart = (e) => {
@@ -700,12 +719,14 @@ function App() {
           joinRoomId={pathRoomId}
         />
       )}
+      <Banner message={bannerMessage} />
       <TopBar
         addToQueueTop={addToQueueTop}
         addToQueueBottom={addToQueueBottom}
         users={users}
         currentUserId={currentUserId}
         refreshUsers={() => roomId && fetchRoomUsers(roomId)}
+        showBanner={showBanner}
       />
       <div className="app-layout">
         {/* Left Sidebar */}

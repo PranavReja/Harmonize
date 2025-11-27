@@ -1134,7 +1134,8 @@ transform: scale(1.02);
 .modal-close-button {
   position: absolute;
   top: 12px;
-  left: 12px;
+  right: 12px;
+  left: auto;
   font-size: 1.5rem;
   background: transparent;
   color: white;
@@ -1208,6 +1209,13 @@ transform: scale(1.02);
   gap: 8px;
   text-decoration: none;
   color: inherit;
+}
+
+.action-buttons {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  margin-left: auto;
 }
 
 .action-buttons {
@@ -1355,4 +1363,32 @@ transform: scale(1.02);
   display: flex;
   align-items: center;
   gap: 4px;
+}
+
+.modal-label {
+  color: white;
+  margin-bottom: 2rem;
+  text-align: right;
+  margin-top: -1.5rem;
+}
+
+.icon-label-button1{
+  color: white;
+  text-align: center;
+  margin-left: 35rem;
+  margin-bottom: 0.45rem;
+}
+
+.icon-label-button2{
+  color: white;
+  text-align: center;
+  margin-left: 53rem;
+  margin-bottom: 0.45rem;
+  margin-top: -1.8rem;
+}
+
+.action-label{
+
+  margin-left: 0.4rem;
+
 }

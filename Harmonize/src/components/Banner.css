@@ -1,0 +1,17 @@
+.banner {
+  position: fixed;
+  top: -100px;
+  left: 50%;
+  transform: translateX(-50%);
+  padding: 1rem 2rem;
+  border-radius: 5px;
+  background-color: rgba(0, 0, 128, 0.8);
+  color: white;
+  border: 2px solid lightblue;
+  transition: top 0.5s ease-in-out;
+  z-index: 1001;
+}
+
+.banner.visible {
+  top: 20px;
+}
