@@ -7,6 +7,13 @@ import HarmonizeLogo from '../assets/logo.png';
 
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3001';
 
+const AccountIcon = () => (
+  <div className="icon-button account-button" style={{ display: 'inline-flex', verticalAlign: 'middle', margin: '0 4px' }}>
+    <div className="head"></div>
+    <div className="body"></div>
+  </div>
+);
+
 export default function TopBar({
   addToQueueTop,
   addToQueueBottom,
@@ -228,6 +235,30 @@ const activeServices = ['YouTube', 'Spotify', 'SoundCloud']; // 👈 change this
     }
   };
 
+  const handleAddSpotify = (r) => {
+    if (currentUser?.isAdmin && !hasSpotify) {
+      showBanner(
+        <span>
+          Click the <AccountIcon /> button and link Spotify to listen to Spotify songs.
+        </span>
+      );
+    } else {
+      addToQueueBottom(createQueueItem(r, 'Spotify'));
+    }
+  };
+
+  const handlePlayNextSpotify = (r) => {
+    if (currentUser?.isAdmin && !hasSpotify) {
+      showBanner(
+        <span>
+          Click the <AccountIcon /> button and link Spotify to listen to Spotify songs.
+        </span>
+      );
+    } else {
+      addToQueueTop(createQueueItem(r, 'Spotify'));
+    }
+  };
+
   return (
     <>
       <header className="top-bar">
@@ -366,8 +397,8 @@ const activeServices = ['YouTube', 'Spotify', 'SoundCloud']; // 👈 change this
               artist={r.artist}
               thumbnail={r.thumbnail}
               url={r.url}
-              onAdd={() => addToQueueBottom(createQueueItem(r, 'Spotify'))}
-              onPlayNext={() => addToQueueTop(createQueueItem(r, 'Spotify'))}
+              onAdd={() => handleAddSpotify(r)}
+              onPlayNext={() => handlePlayNextSpotify(r)}
             />
           ))}
         {service === 'SoundCloud' &&
