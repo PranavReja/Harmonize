@@ -760,9 +760,22 @@ function App() {
             <div className="sidebar-section">
               <h3 className="sidebar-subtitle">Listeners</h3>
               <ul className="user-list">
-                {users.map((u) => (
-                  <UserCard key={u.userId} user={u} isCurrent={u.userId === currentUserId} />
-                ))}
+                {users.map((u) => {
+                  const updatedUser = { ...u };
+                  if (!updatedUser.services) {
+                    updatedUser.services = [];
+                  }
+                  if (!updatedUser.services.includes('YouTube')) {
+                    updatedUser.services.push('YouTube');
+                  }
+                  return (
+                    <UserCard
+                      key={updatedUser.userId}
+                      user={updatedUser}
+                      isCurrent={updatedUser.userId === currentUserId}
+                    />
+                  );
+                })}
               </ul>
             </div>
             <div className="sidebar-section leave-section">
