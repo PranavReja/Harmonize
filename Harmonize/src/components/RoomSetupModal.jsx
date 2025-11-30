@@ -10,6 +10,8 @@ export default function RoomSetupModal({ onClose, onRoomJoined, joinRoomId }) {
   const [roomName, setRoomName] = useState('');
   const [roomCode, setRoomCode] = useState('');
   const [error, setError] = useState('');
+  const [showSpinnerBanner, setShowSpinnerBanner] = useState(false);
+  const [continueClickCount, setContinueClickCount] = useState(0);
   const [services, setServices] = useState({
     YouTube: true,
     Spotify: true,
@@ -40,6 +42,16 @@ export default function RoomSetupModal({ onClose, onRoomJoined, joinRoomId }) {
     return () => window.removeEventListener('keydown', handleKey);
   }, [onClose]);
 
+  useEffect(() => {
+    if (continueClickCount > 1) {
+      setShowSpinnerBanner(true);
+      const timer = setTimeout(() => {
+        setShowSpinnerBanner(false);
+      }, 10000);
+      return () => clearTimeout(timer);
+    }
+  }, [continueClickCount]);
+
   const toggleService = (name) => {
     setServices((s) => ({ ...s, [name]: !s[name] }));
   };
@@ -49,6 +61,7 @@ export default function RoomSetupModal({ onClose, onRoomJoined, joinRoomId }) {
   }, [mode]);
 
   const handleContinue = async () => {
+    setContinueClickCount(prev => prev + 1);
     setError('');
     let id = userId;
     try {
@@ -165,6 +178,11 @@ export default function RoomSetupModal({ onClose, onRoomJoined, joinRoomId }) {
               className="intro-logo"
             />
             <h2 className="intro-title">Welcome to Harmonize</h2>
+            {showSpinnerBanner && (
+              <div className="banner visible" style={{ marginTop: '1rem' }}>
+                You may have to wait up to 50 seconds for backend services to wake up and application to launch. Harmonize is a free software and spins down for inactivity.
+              </div>
+            )}
             <div className="intro-buttons">
               <div className="link-input-group">
                 <div className="unified-search-wrapper" style={{ maxWidth: '220px', marginRight: '12px' }}>
