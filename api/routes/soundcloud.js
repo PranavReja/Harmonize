@@ -109,4 +109,47 @@ router.get('/search', async (req, res) => {
   }
 });
 
+// New endpoint to fetch a single track by ID
+router.get('/track/:id', async (req, res) => {
+  const trackId = req.params.id;
+  if (!trackId) {
+    return res.status(400).json({ error: 'Track ID is required' });
+  }
+
+  try {
+    const token = await getAccessToken();
+    const trackUrl = `https://api.soundcloud.com/tracks/${trackId}`;
+    
+    const response = await fetch(trackUrl, {
+      headers: {
+        'Authorization': `OAuth ${token}`,
+        'User-Agent': 'Harmonize/1.0 (Node.js)'
+      }
+    });
+
+    if (!response.ok) {
+      const errorText = await response.text();
+      console.error(`SoundCloud Track Fetch Error (${response.status}):`, errorText);
+      return res.status(response.status).json({ error: 'Failed to fetch track info' });
+    }
+
+    const track = await response.json();
+
+    const mappedTrack = {
+      id: String(track.id),
+      title: track.title,
+      artist: track.user ? track.user.username : 'Unknown Artist',
+      thumbnail: track.artwork_url || (track.user ? track.user.avatar_url : '') || 'https://a-v2.sndcdn.com/assets/images/default_artwork_large-577c008.png',
+      url: track.permalink_url,
+      duration: track.duration
+    };
+
+    res.json(mappedTrack);
+
+  } catch (error) {
+    console.error('SoundCloud track fetch error:', error);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
 export default router;

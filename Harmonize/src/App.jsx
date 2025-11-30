@@ -8,6 +8,7 @@ import RightSidebar from './components/RightSidebar';
 import UserCard from './components/UserCard';
 import RoomSetupModal from './components/RoomSetupModal.jsx';
 import YouTubePlayer from './components/YouTubePlayer.jsx';
+import SoundCloudPlayer from './components/SoundCloudPlayer.jsx';
 import SpotifyNativePlayer from './components/SpotifyNativePlayer.jsx';
 import { useParams } from 'react-router-dom';
 import Banner from './components/Banner';
@@ -157,6 +158,7 @@ function App() {
 
   const progressBarRef = useRef(null);
   const ytPlayerRef = useRef(null);
+  const scPlayerRef = useRef(null);
   const spotifyNativePlayerRef = useRef(null);
   const spotifyPrevPlayerState = useRef(null);
 
@@ -182,6 +184,16 @@ function App() {
         const res = await fetch(`${API_URL}/spotify/track/${sourceId}`);
         const data = await res.json();
         if (res.ok) url = data.thumbnail || '';
+      } else if (platform === 'soundcloud') {
+        // We can attempt to get the track info, but since we don't have a dedicated track info endpoint for SC in frontend yet,
+        // we'll reuse the search data if available or fetch via our backend if we add a specific route.
+        // For now, let's try to use the existing albumCovers cache which might have been populated by storeAlbumCover
+        // If not, we can try to fetch from our backend proxy
+         const res = await fetch(`${API_URL}/soundcloud/track/${sourceId}`);
+         if(res.ok){
+            const data = await res.json();
+            url = data.thumbnail || 'https://a-v2.sndcdn.com/assets/images/default_artwork_large-577c008.png';
+         }
       }
     } catch (err) {
       console.error('Album cover fetch error', err);
@@ -210,6 +222,7 @@ function App() {
           platform: song.platform,
           sourceId: song.sourceId,
           addedBy: currentUserId,
+          duration: song.duration
         }),
       });
     } catch (err) {
@@ -331,6 +344,8 @@ function App() {
       ytPlayerRef.current.seekTo(newTime);
     } else if (nowPlaying.platform === 'spotify' && spotifyNativePlayerRef.current) {
       spotifyNativePlayerRef.current.seek(newTime * 1000);
+    } else if (nowPlaying.platform === 'soundcloud' && scPlayerRef.current) {
+      scPlayerRef.current.seekTo(newTime);
     }
 
     if (roomId && currentPlaying >= 0) {
@@ -574,7 +589,7 @@ function App() {
     if (!isAdmin) return;
 
     const platform = nowPlaying?.platform;
-    if (platform !== 'youtube' && platform !== 'spotify') return;
+    if (platform !== 'youtube' && platform !== 'spotify' && platform !== 'soundcloud') return;
 
     const id = setInterval(async () => {
       if (isSeeking) return;
@@ -592,6 +607,17 @@ function App() {
           const { duration, position } = state;
           setTotalDuration(duration / 1000);
           setProgress((position / duration) * 100);
+        }
+      } else if (platform === 'soundcloud' && scPlayerRef.current) {
+        try {
+          const duration = await scPlayerRef.current.getDuration();
+          const current = await scPlayerRef.current.getCurrentTime();
+          if (duration > 0) {
+            setTotalDuration(duration);
+            setProgress((current / duration) * 100);
+          }
+        } catch (e) {
+           // silent error for sync issues
         }
       }
     }, 1000);
@@ -810,6 +836,18 @@ function App() {
                     onVideoEnd={handleVideoEnd}
                     onReady={() => {
                       setIsYtPlayerReady(true);
+                      if (isAdmin) {
+                        setIsPlaying(true);
+                      }
+                    }}
+                  />
+                ) : isAdmin && nowPlaying && nowPlaying.platform === 'soundcloud' ? (
+                  <SoundCloudPlayer
+                    ref={scPlayerRef}
+                    trackId={nowPlaying.sourceId}
+                    playing={isPlaying}
+                    onEnded={handleVideoEnd}
+                    onReady={() => {
                       if (isAdmin) {
                         setIsPlaying(true);
                       }

@@ -1,10 +1,13 @@
 import express from 'express'; // Get the Express Router system
+import fetch from 'node-fetch';
 import Room from '../models/Room.js'; // Import your Room model
 import User from '../models/User.js';
 import crypto from 'crypto'; // Use this to generate random room IDs
 
 let spotifyToken = null;
 let spotifyTokenExpires = 0;
+let soundcloudToken = null;
+let soundcloudTokenExpires = 0;
 
 async function getSpotifyAccessToken() {
   try {
@@ -32,6 +35,45 @@ async function getSpotifyAccessToken() {
   } catch (err) {
     console.error('Error getting Spotify access token:', err);
     throw err; // re-throw the error to be caught by the route handler
+  }
+}
+
+async function getSoundCloudAccessToken() {
+  if (soundcloudToken && Date.now() < soundcloudTokenExpires) {
+    return soundcloudToken;
+  }
+
+  console.log("Fetching new SoundCloud Access Token...");
+
+  try {
+    const params = new URLSearchParams();
+    params.append('client_id', process.env.SOUNDCLOUD_CLIENT_ID);
+    params.append('client_secret', process.env.SOUNDCLOUD_CLIENT_SECRET);
+    params.append('grant_type', 'client_credentials');
+
+    const response = await fetch('https://api.soundcloud.com/oauth2/token', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/x-www-form-urlencoded',
+        'User-Agent': 'Harmonize/1.0 (Node.js)'
+      },
+      body: params,
+    });
+
+    if (!response.ok) {
+      const errorText = await response.text();
+      console.error(`Failed to obtain SoundCloud access token: ${response.status} - ${errorText}`);
+      throw new Error(`Failed to obtain SoundCloud access token: ${response.statusText} - ${errorText}`);
+    }
+
+    const data = await response.json();
+    soundcloudToken = data.access_token;
+    soundcloudTokenExpires = Date.now() + (data.expires_in - 300) * 1000;
+    console.log("SoundCloud Access Token obtained successfully.");
+    return soundcloudToken;
+  } catch (error) {
+    console.error('Error fetching SoundCloud access token:', error);
+    return null; 
   }
 }
 
@@ -65,9 +107,43 @@ async function getSpotifyDuration(id) {
   return Math.round((data.duration_ms || 0) / 1000);
 }
 
+async function getSoundCloudDuration(id) {
+  const token = await getSoundCloudAccessToken();
+  if (!token) {
+      console.error("getSoundCloudDuration: No token available.");
+      return null;
+  }
+  try {
+    const url = `https://api.soundcloud.com/tracks/${id}`;
+    console.log(`Fetching SC duration from: ${url}`);
+    const resp = await fetch(url, {
+        headers: { 
+            'Authorization': `OAuth ${token}`,
+            'User-Agent': 'Harmonize/1.0 (Node.js)'
+        }
+    });
+    if (!resp.ok) {
+        const txt = await resp.text();
+        console.error(`SoundCloud duration fetch failed: ${resp.status} ${resp.statusText} - ${txt}`);
+        return null;
+    }
+    const data = await resp.json();
+    return Math.round((data.duration || 0) / 1000); // SC duration is in ms
+  } catch (e) {
+      console.error('SoundCloud duration fetch error:', e);
+      return null;
+  }
+}
+
 async function fetchDuration(platform, id) {
+  console.log(`fetchDuration called for ${platform}, id: ${id}`);
   if (platform === 'spotify') return await getSpotifyDuration(id);
   if (platform === 'youtube') return await getYouTubeDuration(id);
+  if (platform === 'soundcloud') {
+      const dur = await getSoundCloudDuration(id);
+      console.log(`SoundCloud duration result: ${dur}`);
+      return dur;
+  }
   return null;
 }
 
@@ -119,7 +195,9 @@ router.get('/:id/queue', async (req, res) => {
 
 router.post('/:id/queue', async (req, res) => {
     const roomId = req.params.id;
-    const { title, artist, platform, sourceId, addedBy } = req.body;
+    const { title, artist, platform, sourceId, addedBy, duration } = req.body;
+    
+    console.log(`Adding song to queue: ${title} (${platform}) ID: ${sourceId}`);
   
     try {
       const room = await Room.findOne({ roomId });
@@ -136,7 +214,13 @@ router.post('/:id/queue', async (req, res) => {
         return res.status(400).json({ error: 'Spotify songs are not allowed in guest mode' });
       }
   
-      const durationSec = await fetchDuration(platform, sourceId);
+      let durationSec = null;
+      if (duration) {
+          durationSec = Math.round(duration / 1000);
+      } else {
+          durationSec = await fetchDuration(platform, sourceId);
+      }
+
       const newSong = {
         title,
         artist,
@@ -440,7 +524,7 @@ router.patch('/:id/remove-user', async (req, res) => {
 
 router.post('/:id/queue/next', async (req, res) => {
   const roomId = req.params.id;
-  const { title, artist, platform, sourceId, addedBy } = req.body;
+  const { title, artist, platform, sourceId, addedBy, duration } = req.body;
 
   try {
     const room = await Room.findOne({ roomId });
@@ -457,7 +541,12 @@ router.post('/:id/queue/next', async (req, res) => {
 
     const insertIndex = room.currentPlaying + 1 || 0;
 
-    const durationSec = await fetchDuration(platform, sourceId);
+    let durationSec = null;
+    if (duration) {
+        durationSec = Math.round(duration / 1000);
+    } else {
+        durationSec = await fetchDuration(platform, sourceId);
+    }
 
     room.queue.splice(insertIndex, 0, {
       title,

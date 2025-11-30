@@ -198,6 +198,7 @@ const activeServices = ['YouTube', 'Spotify', 'SoundCloud']; // 👈 change this
     queuedBy: getCurrentUserName(),
     platform: service.toLowerCase(),
     sourceId: result.id || null,
+    duration: result.duration
   });
 
   const handleLinkSpotify = () => {

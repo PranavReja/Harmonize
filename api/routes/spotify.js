@@ -52,7 +52,8 @@ router.get('/search', async (req, res) => {
       title: item.name,
       artist: item.artists.map((a) => a.name).join(', '),
       thumbnail: item.album.images?.[0]?.url || null,
-      url: item.external_urls?.spotify
+      url: item.external_urls?.spotify,
+      duration: item.duration_ms
     }));
     res.json({ tracks });
   } catch (err) {
