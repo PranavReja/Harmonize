@@ -794,6 +794,9 @@ function App() {
                   if (!updatedUser.services.includes('YouTube')) {
                     updatedUser.services.push('YouTube');
                   }
+                  if (!updatedUser.services.includes('SoundCloud')) {
+                    updatedUser.services.push('SoundCloud');
+                  }
                   return (
                     <UserCard
                       key={updatedUser.userId}
