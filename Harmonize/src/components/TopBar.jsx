@@ -242,27 +242,25 @@ const activeServices = ['YouTube', 'Spotify', 'SoundCloud']; // 👈 change this
     }
   };
 
-  const handleAddSpotify = (r) => {
+  const handleAddSpotify = async (r) => {
+    await addToQueueBottom(createQueueItem(r, 'Spotify'));
     if (currentUser?.isAdmin && !hasSpotify) {
       showBanner(
         <span>
           Click the <AccountIcon /> button and link Spotify to listen to Spotify songs.
         </span>
       );
-    } else {
-      addToQueueBottom(createQueueItem(r, 'Spotify'));
     }
   };
 
-  const handlePlayNextSpotify = (r) => {
+  const handlePlayNextSpotify = async (r) => {
+    await addToQueueTop(createQueueItem(r, 'Spotify'));
     if (currentUser?.isAdmin && !hasSpotify) {
       showBanner(
         <span>
           Click the <AccountIcon /> button and link Spotify to listen to Spotify songs.
         </span>
       );
-    } else {
-      addToQueueTop(createQueueItem(r, 'Spotify'));
     }
   };
 
