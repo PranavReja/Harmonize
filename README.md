@@ -1,15 +1,22 @@
 # Harmonize
 
-Harmonize is a collaborative music listening platform that allows users to create and join rooms to listen to music together in real-time. Whether you're on YouTube, Spotify, or SoundCloud, Harmonize synchronizes playback across all connected users, ensuring everyone hears the same beat at the same time.
+Harmonize is a collaborative queue management platform designed to democratize the "aux cord." It allows a host (the Admin) to play music from various platforms while inviting others to join a room and collaboratively manage the playlist.
+
+**The core concept:** One person listens (the Admin), and everyone else controls what plays next.
+
+This makes Harmonize perfect for:
+*   **Road Trips:** The driver or navigator connects their phone to the car stereo, while passengers use their own phones to add songs to the queue without passing a single device around.
+*   **Parties:** The host runs the audio, but guests can request songs from their own devices.
+*   **Streamers:** A unified way for chat/audience members to suggest songs.
 
 ## Features
 
--   **Multi-Platform Support:** Seamlessly queue and play tracks from YouTube, Spotify, and SoundCloud.
--   **Real-Time Synchronization:** Playback, pausing, seeking, and track skipping are synchronized instantly for all users in the room.
--   **Collaborative Queue:** Users can add songs to a shared queue, reorder tracks, and see what's coming up next.
--   **Room Management:** Create private rooms, share invite links, and manage listeners.
--   **Admin Controls:** Room creators have administrative privileges to control playback and manage the room.
--   **Responsive UI:** A clean, modern interface with collapsible sidebars for room details and the queue, ensuring a great experience on various screen sizes.
+-   **Centralized Playback:** The Admin acts as the sole audio output source, playing tracks seamlessly from YouTube, Spotify, and SoundCloud.
+-   **Collaborative Queue:** joined users can search for songs, add them to the shared queue, and see what's coming up next.
+-   **Real-Time Updates:** While audio plays only for the Admin, all users see the "Now Playing" status, progress bar, and queue updates in real-time.
+-   **Multi-Platform Support:** Queue tracks from multiple services (YouTube, Spotify, SoundCloud) into a single, unified playlist.
+-   **Room Management:** Easy-to-share invite links for quick room entry.
+-   **Admin Controls:** The host has full control over playback (play/pause/skip) and queue management (removing songs, reordering).
 
 ## Tech Stack
 
